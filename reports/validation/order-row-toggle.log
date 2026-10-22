@@ -1,0 +1,13 @@
+{
+  "passed": 7,
+  "checks": [
+    "clicking count and fee cells expands and collapses the order",
+    "order name and keyboard toggle exactly once without event bubbling double-toggle",
+    "execution checkbox changes selection without toggling details",
+    "copy preserves original expansion and non-current expanded row collapses on the next row click",
+    "detail inputs edit the intended order without triggering row toggles",
+    "redraw preserves expansion and space key can collapse via the name button",
+    "delete only removes its target and does not change another row expansion"
+  ],
+  "errors": []
+}

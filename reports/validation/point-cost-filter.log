@@ -1,0 +1,10 @@
+{
+  "passed": 4,
+  "checks": [
+    "table and filter use the new caption while 100 coins/point limit displays 0.01 M/100",
+    "filter conversion matches displayed M/100 values for ask and bid pricing and preserves internal units",
+    "translated long unit caption keeps all three thresholds together on narrow screens",
+    "tiny nonzero costs retain significant digits rather than rounding to zero"
+  ],
+  "errors": []
+}

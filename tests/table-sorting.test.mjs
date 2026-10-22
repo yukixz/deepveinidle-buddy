@@ -1,0 +1,14 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import * as game from '../src/engine/upstream.js';
+import {sortItemRows,sortNumericRows,itemLevel} from '../src/table-sorting.js';
+import {sortCollectionRows} from '../src/collection-sorting.js';
+import {defaults,validateWorkspace} from '../src/workspace.js';
+const rows=[{id:41,key:'iron'},{id:game.withRarity(40,2),key:'rare-bronze'},{id:40,key:'bronze'}];
+test('item columns sort by original item level in both directions',()=>{assert.ok(itemLevel(41)>itemLevel(40));assert.deepEqual(sortItemRows(rows).map(r=>r.key),['bronze','rare-bronze','iron']);assert.equal(sortItemRows(rows,'item','desc')[0].key,'iron');assert.equal(rows[0].key,'iron');});
+test('rarity columns sort by rarity and break ties with item level',()=>{assert.deepEqual(sortItemRows(rows,'rarity').map(r=>r.key),['bronze','iron','rare-bronze']);assert.equal(sortItemRows(rows,'rarity','desc')[0].key,'rare-bronze');});
+test('unknown item levels stay last in both directions and explicit invalid sort fails',()=>{const unknown=game.items.find(i=>itemLevel(i.id)===null);assert.ok(unknown);for(const direction of ['asc','desc'])assert.equal(sortItemRows([...rows,{id:unknown.id}], 'item',direction).at(-1).id,unknown.id);assert.throws(()=>sortItemRows(rows,'name'),/invalidSort/);assert.throws(()=>sortItemRows(rows,'item','up'),/invalidSort/);});
+test('collection item and rarity sorting uses the shared rules',()=>{const values=rows.map(r=>({...r,job:{levelReq:1}}));assert.deepEqual(sortCollectionRows(values,'item'),sortItemRows(values));assert.deepEqual(sortCollectionRows(values,'rarity','desc'),sortItemRows(values,'rarity','desc'));});
+test('all modes default to all rarities while explicit saved choices and sort survive',()=>{const saved=defaults();assert.equal(saved.filters.craft.tier,'all');assert.equal(saved.filters.collection.tier,'all');saved.filters.collection={...saved.filters.collection,sort:'rarity',sortDirection:'desc',tier:'2'};assert.deepEqual(validateWorkspace(saved).filters.collection,saved.filters.collection);});
+
+test('numeric table columns keep unknown values last both ways and stable item-level ties',()=>{const values=[{id:41,n:2},{id:40,n:null},{id:42,n:1},{id:43,n:2}];assert.deepEqual(sortNumericRows(values,r=>r.n).map(r=>r.n),[1,2,2,null]);assert.deepEqual(sortNumericRows(values,r=>r.n,'desc').map(r=>r.n),[2,2,1,null]);assert.equal(values[0].id,41);assert.throws(()=>sortNumericRows([{id:40,n:NaN}],r=>r.n),/invalidSortValue/);});
+test('collection total coins sorting keeps cost-per-point preference independent',()=>{const values=[{id:40,key:'a',cost:10,costPerPoint:1,job:{levelReq:1}},{id:41,key:'b',cost:5,costPerPoint:2,job:{levelReq:15}}];assert.deepEqual(sortCollectionRows(values,'coins').map(r=>r.key),['b','a']);assert.deepEqual(sortCollectionRows(values,'cost').map(r=>r.key),['a','b']);});

@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {feeToInput,feeFromInput,feeInputMax} from '../src/fee-units.js';
+test('fixed fee uses millions while persisted values remain coins',()=>{assert.equal(feeToInput('fixed',2500000),2.5);assert.equal(feeFromInput('fixed',2.5),2500000);assert.equal(feeFromInput('fixed',.000001),1);});
+test('hourly millions convert to existing per-minute coins',()=>{assert.equal(feeToInput('minute',100000),6);assert.equal(feeFromInput('minute',6),100000);assert.equal(feeToInput('minute',2),.00012);assert.ok(Math.abs(feeFromInput('minute',.00012)-2)<1e-12);});
+test('percentage and zero retain their meaning',()=>{for(const key of ['fixed','percent','minute']){assert.equal(feeToInput(key,0),0);assert.equal(feeFromInput(key,0),0);assert.ok(feeInputMax(key)>0);}assert.equal(feeFromInput('percent',5),5);assert.equal(feeToInput('percent',5),5);});
+test('invalid units and unsafe converted values fail explicitly',()=>{assert.throws(()=>feeFromInput('wrong',1),/invalidNumber/);for(const value of [-1,NaN,Infinity])assert.throws(()=>feeFromInput('fixed',value),/invalidNumber/);assert.throws(()=>feeFromInput('fixed',Number.MAX_SAFE_INTEGER),/quantityOverflow/);assert.throws(()=>feeFromInput('minute',Number.MAX_SAFE_INTEGER),/quantityOverflow/);});

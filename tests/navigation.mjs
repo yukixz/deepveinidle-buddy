@@ -1,0 +1,28 @@
+import {launchBrowser,baseUrl} from './browser-helper.mjs';import fs from 'node:fs/promises';import assert from 'node:assert/strict';
+const browser=await launchBrowser();
+const page=await browser.newPage({viewport:{width:1440,height:1080}}),checks=[],errors=[];page.on('pageerror',e=>errors.push(e.message));
+const base=baseUrl;await fs.mkdir('.test-artifacts/navigation',{recursive:true});
+try{
+ await page.goto(base);const panel=page.locator('#deepveinidle-buddy'),nav=page.locator('nav[aria-label="游戏导航"]'),launcher=nav.locator('[data-buddy-launcher]');
+ await launcher.waitFor();assert.equal(await launcher.isEnabled(),true);
+ assert.ok(await nav.evaluate(n=>n.lastElementChild.matches('[data-buddy-launcher]')&&n.lastElementChild.previousElementSibling.matches('[data-buddy-separator][role="separator"]')));checks.push('launcher is the last navigation entry with an immediately preceding separator');
+ assert.equal(await launcher.getAttribute('class'),await nav.locator('button').first().getAttribute('class'));assert.equal(await nav.locator('[data-buddy-separator]').getAttribute('class'),await nav.locator('[role="separator"]').first().getAttribute('class'));checks.push('launcher and separator reuse native navigation classes');
+ await page.evaluate(()=>{window.originalNavClicks=0;document.querySelector('nav').addEventListener('click',()=>window.originalNavClicks++);});
+ await panel.locator('[data-action="close"]').click();assert.equal(await panel.isVisible(),false);assert.equal(await page.locator('.launcher').count(),0);await launcher.click();assert.equal(await panel.isVisible(),true);assert.equal(await page.evaluate(()=>window.originalNavClicks),0);checks.push('navigation reopens the hidden panel without forwarding a game navigation action');
+ await nav.evaluate(n=>{const extra=document.createElement('button');extra.className='nav-icon';extra.textContent='New native entry';n.append(extra);});
+ await page.waitForFunction(()=>document.querySelector('nav').lastElementChild.matches('[data-buddy-launcher]'));assert.equal(await nav.locator('[data-buddy-launcher]').count(),1);assert.equal(await nav.locator('[data-buddy-separator]').count(),1);checks.push('new native entries keep buddy at the end without duplicates');
+ await nav.evaluate(n=>{const replacement=n.cloneNode(true);n.replaceWith(replacement);});await page.waitForFunction(()=>document.querySelectorAll('nav [data-buddy-launcher]').length===1&&document.querySelector('nav').lastElementChild.matches('[data-buddy-launcher]'));await panel.locator('[data-action="close"]').click();await page.locator('nav [data-buddy-launcher]').click();assert.equal(await panel.isVisible(),true);checks.push('navigation replacement restores the live launcher and removes cloned duplicates');
+ await page.locator('nav').evaluate(n=>n.setAttribute('aria-label','Game navigation'));await page.getByRole('button',{name:'Crafting buddy',exact:true}).waitFor();checks.push('navigation language change updates accessible launcher label');
+ await panel.locator('[data-action="close"]').click();await page.screenshot({path:'.test-artifacts/navigation/closed-launcher.png'});
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:'.test-artifacts/navigation/mobile-launcher.png'});assert.equal(await page.locator('nav [data-buddy-launcher]').isVisible(),true);checks.push('launcher remains in narrow-screen navigation while the panel is closed');
+ // No game or account: exercise late navigation and cleanup directly against an authored fixture.
+ await page.goto(base+'/tests/fixture.html');await page.locator('nav').evaluate(n=>n.remove());
+ await page.evaluate(async()=>{const {installNavigationLauncher}=await import('/src/navigation.js');window.opens=0;window.launcherAPI=installNavigationLauncher(document,()=>window.opens++);});
+ assert.equal(await page.locator('[data-buddy-launcher]').count(),0);
+ await page.evaluate(()=>{const nav=document.createElement('nav');nav.setAttribute('aria-label','Game navigation');nav.innerHTML='<button class="nav-icon">More</button><span role="separator" class="nav-sep"></span>';document.body.append(nav);});
+ await page.locator('nav [data-buddy-launcher]').waitFor();assert.equal(await page.locator('nav [data-buddy-launcher]').isDisabled(),true);checks.push('late navigation mount inserts a disabled waiting entry');
+ await page.evaluate(()=>window.launcherAPI.update({ready:true,open:false,status:''}));await page.locator('[data-buddy-launcher]').click();assert.equal(await page.evaluate(()=>window.opens),1);checks.push('ready entry opens exactly once');
+ await page.evaluate(()=>window.launcherAPI.dispose());assert.equal(await page.locator('[data-buddy-launcher],[data-buddy-separator]').count(),0);checks.push('dispose removes both injected elements and observers');
+ assert.deepEqual(errors,[]);checks.push('no uncaught browser errors');
+ await fs.writeFile('.test-artifacts/navigation/summary.json',JSON.stringify({checks,errors},null,2)+'\n');console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
+}catch(error){await page.screenshot({path:'.test-artifacts/navigation/failure.png'});console.error(JSON.stringify({checks,errors,error:error.stack},null,2));throw error;}finally{await browser.close();}

@@ -1,0 +1,13 @@
+{
+  "passed": 7,
+  "checks": [
+    "actions with individually sufficient shared inputs show yellow row tooltip without status text and retain five columns",
+    "deselecting competing order immediately changes remaining action to green; order management has no readiness highlights",
+    "whole plan stock shows green with translated row tooltip and no status text",
+    "insufficient action stock has no readiness highlight",
+    "unknown inventory never claims materials are available",
+    "yellow warning translates to English",
+    "narrow layout retains highlighted rows without inline status text and keeps table scrolling"
+  ],
+  "errors": []
+}

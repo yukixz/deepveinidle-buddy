@@ -1,9 +1,27 @@
 # 技术方案
 
-src/engine 复用 deepveinidle-lab main 的 1199 计算模块，源码来源和摘要见 vendor/manifest.json。原始资源归游戏作者，公开资源不代表开源许可。使用 scripts/extract.mjs 校验完整来源后生成 src/engine/upstream.js，不手改生成代码。原始计算不依赖账号。
+## 来源与边界
 
-新增模块使用依赖注入和 root 内查询；不代理全局 document，不修改原游戏资源。构建使用固定版本 esbuild，将应用和无外部 import 的 Worker 装入 userscript。捕获器先于 UI 初始化，元数据仅匹配两个游戏域名且 noframes。GM 只存订单／偏好／价格及必要配置，角色 ID 分桶；本地演示的 storage 独立。
+`src/engine` 保留应用和解析计算测试使用的实验室模块，源提交及逐文件摘要见 `vendor/lab-source.json`。原始游戏资源与语义提取映射见 `vendor/manifest.json`；`src/engine/upstream.js` 为生成文件，禁止手改。更新原始资源后先审查来源、版本、符号签名及摘要，再执行 `npm run extract`。来源一致性由单元测试校验。公开资源不代表开源许可。
 
-网络仅用于固定公开市场 API，禁用凭据；只旁听既有同源 WebSocket，不发送任何消息。Blob Worker 失败明确提示，不退回主线程执行逐刻模拟。UI 卸载终止 Worker、释放 URL 并清理监听。
+当前计算版本为1.0.1199。其他游戏版本需重新核验。原始模拟模块作为角色构造和计算对照依赖保留，面板不启动模拟或 Worker。
 
-旧实验室参考设计快照位于 docs/reference；其中指向实验室的文档链接属于原仓库语境，不作为本项目当前规则。新项目入口以 DESIGN.md 为准。
+## 模块
+
+- `capture.js`：只读旁听已有同源 WebSocket，捕获器先于面板初始化，不额外连接，不发送游戏消息。
+- `main.js`、`navigation.js`：按角色挂载／卸载面板及导航入口，清理监听与定时器。
+- `app.js`、`theme.css`：Shadow DOM 内订单、筛选、共享定价和中文输入保护；不代理全局 document 或修改原游戏代码。
+- `workspace.js`、`crafting-estimates.js`：严格当前模型、解析动作／费用、合并采购与高亮。
+- `collection-sorting.js`、`table-sorting.js`：全精度稳定排序，未知值置末。
+- `fee-units.js`：界面 M／M/h 与金币／金币每分钟基础单位换算。
+- `plan-transfer.js`：固定 DVILAB-PLAN 的 gzip／Base64 封装，应用层校验当前单订单结构。
+- `storage.js`、`panel-geometry.js`：GM revision 保护、独立布局存储、拖动与四边缩放。
+- `platform.js`：浏览器／GM 存储及剪贴板适配；写入使用 GM_setClipboard，读取由点击触发 navigator.clipboard.readText。
+
+网络仅用于固定公开市场 API，禁用凭据；不读取登录信息或聊天。GM 无原子比较交换，跨标签版本检查为尽力检测。真实管理器权限、注入时机与长期性能需独立验证。
+
+## 开发验证
+
+`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器配置，完整输出在 `.test-artifacts/verification/`。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，无远程 require 或运行时下载代码。
+
+项目处于开发阶段，仅接受当前数据结构，不维护历史兼容和迁移。发布授权与真实环境验证完成前不部署。

@@ -1,0 +1,27 @@
+{
+  "passed": 21,
+  "checks": [
+    "titlebar has only language and close buttons",
+    "pointer handle resizes both width and height",
+    "left bottom handle resizes both axes while anchoring the opposite corner",
+    "west resizes the intended axes with opposite edges anchored",
+    "east resizes the intended axes with opposite edges anchored",
+    "top resizes the intended axes with opposite edges anchored",
+    "bottom resizes the intended axes with opposite edges anchored",
+    "top-left resizes the intended axes with opposite edges anchored",
+    "top-right resizes the intended axes with opposite edges anchored",
+    "refresh restores saved position and size",
+    "language redraw preserves geometry",
+    "dragging titlebar moves panel",
+    "refresh restores titlebar movement as well as size",
+    "titlebar buttons do not initiate dragging",
+    "dragging is clamped to viewport",
+    "resize reaches all viewport edges with no corner grip artwork",
+    "focused handle supports keyboard resizing",
+    "close hides panel and navigation reopens at preserved position and size",
+    "viewport shrink and narrow layout keep controls and resize grip visible",
+    "invalid layout storage shows an error and remains protected from overwrite",
+    "no uncaught browser errors"
+  ],
+  "errors": []
+}

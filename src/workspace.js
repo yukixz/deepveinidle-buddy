@@ -1,9 +1,9 @@
+import {encodePlanPayload,decodePlanPayload} from './plan-transfer.js';
+import {estimateCraftAction} from './crafting-estimates.js';
 import * as game from './engine/upstream.js';
-import {craftingJobs,craftingTiers,craftingMaterials,normalizeCrafting} from './engine/crafting-model.js';
+import {craftingJobs,craftingTiers,craftingMaterials} from './engine/crafting-model.js';
 import {collectionDefaults,validateCollection,collectionTarget,collectionRoutes,collectionPlayers,estimateCollection,collectionPrice} from './engine/collection-model.js';
 import {validateCollectionPlan} from './engine/collection-plan.js';
-import {normalizeWorkspace as legacyCraft} from './engine/crafting-orders.js';
-import {decodeCollectionPlan} from './engine/collection-plan-transfer.js';
 import {priceDefaults,normalizePriceState} from './engine/item-prices.js';
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const safe=v=>Number.isFinite(v)&&v>=0&&v<=Number.MAX_SAFE_INTEGER;
@@ -32,14 +32,20 @@ export function validateOrders(raw){
   return {id:order.id,name:order.name,enabled:order.enabled,fees:{...order.fees},lines};
  });
 }
-export const filterDefaults=()=>({skill:'all',tier:'0',query:'',route:'all',sort:'level',group:'',page:1,minPoints:'',maxTime:'',maxCost:''});
-export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:collectionDefaults(),prices:priceDefaults(),follow:true,autoRemove:true,language:'zh',filters:{craft:filterDefaults(),collection:filterDefaults()}};}
+export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
+export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',autoRemove:true,language:'zh',filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
 export function validateWorkspace(raw){
- if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.follow!=='boolean'||typeof raw.autoRemove!=='boolean'||!['zh','en'].includes(raw.language))throw Error('invalidWorkspace');
- const orders=validateOrders(raw.orders);
- const filters={};for(const mode of ['craft','collection']){const f=raw.filters?.[mode]??filterDefaults();if(!record(f)||!['all',...game.allSkills].includes(f.skill)||!['all','0','1','2','3','4'].includes(f.tier)||typeof f.query!=='string'||typeof f.group!=='string'||!['all','craft','gather'].includes(f.route)||!['level','time','cost','points'].includes(f.sort)||!Number.isSafeInteger(f.page)||f.page<1||!['minPoints','maxTime','maxCost'].every(k=>typeof f[k]==='string'&&(f[k]===''||safe(Number(f[k])))))throw Error('invalidFilters');filters[mode]={...f};}
- if(!orders.length||!orders.some(o=>o.id===raw.currentOrderId))throw Error('invalidWorkspace');
- return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),follow:raw.follow,autoRemove:raw.autoRemove,language:raw.language,filters};
+ if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.autoRemove!=='boolean'||!['zh','en'].includes(raw.language)||!record(raw.filters)||raw.prices?.version!==4)throw Error('invalidWorkspace');
+ if(!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.character?.buyMode))throw Error('invalidPriceMode');
+ const orders=validateOrders(raw.orders),filters={};
+ for(const mode of ['craft','collection']){
+  const f=raw.filters[mode],columns=mode==='craft'?['item','rarity']:['item','rarity','points','duration','time','cost','coins'];
+  const keys=['skill','tier','query','route','sort','sortDirection','page','minPoints','maxSecondsPerPoint','maxCost'];
+  if(!record(f)||Object.keys(f).some(key=>!keys.includes(key))||!['all',...game.allSkills].includes(f.skill)||!['all','0','1','2','3','4'].includes(f.tier)||typeof f.query!=='string'||!['all','craft','gather'].includes(f.route)||!columns.includes(f.sort)||!['asc','desc'].includes(f.sortDirection)||!Number.isSafeInteger(f.page)||f.page<1||!['minPoints','maxSecondsPerPoint','maxCost'].every(key=>typeof f[key]==='string'&&(f[key]===''||safe(Number(f[key])))))throw Error('invalidFilters');
+  filters[mode]={...f};
+ }
+ if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
+ return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,autoRemove:raw.autoRemove,language:raw.language,filters};
 }
 export function putLine(order,raw){
  if(raw.kind==='craft'&&raw.count===0){order.lines=order.lines.filter(l=>lineKey(l)!==lineKey(raw));return;}
@@ -51,12 +57,25 @@ export function removeCompleted(workspace){
  if(!workspace.autoRemove||!workspace.character.initialized)return;
  for(const order of workspace.orders)order.lines=order.lines.filter(l=>l.kind!=='collection'||!collectionTarget(workspace.character,l.itemId,l.target).complete);
 }
-export const craftConfig=character=>normalizeCrafting(character.config);
-export const craftSignature=(character,line)=>{
- const config=craftConfig(character),job=craftingJobs.find(j=>j.id===line.jobId),slot={cooking:'pan',smithing:'hammer',fletching:'knife',herblore:'mortar',crafting:'needle'}[job.skill];
- return JSON.stringify({jobId:line.jobId,tier:line.tier,count:line.count,level:config.levels[job.skill],tool:config.gear[slot],mount:config.gear.mount,brews:config.brews,house:game.rooms.filter(r=>r.bonus.kind==='craftSpeed'&&r.bonus.skill===job.skill).map(r=>[r.id,config.house[r.id]]),masteries:config.masteries,perks:{pockets:config.perks.pockets,quick:config.perks.quick,hands:job.skill==='cooking'?config.perks.hands:0},guildXp:config.guildXp,weeklyXp:config.weeklyXp,ironman:config.ironman,blessing:config.blessing,homeBank:config.homeBank,hotSetting:config.hotSetting,window:config.hotSetting==='current'?Math.floor(Date.now()/1800000):null});
-};
-export function estimateOrders(workspace,prices,results=new Map(),now=Date.now()){
+function summarizeExecutionActions(entries,rows,canAssess,planReady){
+ const groups=new Map();
+ const increment=(row,field,value)=>{if(row[field]===null)return;try{row[field]=add(row[field],value);}catch(error){row[field]=null;row.issues.add(error.message);}};
+ for(const entry of entries){
+  if(entry.status==='complete')continue;
+  const tier=entry.kind==='craft'?entry.tier:game.itemTier(entry.itemId),key=String(entry.jobId)+':'+tier;
+  if(!groups.has(key))groups.set(key,{key,jobId:entry.jobId,tier,craftCount:0,collectionAttempts:0,seconds:0,timeUnknown:false,materials:{},issues:new Set()});
+  const row=groups.get(key);
+  if(entry.kind==='craft')increment(row,'craftCount',entry.count);
+  else if(entry.status==='ok'&&entry.attempts!==null&&entry.attempts!==undefined)increment(row,'collectionAttempts',entry.attempts);
+  else row.collectionAttempts=null;
+  if(entry.status==='ok'&&entry.seconds!==null&&entry.seconds!==undefined)increment(row,'seconds',entry.seconds);
+  else row.timeUnknown=true;
+  if(entry.status!=='ok')row.issues.add(entry.status);
+  else for(const [id,qty]of Object.entries(entry.materials)){try{row.materials[id]=add(row.materials[id]??0,qty);}catch(error){row.issues.add(error.message);}}
+ }
+ return [...groups.values()].map(row=>{let count=null;if(row.craftCount!==null&&row.collectionAttempts!==null){try{count=add(row.craftCount,row.collectionAttempts);}catch(error){row.issues.add(error.message);}}return {key:row.key,jobId:row.jobId,tier:row.tier,craftCount:row.craftCount,collectionAttempts:row.collectionAttempts,count,seconds:row.timeUnknown?null:row.seconds,materialStatus:canAssess&&row.issues.size===0&&Object.keys(row.materials).length>0&&Object.entries(row.materials).every(([id,qty])=>{const stock=rows.find(r=>r.id===Number(id));return stock?.owned!==null&&stock?.owned>=Math.ceil(qty);})?(planReady?'ready':'shared'):null,issues:[...row.issues]};}).sort((a,b)=>String(a.jobId).localeCompare(String(b.jobId),undefined,{numeric:true})||a.tier-b.tier);
+}
+export function estimateOrders(workspace,prices,now=Date.now()){
  const state=workspace.character,players=collectionPlayers(state,now),selected=workspace.orders.filter(o=>o.enabled),materials=new Map(),seen=new Set(),conflicts=new Set();
  for(const order of selected)for(const line of order.lines)if(line.kind==='collection'){
   if(seen.has(line.itemId))conflicts.add(line.itemId);seen.add(line.itemId);
@@ -64,28 +83,23 @@ export function estimateOrders(workspace,prices,results=new Map(),now=Date.now()
  const entries=[],orders=[];let blocked=0,points=0,craftSeconds=0,collectionSeconds=0;
  const materialAdd=(map,id,qty)=>map.set(Number(id),add(map.get(Number(id))??0,qty));
  for(const order of selected){
-  const own=new Map();let ownBlocked=false,ownCraftSeconds=0,hasCollection=false,ownMaterialsUnknown=false;
+  const own=new Map();let ownBlocked=false,ownSeconds=0,ownMaterialsUnknown=false;
   for(const line of order.lines){
    let entry={...line,orderId:order.id,status:'ok',materials:{}};
    try{
     if(line.kind==='craft'){
      const job=craftingJobs.find(j=>j.id===line.jobId);entry.materials=craftingMaterials(job,line.tier,line.count);
-     if(!state.initialized)entry.status='uninitialized';
-     else if(state.config.levels[job.skill]<job.levelReq)entry.status='levelTooLow';
-     const result=results.get(craftSignature(state,line));entry.result=result;
-     if(entry.status==='ok'){
-      if(result?.complete&&!result.error){entry.seconds=result.elapsedTicks*game.tickMs/1000;craftSeconds=add(craftSeconds,entry.seconds);ownCraftSeconds=add(ownCraftSeconds,entry.seconds);}
-      else entry.status=result?.error??'calculating';
-     }
+     Object.assign(entry,estimateCraftAction(state,job,line.count,players));
+     if(entry.status==='ok')craftSeconds=add(craftSeconds,entry.seconds);
     }else{
      const estimate=estimateCollection(state,line.itemId,collectionRoutes(line.itemId).find(j=>j.id===line.jobId),players,line.target);
      entry={...entry,...estimate,remaining:state.initialized?Math.max(0,line.target-(state.counts[line.itemId]??0)):null};
      if(conflicts.has(line.itemId))entry.status='collectionConflict';
-     if(entry.status==='ok'){points=add(points,entry.points);collectionSeconds=add(collectionSeconds,entry.seconds);hasCollection=true;}
-     else if(entry.status!=='complete')hasCollection=true;
+     if(entry.status==='ok'){points=add(points,entry.points);collectionSeconds=add(collectionSeconds,entry.seconds);}
     }
     if(!['ok','complete'].includes(entry.status)){blocked++;ownBlocked=true;if(line.kind==='collection')ownMaterialsUnknown=true;}
-    // Deterministic crafting requirements stay available while simulation runs.
+    if(entry.status==='ok')ownSeconds=add(ownSeconds,entry.seconds);
+    // Fixed crafting requirements remain available even when action time is unknown.
     if(line.kind==='craft'||entry.status==='ok')for(const [id,qty]of Object.entries(entry.materials)){materialAdd(materials,id,qty);materialAdd(own,id,qty);}
    }catch(error){entry.status=error.message;blocked++;ownBlocked=true;ownMaterialsUnknown=true;}
    entries.push(entry);
@@ -93,8 +107,8 @@ export function estimateOrders(workspace,prices,results=new Map(),now=Date.now()
   let materialValue=0,unknown=false;
   for(const [id,qty]of own){const price=collectionPrice(id,prices,state.buyMode).price;if(price===null&&qty>0)unknown=true;else materialValue=add(materialValue,qty*(price??0));}
   const nonempty=order.lines.some(l=>l.kind==='craft'||!state.initialized||!collectionTarget(state,l.itemId,l.target).complete);
-  const fixed=nonempty?order.fees.fixed:0,percent=order.fees.percent===0?0:unknown||ownMaterialsUnknown?null:materialValue*order.fees.percent/100;
-  const minute=!nonempty||order.fees.minute===0?0:hasCollection||ownBlocked?null:ownCraftSeconds/60*order.fees.minute;
+  const fixed=nonempty?order.fees.fixed:0,percent=order.fees.percent===0?0:unknown||ownMaterialsUnknown?null:add(0,materialValue*(order.fees.percent/100));
+  const minute=!nonempty||order.fees.minute===0?0:ownBlocked?null:add(0,ownSeconds/60*order.fees.minute);
   const total=percent===null||minute===null?null:add(add(fixed,percent),minute);
   orders.push({id:order.id,fees:{fixed,percent,minute,total},blocked:ownBlocked,materialValue:unknown?null:materialValue});
  }
@@ -107,20 +121,12 @@ export function estimateOrders(workspace,prices,results=new Map(),now=Date.now()
   if(cost!==null)subtotal=add(subtotal,cost);
   return {id,required,owned,purchase,price:quote.price,cost};
  });
- for(const entry of entries){const dependencies=Object.keys(entry.materials);entry.ready=entry.status==='ok'&&dependencies.length>0&&dependencies.every(id=>{const row=rows.find(r=>r.id===Number(id));return row&&row.owned!==null&&row.owned>=row.required;});
-  const jobId=entry.jobId;entry.overlap=entry.kind==='collection'?entries.some(e=>e.kind==='craft'&&e.jobId===jobId&&e.tier===game.itemTier(entry.itemId)):entries.some(e=>e.kind==='collection'&&e.jobId===jobId&&game.itemTier(e.itemId)===entry.tier);
- }
- return {entries,orders,rows,blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds,collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
+ return {entries,orders,rows,actions:summarizeExecutionActions(entries,rows,blocked===0&&!unknownInventory,rows.every(r=>r.purchase===0)),blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&!['ok','complete'].includes(e.status))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
 }
-export function exportOrders(workspace){return {format:'deepveinidle-buddy-orders',version:1,orders:validateOrders(workspace.orders),autoRemove:workspace.autoRemove,buyMode:workspace.character.buyMode};}
-export async function importOrders(text){
- let raw;try{raw=JSON.parse(text);}catch{raw=null;}
- if(raw?.format==='deepveinidle-buddy-orders'){
-  if(raw.version!==1||typeof raw.autoRemove!=='boolean'||!['global','ask','bid','vendor'].includes(raw.buyMode))throw Error('invalidOrders');
-  const orders=validateOrders(raw.orders);return {orders,autoRemove:raw.autoRemove,buyMode:raw.buyMode};
- }
- if(raw?.version===1&&Array.isArray(raw.orders)){
-  const old=legacyCraft(raw);return {orders:old.orders.map(o=>({...o,fees:Object.fromEntries(Object.entries(o.fees).map(([k,v])=>[k,v??0])),lines:Object.entries(o.plans).map(([key,count])=>{const split=key.lastIndexOf(':'),id=key.slice(0,split);return validateLine({kind:'craft',jobId:id.startsWith('upgrade-')?id:Number(id),tier:Number(key.slice(split+1)),count});})}))};
- }
- const plan=await decodeCollectionPlan(text),order=createOrder(crypto.randomUUID(),'收藏计划');order.lines=plan.selections.map(s=>({kind:'collection',...s}));return {orders:[order]};
+export function exportOrder(order){return {format:'deepveinidle-buddy-order',version:1,order:validateOrders([order])[0]};}
+export async function exportOrderText(order){return encodePlanPayload(exportOrder(order));}
+export async function importOrder(text){
+ const raw=await decodePlanPayload(text);
+ if(!record(raw)||raw.format!=='deepveinidle-buddy-order'||raw.version!==1||Object.keys(raw).some(key=>!['format','version','order'].includes(key)))throw Error('invalidOrders');
+ return validateOrders([raw.order])[0];
 }

@@ -1,0 +1,12 @@
+{
+  "passed": 6,
+  "checks": [
+    "canonical coin/minute values display as fixed M and hourly M",
+    "three fields and explanations translate with explicit units",
+    "M and M/h inputs convert correctly and hourly fee matches expected action hours",
+    "DVILAB-PLAN preserves canonical fee units through import and reload",
+    "unsafe unit input is rejected without changing saved fees",
+    "unit captions fit narrow layout without page overflow"
+  ],
+  "errors": []
+}

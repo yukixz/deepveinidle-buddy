@@ -1,0 +1,14 @@
+{
+  "passed": 8,
+  "checks": [
+    "order detail type and count/target columns sort both directions without mutating stored order lines",
+    "purchase, total-required, unit-price and cost columns sort numerically in both directions",
+    "execution skill, attempts and expected time columns sort in both directions",
+    "collection total coins column sorts before pagination and keeps unknown costs last",
+    "clipboard exports DVILAB-PLAN and imports the same full order atomically",
+    "pending transfers disable both controls and late clipboard import cannot overwrite intervening edits",
+    "invalid compressed clipboard text preserves the order",
+    "sorting state survives language redraw and narrow layout retains internal scrolling"
+  ],
+  "errors": []
+}

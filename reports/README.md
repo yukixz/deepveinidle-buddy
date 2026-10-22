@@ -1,4 +1,7 @@
 # 报告索引
 
-- [调研与方案](research.md)：Shadow DOM、收藏混合订单、游戏面板风格及原调研边界。
-- [实施与验证](implementation.md)：本项目实际运行结果与未验证事项。
+- [架构调研](research.md)：userscript、Shadow DOM 与只读接入的选型。
+- [当前验证](validation.md)：本次实际运行结果、日志、截图及验证边界。
+- [游戏样式样本](theme-sample.json)：公开面板字体与配色采样。
+
+产品规则见 [DESIGN.md](../DESIGN.md)，不在报告中重复维护。
