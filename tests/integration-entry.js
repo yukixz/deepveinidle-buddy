@@ -1,0 +1,10 @@
+import {mountPanel} from '../src/app.js';import css from '../src/theme.css';
+import {defaults} from '../src/workspace.js';import {createGameSync,installGameSync,readClient} from '../src/game-sync.js';import {createGamePrefill,verifyGameBundle} from '../src/game-prefill.js';
+window.buddyTest={defaults,createGameSync,createGamePrefill,verifyGameBundle};
+const initial=defaults();initial.orders[0].lines=window.__testLines;initial.autoRemove=false;if(window.__testPrices)initial.prices=window.__testPrices;
+const values=new Map();window.__writes=[];
+const platform={get:async(k,v)=>values.get(k)??v,set:async(k,v)=>{values.set(k,v);window.__writes.push(v);},subscribe:()=>()=>{},market:()=>Promise.reject(Error('disabled in fixture')),copy:()=>{},readClipboard:()=>{}};
+const integration=createGamePrefill(window,{verify:()=>window.__verify()});
+const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
+const panel=await mountPanel(host.attachShadow({mode:'open'}),{platform,css,initial,gameIntegration:integration,readCharacter:()=>readClient(window)});window.__panel=panel;
+window.__disposeSync=installGameSync(window,envelope=>panel.receive(envelope));

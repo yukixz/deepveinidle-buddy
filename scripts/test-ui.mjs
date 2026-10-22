@@ -1,6 +1,6 @@
 import {spawn} from 'node:child_process';
 import fs from 'node:fs/promises';
-const scenarios=['browser','orders-tables-ime','fee-captions','point-cost-filter','bulk-pagination','extra-sorting','action-materials','execution-summary','order-row-toggle','panel-geometry','table-scroll','navigation'];
+const scenarios=['game-integration','browser','orders-tables-ime','fee-captions','point-cost-filter','bulk-pagination','extra-sorting','action-materials','execution-summary','order-row-toggle','panel-geometry','table-scroll','navigation'];
 const selected=process.argv.slice(2);if(selected.some(name=>!scenarios.includes(name)))throw Error('Unknown UI scenario');
 const names=selected.length?selected:scenarios,directory='.test-artifacts/verification';await fs.mkdir(directory,{recursive:true});const results=[];
 for(const name of names){

@@ -1,6 +1,11 @@
 {
   "scenarios": [
     {
+      "name": "game-integration",
+      "passed": 14,
+      "code": 0
+    },
+    {
       "name": "browser",
       "passed": 44,
       "code": 0
@@ -61,6 +66,6 @@
       "code": 0
     }
   ],
-  "totalChecks": 145,
+  "totalChecks": 159,
   "complete": true
 }

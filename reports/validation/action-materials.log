@@ -1,7 +1,7 @@
 {
   "passed": 7,
   "checks": [
-    "actions with individually sufficient shared inputs show yellow row tooltip without status text and retain five columns",
+    "actions with individually sufficient shared inputs show yellow row tooltip without status text and include the prefill action column",
     "deselecting competing order immediately changes remaining action to green; order management has no readiness highlights",
     "whole plan stock shows green with translated row tooltip and no status text",
     "insufficient action stock has no readiness highlight",

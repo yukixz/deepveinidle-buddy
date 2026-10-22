@@ -7,7 +7,7 @@ const header=`// ==UserScript==
 // @name         Deep Vein Idle · Buddy 制造与收藏助手
 // @namespace    deepveinidle-buddy
 // @version      ${version}
-// @description  游戏内制造与收藏混合订单；只读角色快照，不发送游戏命令。
+// @description  游戏内制造与收藏混合订单；实时读取角色；用户点击预填游戏菜单，不提交购买或动作。
 // @match        https://deepveinidle.com/*
 // @match        https://cn.deepveinidle.com/*
 // @run-at       document-start

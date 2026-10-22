@@ -1,0 +1,75 @@
+{
+  "checks": [
+    "late attachment reads the current client without a welcome frame or extra socket",
+    "unchanged client reads neither save again nor rebuild the panel",
+    "inventory, pack, collection, level, equipment and mastery updates are observed within one second",
+    "live readonly updates preserve horizontal table scroll on narrow screens",
+    "native IME keeps the composing node while readonly procurement refreshes within one second",
+    "purchase button fills exact deficit and selected price in a buy-order draft without submitting",
+    "execution button preselects manufacturing with aggregate expected attempts rounded up and no start or queue",
+    "gathering execution uses the selected route and count without manufacturing rarity controls",
+    "unknown builds, role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands",
+    "client failure switches to the independent older server snapshot, disables prefill and restores live state on recovery",
+    "resource digest gate rejects altered code and accepts the exact verified digest",
+    "production userscript attaches to an already logged-in client without refresh, server welcome or new connection",
+    "production client role changes remount the correct GM bucket without leaking orders or opening sockets",
+    "slow GM role changes discard obsolete mounts; mount failures surface once without an immediate retry loop"
+  ],
+  "latencies": [
+    {
+      "field": "bank",
+      "ms": 64
+    },
+    {
+      "field": "pack",
+      "ms": 254
+    },
+    {
+      "field": "collections",
+      "ms": 280
+    },
+    {
+      "field": "skills",
+      "ms": 250
+    },
+    {
+      "field": "equipment",
+      "ms": 241
+    },
+    {
+      "field": "masteries",
+      "ms": 253
+    },
+    {
+      "field": "IME visible procurement",
+      "ms": 120
+    }
+  ],
+  "failures": [
+    [
+      "unknown",
+      "unsupportedGameVersion"
+    ],
+    [
+      "role",
+      "gameRoleChanged"
+    ],
+    [
+      "changed",
+      "planChanged"
+    ],
+    [
+      "price rounding",
+      "gamePrefillMismatch"
+    ],
+    [
+      "quantity clamp",
+      "gamePrefillMismatch"
+    ],
+    [
+      "missing rarity",
+      "gameControlMissing"
+    ]
+  ],
+  "errors": []
+}

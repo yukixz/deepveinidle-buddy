@@ -1,4 +1,5 @@
-import {installCapture} from './capture.js';
+import {installGameSync,readClient} from './game-sync.js';
+import {createGamePrefill} from './game-prefill.js';
 import {installNavigationLauncher} from './navigation.js';
 import {mountPanel} from './app.js';
 import {userscriptPlatform,browserPlatform} from './platform.js';
@@ -20,12 +21,12 @@ export async function startDemo(){
 }
 export function startUserscript(page,api){
  if(document.getElementById('deepveinidle-buddy')||document.querySelector('[data-buddy-launcher]'))return;
- const platform=userscriptPlatform(api);let latest=null,panel=null,host=null,currentRole=null,starting=false,disposed=false,pendingTimer=null;
+ const platform=userscriptPlatform(api),gameIntegration=createGamePrefill(page);let latest=null,panel=null,host=null,currentRole=null,starting=false,disposed=false,pendingTimer=null;
  const navigation=installNavigationLauncher(document,()=>panel?.open());
- navigation.update({ready:false,status:'等待角色快照，请在安装后刷新游戏 / Waiting for snapshot; refresh after installing'});
- const disposeCapture=installCapture(page,envelope=>{
+ navigation.update({ready:false,status:'等待读取游戏角色 / Waiting for game character'});
+ const disposeCapture=installGameSync(page,envelope=>{
   latest=envelope;
-  if(envelope.status==='waiting'){panel?.receive(envelope);return;}
+  if(!envelope.role){panel?.dispose();host?.remove();panel=host=null;currentRole=null;navigation.update({ready:false,status:envelope.error??'等待读取游戏角色 / Waiting for game character'});return;}
   clearTimeout(pendingTimer);pendingTimer=setTimeout(()=>void synchronize(),100);
  });
  async function synchronize(){
@@ -34,15 +35,15 @@ export function startUserscript(page,api){
   if(!role){panel?.receive(latest);navigation.update({ready:false,status:'缺少稳定角色标识，存档已保护 / Stable character identity missing; storage protected'});return;}
   if(panel&&role===currentRole){panel.receive(latest);return;}
   if(!document.documentElement){pendingTimer=setTimeout(()=>void synchronize(),50);return;}
-  starting=true;navigation.update({ready:false,status:'载入中 / Loading'});
+  starting=true;let mountingHost=null,mountFailed=false;navigation.update({ready:false,status:'载入中 / Loading'});
   try{
-   panel?.dispose();host?.remove();host=document.createElement('div');host.id='deepveinidle-buddy';document.documentElement.append(host);currentRole=role;
-   panel=await mountPanel(host.attachShadow({mode:'open'}),{platform,css,storageKey:`dvi-buddy-v1:${location.host}:${role}`,onVisibilityChange:open=>navigation.update({open,ready:true,status:''})});
-   if(disposed){panel.dispose();host.remove();return;}
-   if(latest?.role===role)panel.receive(latest);
-  }catch(error){navigation.update({ready:false,status:`载入失败 / Load failed: ${error.message}`});console.error('[DVI Buddy]',error);}
-  finally{starting=false;if(latest?.role&&latest.role!==currentRole)void synchronize();}
+   panel?.dispose();panel=null;host?.remove();mountingHost=document.createElement('div');host=mountingHost;host.id='deepveinidle-buddy';document.documentElement.append(host);currentRole=role;
+   const nextPanel=await mountPanel(mountingHost.attachShadow({mode:'open'}),{platform,css,storageKey:`dvi-buddy-v1:${location.host}:${role}`,gameIntegration,readCharacter:()=>readClient(page),onVisibilityChange:open=>navigation.update({open,ready:true,status:''})});
+   if(disposed||latest?.role!==role||host!==mountingHost){nextPanel.dispose();mountingHost.remove();if(host===mountingHost){host=null;currentRole=null;}return;}
+   panel=nextPanel;panel.receive(latest);
+  }catch(error){mountFailed=true;mountingHost?.remove();if(host===mountingHost){host=null;panel=null;currentRole=null;}navigation.update({ready:false,status:`载入失败 / Load failed: ${error.message}`});console.error('[DVI Buddy]',error);}
+  finally{starting=false;if(!mountFailed&&latest?.role&&latest.role!==currentRole)void synchronize();}
  }
- function dispose(){if(disposed)return;disposed=true;disposeCapture();panel?.dispose();host?.remove();navigation.dispose();clearTimeout(pendingTimer);page.removeEventListener('pagehide',dispose);}
+ function dispose(){if(disposed)return;disposed=true;disposeCapture();gameIntegration.dispose();panel?.dispose();host?.remove();navigation.dispose();clearTimeout(pendingTimer);page.removeEventListener('pagehide',dispose);}
  page.addEventListener('pagehide',dispose,{once:true});return {dispose};
 }

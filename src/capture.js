@@ -1,4 +1,4 @@
-const fields=['lastTick','skills','equipment','foodItemId','eatAt','foodMaxTier','foodPerTrip','brews','brewTier','brewBuckets','house','houseFurniture','masteries','perks','guildBonus','homeBank','ironman','bank','pack','collections'];
+export const characterFields=['lastTick','skills','equipment','foodItemId','eatAt','foodMaxTier','foodPerTrip','brews','brewTier','brewBuckets','house','houseFurniture','masteries','perks','guildBonus','homeBank','ironman','bank','pack','collections'];
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 export function createCapture(emit,{now=Date.now}={}){
  let connection=0,sequence=0,player=null,role=null,guild=null,windows=null,worldTick=null,playerAt=null,worldAt=null,lastTick=-1,live=false;
@@ -20,7 +20,7 @@ export function createCapture(emit,{now=Date.now}={}){
       const nextRole=Number.isSafeInteger(id)&&id>0?String(id):typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)?id:null;
       if(player&&role!==nextRole){player=null;notify('waiting');}
       role=nextRole;
-      player=JSON.parse(JSON.stringify(Object.fromEntries(fields.filter(k=>Object.hasOwn(you,k)).map(k=>[k,you[k]]))));playerAt=now();changed=true;
+      player=JSON.parse(JSON.stringify(Object.fromEntries(characterFields.filter(k=>Object.hasOwn(you,k)).map(k=>[k,you[k]]))));playerAt=now();changed=true;
      }
      if(message?.t==='welcome'||message?.t==='guild'){
       const value=message.t==='welcome'?message.guild:message.info;guild=value==null?null:{name:value.name,tag:value.tag};changed=true;
