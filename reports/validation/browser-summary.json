@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "actual Blob Worker completes manufacturing while collection reports four points",
+    "mixed materials merge once against shared stock",
+    "existing collection milestone is included in current mixed order",
+    "committing focused name does not lose New order click",
+    "delete removes only targeted order and preserves other orders",
+    "unfocused transfer draft survives redraw and language changes",
+    "JSON export includes mixed typed lines",
+    "collapse unmounts content and expansion restores order",
+    "async saved workspace survives reload",
+    "narrow viewport contains panel; tables scroll internally",
+    "actual userscript boots from intercepted welcome and role-specific GM storage",
+    "host hostile CSS and buddy CSS are mutually isolated",
+    "progress snapshot removes completed target without game commands",
+    "socket closure shows stale disconnected state",
+    "role change uses separate GM buckets",
+    "no uncaught browser errors"
+  ],
+  "errors": []
+}
