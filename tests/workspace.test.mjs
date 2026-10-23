@@ -74,7 +74,7 @@ test('execution actions keep unknown or conflicting collection counts explicit',
 test('completed collections and empty orders do not add execution actions',()=>{const w=setup();assert.deepEqual(evaluate(w).actions,[]);w.autoRemove=false;w.character.counts[40]=100;putLine(w.orders[0],collection(100));assert.deepEqual(evaluate(w).actions,[]);putLine(w.orders[0],craft(2));assert.equal(evaluate(w).actions[0].count,2);});
 test('execution actions separate rarities and include gathering collection routes',()=>{const w=setup(),job=craftingJobs.find(j=>craftingTiers(j).includes(1)&&j.levelReq<=100);assert.ok(job);putLine(w.orders[0],{kind:'craft',jobId:job.id,tier:0,count:2});putLine(w.orders[0],{kind:'craft',jobId:job.id,tier:1,count:3});let actions=evaluate(w).actions;assert.equal(actions.length,2);assert.deepEqual(actions.map(a=>[a.tier,a.count]),[[0,2],[1,3]]);w.orders[0].lines=[];const candidate=collectionRows(w.character).find(r=>r.status==='ok'&&game.recipes.find(j=>j.id===r.jobId).skill==='mining');assert.ok(candidate);putLine(w.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});actions=evaluate(w).actions;assert.equal(actions[0].craftCount,0);assert.equal(actions[0].count,candidate.attempts);});
 
-test('execution material highlights distinguish a fully stocked plan from competing actions',()=>{
+test('execution material highlights distinguish sufficient total shared stock from competing actions',()=>{
  const w=setup(),jobs=craftingJobs.filter(j=>!j.upgrade&&j.levelReq<=100&&Object.keys(craftingMaterials(j,0,1)).length===1&&craftingMaterials(j,0,1)[40]>0),first=jobs[0],second=jobs.find(j=>j.id!==first.id);assert.ok(second);
  for(const job of [first,second])putLine(w.orders[0],{kind:'craft',jobId:job.id,tier:0,count:1});
  const quantities=[first,second].map(j=>craftingMaterials(j,0,1)[40]);w.character.bank={40:Math.max(...quantities)};
@@ -93,4 +93,33 @@ test('fractional collection material requirements are rounded after merged actio
 test('uninitialized or conflicting actions and material-free gathering never claim readiness',()=>{
  const w=setup();putLine(w.orders[0],craft(2));putLine(w.orders[0],collection(100));w.character.bank={1:9999,2:9999};w.character.initialized=false;assert.ok(evaluate(w).actions.every(a=>a.materialStatus===null));w.character.initialized=true;const second=createOrder();putLine(second,collection(100));w.orders.push(second);assert.ok(evaluate(w).actions.every(a=>a.materialStatus===null));
  const gather=setup(),candidate=collectionRows(gather.character).find(r=>r.status==='ok'&&Object.keys(r.materials).length===0);assert.ok(candidate);putLine(gather.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});assert.equal(evaluate(gather).actions[0].materialStatus,null);
+});
+
+test('unrelated material shortages do not block green for this action, including surplus stock',()=>{
+ const w=setup(),first=craftingJobs.find(job=>job.id===43),second=craftingJobs.find(job=>job.id===44);
+ putLine(w.orders[0],{kind:'craft',jobId:first.id,tier:0,count:2});
+ putLine(w.orders[0],{kind:'craft',jobId:second.id,tier:0,count:1});
+ const materials=craftingMaterials(first,0,2),requirements=evaluate(w).rows;
+ w.character.bank=Object.fromEntries(Object.keys(materials).map(id=>[id,requirements.find(row=>row.id===Number(id)).required]));
+ let plan=evaluate(w);
+ assert.ok(plan.rows.some(row=>row.purchase>0));
+ assert.equal(plan.actions.find(row=>row.jobId===first.id).materialStatus,'ready');
+ assert.equal(plan.actions.find(row=>row.jobId===second.id).materialStatus,null);
+ for(const id of Object.keys(materials))w.character.bank[id]++;
+ plan=evaluate(w);
+ assert.equal(plan.actions.find(row=>row.jobId===first.id).materialStatus,'ready');
+ assert.ok(plan.rows.some(row=>row.purchase>0));
+});
+test('multiple inputs mark partial readiness when one shared input is below total demand but enough for this action',()=>{
+ const w=setup(),first=craftingJobs.find(job=>job.id===43),second=craftingJobs.find(job=>job.id===44);
+ putLine(w.orders[0],{kind:'craft',jobId:first.id,tier:0,count:2});
+ putLine(w.orders[0],{kind:'craft',jobId:second.id,tier:0,count:1});
+ const own=craftingMaterials(first,0,2),other=craftingMaterials(second,0,1),shared=Object.keys(own).find(id=>other[id]);
+ w.character.bank=Object.fromEntries(evaluate(w).rows.map(row=>[row.id,row.required]));
+ w.character.bank[shared]--;
+ assert.equal(evaluate(w).actions.find(row=>row.jobId===first.id).materialStatus,'shared');
+ w.character.bank[shared]=Math.ceil(own[shared]);
+ assert.equal(evaluate(w).actions.find(row=>row.jobId===first.id).materialStatus,'shared');
+ w.character.bank[shared]--;
+ assert.equal(evaluate(w).actions.find(row=>row.jobId===first.id).materialStatus,null);
 });

@@ -4,11 +4,11 @@
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
     "route and fixed-rarity queue changes highlight exact rows within one second without changing plan totals or columns",
-    "best-first queue spans planned rarities with an explicit tooltip; purple running outline takes priority over blue queue outline",
+    "best-first queue spans planned rarities with an explicit tooltip; purple running background takes priority over blue queue background",
     "rarity changes move the running mark; paused routes retain queue marks without claiming current execution",
     "gathering matches all planned output rarities by recipe rather than queue rarity",
     "clearing game tasks clears marks; task-only changes never write or restore queue in character storage",
-    "running and queued outlines retain material-ready background and translated combined tooltips",
+    "running and queued backgrounds retain material-ready borders and translated combined tooltips",
     "invalid task state explicitly clears marks and recovers without discarding valid character data",
     "inventory, pack, collection, level, equipment and mastery updates are observed within one second",
     "live readonly updates preserve horizontal table scroll on narrow screens",
@@ -28,35 +28,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 171
+      "ms": 180
     },
     {
       "field": "bank",
-      "ms": 148
+      "ms": 158
     },
     {
       "field": "pack",
-      "ms": 257
+      "ms": 239
     },
     {
       "field": "collections",
-      "ms": 284
+      "ms": 282
     },
     {
       "field": "skills",
-      "ms": 230
+      "ms": 257
     },
     {
       "field": "equipment",
-      "ms": 250
+      "ms": 241
     },
     {
       "field": "masteries",
-      "ms": 260
+      "ms": 254
     },
     {
       "field": "IME visible procurement",
-      "ms": 90
+      "ms": 94
     }
   ],
   "errors": []

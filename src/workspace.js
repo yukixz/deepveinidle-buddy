@@ -57,8 +57,8 @@ export function removeCompleted(workspace){
  if(!workspace.autoRemove||!workspace.character.initialized)return;
  for(const order of workspace.orders)order.lines=order.lines.filter(l=>l.kind!=='collection'||!collectionTarget(workspace.character,l.itemId,l.target).complete);
 }
-function summarizeExecutionActions(entries,rows,canAssess,planReady){
- const groups=new Map();
+function summarizeExecutionActions(entries,rows,canAssess){
+ const groups=new Map(),stockById=new Map(rows.map(row=>[row.id,row]));
  const increment=(row,field,value)=>{if(row[field]===null)return;try{row[field]=add(row[field],value);}catch(error){row[field]=null;row.issues.add(error.message);}};
  for(const entry of entries){
   if(entry.status==='complete')continue;
@@ -73,7 +73,20 @@ function summarizeExecutionActions(entries,rows,canAssess,planReady){
   if(entry.status!=='ok')row.issues.add(entry.status);
   else for(const [id,qty]of Object.entries(entry.materials)){try{row.materials[id]=add(row.materials[id]??0,qty);}catch(error){row.issues.add(error.message);}}
  }
- return [...groups.values()].map(row=>{let count=null;if(row.craftCount!==null&&row.collectionAttempts!==null){try{count=add(row.craftCount,row.collectionAttempts);}catch(error){row.issues.add(error.message);}}return {key:row.key,jobId:row.jobId,tier:row.tier,craftCount:row.craftCount,collectionAttempts:row.collectionAttempts,count,seconds:row.timeUnknown?null:row.seconds,materialStatus:canAssess&&row.issues.size===0&&Object.keys(row.materials).length>0&&Object.entries(row.materials).every(([id,qty])=>{const stock=rows.find(r=>r.id===Number(id));return stock?.owned!==null&&stock?.owned>=Math.ceil(qty);})?(planReady?'ready':'shared'):null,issues:[...row.issues]};}).sort((a,b)=>String(a.jobId).localeCompare(String(b.jobId),undefined,{numeric:true})||a.tier-b.tier);
+ return [...groups.values()].map(row=>{
+  let count=null;
+  if(row.craftCount!==null&&row.collectionAttempts!==null)try{count=add(row.craftCount,row.collectionAttempts);}catch(error){row.issues.add(error.message);}
+  const materials=Object.entries(row.materials);
+  const sufficient=canAssess&&row.issues.size===0&&materials.length>0&&materials.every(([id,qty])=>{
+   const stock=stockById.get(Number(id));
+   return stock?.owned!=null&&stock.owned>=Math.ceil(qty);
+  });
+  const materialStatus=sufficient?(materials.every(([id])=>{
+   const stock=stockById.get(Number(id));
+   return stock.owned>=stock.required;
+  })?'ready':'shared'):null;
+  return {key:row.key,jobId:row.jobId,tier:row.tier,craftCount:row.craftCount,collectionAttempts:row.collectionAttempts,count,seconds:row.timeUnknown?null:row.seconds,materialStatus,issues:[...row.issues]};
+ }).sort((a,b)=>String(a.jobId).localeCompare(String(b.jobId),undefined,{numeric:true})||a.tier-b.tier);
 }
 export function estimateOrders(workspace,prices,now=Date.now()){
  const state=workspace.character,players=collectionPlayers(state,now),selected=workspace.orders.filter(o=>o.enabled),materials=new Map(),seen=new Set(),conflicts=new Set();
@@ -121,7 +134,7 @@ export function estimateOrders(workspace,prices,now=Date.now()){
   if(cost!==null)subtotal=add(subtotal,cost);
   return {id,required,owned,purchase,price:quote.price,cost};
  });
- return {entries,orders,rows,actions:summarizeExecutionActions(entries,rows,blocked===0&&!unknownInventory,rows.every(r=>r.purchase===0)),blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&!['ok','complete'].includes(e.status))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
+ return {entries,orders,rows,actions:summarizeExecutionActions(entries,rows,blocked===0&&!unknownInventory),blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&!['ok','complete'].includes(e.status))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
 }
 export function exportOrder(order){return {format:'deepveinidle-buddy-order',version:1,order:validateOrders([order])[0]};}
 export async function exportOrderText(order){return encodePlanPayload(exportOrder(order));}

@@ -1,5 +1,5 @@
 PASS project Markdown file links
-PASS changed JavaScript syntax and no generated engine modifications
+PASS changed JavaScript syntax
 PASS namespace, author and exactly five required grants
 PASS no public debug introduction
 PASS built file sizes / SHA-256 hashes and upstream provenance comment

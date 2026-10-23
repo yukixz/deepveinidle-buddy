@@ -1,12 +1,14 @@
 {
-  "passed": 7,
+  "passed": 9,
   "checks": [
-    "actions with individually sufficient shared inputs show yellow row tooltip without status text with hidden debug controls omitted",
+    "actions with individually sufficient shared inputs show yellow borders and row tooltip without status text with hidden debug controls omitted",
     "deselecting competing order immediately changes remaining action to green; order management has no readiness highlights",
     "whole plan stock shows green with translated row tooltip and no status text",
+    "unrelated purchase shortages do not prevent green on fully stocked action inputs",
+    "stock above relevant total demand stays green despite unrelated shortages",
     "insufficient action stock has no readiness highlight",
     "unknown inventory never claims materials are available",
-    "yellow warning translates to English",
+    "partial-material warning translates to English",
     "narrow layout retains highlighted rows without inline status text and keeps table scrolling"
   ],
   "errors": []
