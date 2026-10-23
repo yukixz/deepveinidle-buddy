@@ -1,0 +1,2 @@
+PASS deepveinidle-buddy.user.js: provenance in upstream section; wording/URL/version/hash match; executable AST equals build without provenance plugin
+PASS demo.js: provenance in upstream section; wording/URL/version/hash match; executable AST equals build without provenance plugin

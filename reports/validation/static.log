@@ -1,6 +1,5 @@
 PASS project Markdown file links
-PASS changed JavaScript syntax
+PASS build script syntax
 PASS exactly five required grants
-PASS no storage change listener references in source, tests or bundle
-PASS built file sizes and SHA-256 hashes
+PASS provenance wording and built file sizes / SHA-256 hashes
 PASS git diff --check
