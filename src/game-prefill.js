@@ -24,8 +24,10 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
   async purchase(request,guard=()=>true){
    if(!Number.isSafeInteger(request.itemId)||request.itemId<=0||!Number.isSafeInteger(request.baseId)||request.baseId<=0||!Number.isInteger(request.tier)||request.tier<0||request.tier>4||!Number.isSafeInteger(request.quantity)||request.quantity<1||!Number.isSafeInteger(request.price)||request.price<1||request.price>1e9)failure('invalidPrefill');
    return run(request,guard,async check=>{
-    // Do not replace an existing trade draft belonging to the user.
-    if(find('[data-market-trade]'))failure('gameDraftOpen');
+    if(find('[data-market-trade]')){
+     click('[data-market-trade] [data-trade-close]');
+     await until(()=>!find('[data-market-trade]'),check);
+    }
     if(!find('[data-market-window]'))click('[data-open="market"]');
     await until(()=>find('[data-market-window]'),check);
     click('[data-market-mode="buy"]');
@@ -59,7 +61,6 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
    return run(request,guard,async check=>{
     const routes=page.deepvein?.routes?.();
     if(!routes||typeof routes.show!=='function'||typeof routes.preselect!=='function')failure('gameControlMissing');
-    if(routes.pending)failure('gameDraftOpen');
     const panels=page.deepvein.panels;if(!panels||typeof panels.show!=='function')failure('gameControlMissing');
     panels.show('skills');routes.show(request.skill);routes.preselect({jobId:request.jobId});check();
     if(routes.pending?.jobId!==request.jobId)failure('gameControlUnavailable');

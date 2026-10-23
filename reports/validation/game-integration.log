@@ -1,5 +1,5 @@
 {
-  "passed": 25,
+  "passed": 27,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
@@ -18,7 +18,9 @@
     "purchase button fills exact deficit and selected price in a buy-order draft without submitting",
     "market search follows the visible material name in both Chinese and English after switching the assistant language",
     "execution button preselects manufacturing with aggregate expected attempts rounded up and no start or queue",
-    "gathering execution uses the selected route and count without manufacturing rarity controls",
+    "existing manufacturing draft is refilled with the requested count and rarity without a draft warning",
+    "gathering execution replaces the existing manufacturing draft without commands or manufacturing rarity controls",
+    "existing sell draft for another item is closed and replaced with the requested buy draft without submitting",
     "role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands",
     "client failure switches to the independent older server snapshot, disables prefill and restores live state on recovery",
     "production adapter fills drafts without registered game bundle metadata or resource verification requests",
@@ -30,35 +32,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 163
+      "ms": 167
     },
     {
       "field": "bank",
-      "ms": 200
+      "ms": 189
     },
     {
       "field": "pack",
-      "ms": 244
+      "ms": 250
     },
     {
       "field": "collections",
-      "ms": 275
+      "ms": 272
     },
     {
       "field": "skills",
-      "ms": 258
+      "ms": 248
     },
     {
       "field": "equipment",
-      "ms": 259
+      "ms": 246
     },
     {
       "field": "masteries",
-      "ms": 220
+      "ms": 271
     },
     {
       "field": "IME visible procurement",
-      "ms": 131
+      "ms": 102
     }
   ],
   "errors": []

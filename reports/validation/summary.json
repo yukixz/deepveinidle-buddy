@@ -1,56 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "panel-geometry",
-      "passed": 26,
-      "code": 0,
-      "stage": "工具栏与预填"
-    },
-    {
-      "name": "debug-menu",
-      "passed": 8,
-      "code": 0,
-      "stage": "工具栏与预填"
-    },
-    {
-      "name": "fee-captions",
-      "passed": 7,
-      "code": 0,
-      "stage": "默认选项与订单详情"
-    },
-    {
-      "name": "orders-tables-ime",
-      "passed": 18,
-      "code": 0,
-      "stage": "默认选项与订单详情"
-    },
-    {
-      "name": "browser",
-      "passed": 45,
-      "code": 0,
-      "stage": "默认选项与订单详情"
-    },
-    {
-      "name": "bulk-pagination",
-      "passed": 7,
-      "code": 0,
-      "stage": "默认选项与订单详情"
-    },
-    {
-      "name": "table-scroll",
-      "passed": 7,
-      "code": 0,
-      "stage": "默认选项与订单详情"
-    },
-    {
       "name": "game-integration",
-      "passed": 25,
-      "code": 0,
-      "stage": "购买搜索语言"
+      "passed": 27,
+      "code": 0
     }
   ],
-  "totalChecks": 143,
-  "complete": true,
-  "singleRun": false,
-  "note": "各场景取本次实施中最后一次通过结果；跨三个修改阶段汇总，不代表最终构建上统一重跑。"
+  "totalChecks": 27,
+  "complete": true
 }
