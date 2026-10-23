@@ -1,8 +1,13 @@
 {
   "scenarios": [
     {
+      "name": "debug-menu",
+      "passed": 8,
+      "code": 0
+    },
+    {
       "name": "game-integration",
-      "passed": 14,
+      "passed": 16,
       "code": 0
     },
     {
@@ -11,53 +16,8 @@
       "code": 0
     },
     {
-      "name": "orders-tables-ime",
-      "passed": 16,
-      "code": 0
-    },
-    {
-      "name": "fee-captions",
-      "passed": 6,
-      "code": 0
-    },
-    {
-      "name": "point-cost-filter",
-      "passed": 4,
-      "code": 0
-    },
-    {
-      "name": "bulk-pagination",
-      "passed": 7,
-      "code": 0
-    },
-    {
-      "name": "extra-sorting",
-      "passed": 8,
-      "code": 0
-    },
-    {
-      "name": "action-materials",
-      "passed": 7,
-      "code": 0
-    },
-    {
-      "name": "execution-summary",
-      "passed": 7,
-      "code": 0
-    },
-    {
-      "name": "order-row-toggle",
-      "passed": 7,
-      "code": 0
-    },
-    {
       "name": "panel-geometry",
       "passed": 21,
-      "code": 0
-    },
-    {
-      "name": "table-scroll",
-      "passed": 7,
       "code": 0
     },
     {
@@ -66,6 +26,6 @@
       "code": 0
     }
   ],
-  "totalChecks": 159,
+  "totalChecks": 100,
   "complete": true
 }

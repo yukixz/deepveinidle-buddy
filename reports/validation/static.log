@@ -1,3 +1,5 @@
-Date: 2026-10-22
-Markdown local links: PASS (11 files, 54 targets)
-Git whitespace check: PASS
+PASS project Markdown file links
+PASS changed JavaScript syntax
+PASS localized install names and game prefix
+PASS built file sizes and SHA-256 hashes
+PASS git diff --check

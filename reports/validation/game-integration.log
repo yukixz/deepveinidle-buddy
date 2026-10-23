@@ -1,11 +1,13 @@
 {
-  "passed": 14,
+  "passed": 16,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
     "inventory, pack, collection, level, equipment and mastery updates are observed within one second",
     "live readonly updates preserve horizontal table scroll on narrow screens",
     "native IME keeps the composing node while readonly procurement refreshes within one second",
+    "debug is off by default and a forged prefill button cannot navigate",
+    "disabling and re-enabling debug during async verification cancels the original prefill before game navigation",
     "purchase button fills exact deficit and selected price in a buy-order draft without submitting",
     "execution button preselects manufacturing with aggregate expected attempts rounded up and no start or queue",
     "gathering execution uses the selected route and count without manufacturing rarity controls",
@@ -19,7 +21,7 @@
   "latencies": [
     {
       "field": "bank",
-      "ms": 64
+      "ms": 70
     },
     {
       "field": "pack",
@@ -27,23 +29,23 @@
     },
     {
       "field": "collections",
-      "ms": 280
+      "ms": 279
     },
     {
       "field": "skills",
-      "ms": 250
+      "ms": 242
     },
     {
       "field": "equipment",
-      "ms": 241
+      "ms": 278
     },
     {
       "field": "masteries",
-      "ms": 253
+      "ms": 245
     },
     {
       "field": "IME visible procurement",
-      "ms": 120
+      "ms": 79
     }
   ],
   "errors": []

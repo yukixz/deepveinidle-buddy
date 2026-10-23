@@ -6,7 +6,7 @@ export function installNavigationLauncher(doc,onOpen){
  button.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9h16l-3 4h-5v4h5v3H7v-3h3v-4H7zM5 5h7v4H5z"/></svg>';
  let nav=null,ready=false,open=false,status='',scheduled=false,disposed=false;
  function updateLabels(){
-  const zh=nav?.getAttribute('aria-label')==='游戏导航',label=zh?'制造助手':'Crafting buddy';
+  const zh=nav?.getAttribute('aria-label')==='游戏导航',label=zh?'工匠与精通助手':'Crafting & Mastery Buddy';
   if(button.getAttribute('aria-label')!==label)button.setAttribute('aria-label',label);
   const title=status?`${label} · ${status}`:label;if(button.title!==title)button.title=title;
   button.disabled=!ready;if(button.getAttribute('aria-pressed')!==String(open))button.setAttribute('aria-pressed',String(open));

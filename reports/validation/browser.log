@@ -18,7 +18,7 @@
     "simulation controls and rate columns removed; no Worker constructed",
     "mixed expected action times and time fee remain available",
     "mixed materials merge once against shared stock",
-    "execution actions include the prefill action column and combine mixed attempts without stock deduction; short table fields do not wrap",
+    "execution actions hide the debug action column by default and combine mixed attempts without stock deduction; short table fields do not wrap",
     "existing collection milestone is included in current mixed order",
     "committing focused name does not lose New order click",
     "delete removes only targeted order and preserves other orders",

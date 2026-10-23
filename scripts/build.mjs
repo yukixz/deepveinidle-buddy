@@ -4,7 +4,8 @@ import crypto from 'node:crypto';
 const version=JSON.parse(await fs.readFile('package.json','utf8')).version;
 await fs.mkdir('dist',{recursive:true});
 const header=`// ==UserScript==
-// @name         Deep Vein Idle · Buddy 制造与收藏助手
+// @name         Deep Vein Idle · 工匠与精通助手
+// @name:en      Deep Vein Idle · Crafting & Mastery Buddy
 // @namespace    deepveinidle-buddy
 // @version      ${version}
 // @description  游戏内制造与收藏混合订单；实时读取角色；用户点击预填游戏菜单，不提交购买或动作。
