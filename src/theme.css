@@ -87,7 +87,7 @@ table input[type=number] { width:68px; min-height:26px; padding:2px 5px; }
 .order-detail-row>td { padding:4px 6px; background:#1a100955; }
 .order-details .fees { display:flex; gap:7px 10px; flex-wrap:wrap; }
 .order-details .toolbar { gap:7px; }
-.order-details input.order-name { width:160px; }
+.order-details input.order-name { width:110px; }
 .order-details .text-cell { max-width:220px; }
 .summary { display:flex; gap:12px; flex-wrap:wrap; font-size:12px; }
 .summary span { padding:4px 8px; border:1px solid #735537; border-radius:3px; background:#1a100933; }

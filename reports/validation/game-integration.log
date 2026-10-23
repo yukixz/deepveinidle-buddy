@@ -1,5 +1,5 @@
 {
-  "passed": 23,
+  "passed": 25,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
@@ -14,13 +14,15 @@
     "live readonly updates preserve horizontal table scroll on narrow screens",
     "native IME keeps the composing node while readonly procurement refreshes within one second",
     "debug is off by default and a forged prefill button cannot navigate",
-    "disabling and re-enabling debug during async verification cancels the original prefill before game navigation",
+    "disabling and re-enabling debug while waiting for game controls cancels the original prefill before game navigation",
     "purchase button fills exact deficit and selected price in a buy-order draft without submitting",
+    "market search follows the visible material name in both Chinese and English after switching the assistant language",
     "execution button preselects manufacturing with aggregate expected attempts rounded up and no start or queue",
     "gathering execution uses the selected route and count without manufacturing rarity controls",
-    "unknown builds, role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands",
+    "role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands",
     "client failure switches to the independent older server snapshot, disables prefill and restores live state on recovery",
-    "resource digest gate rejects altered code and accepts the exact verified digest",
+    "production adapter fills drafts without registered game bundle metadata or resource verification requests",
+    "purchase and execute feedback stays inside the execution plan",
     "production userscript attaches to an already logged-in client without refresh, server welcome or new connection",
     "production client role changes remount the correct GM bucket without leaking orders or opening sockets",
     "slow GM role changes discard obsolete mounts; mount failures surface once without an immediate retry loop"
@@ -28,35 +30,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 180
+      "ms": 163
     },
     {
       "field": "bank",
-      "ms": 158
+      "ms": 200
     },
     {
       "field": "pack",
-      "ms": 239
+      "ms": 244
     },
     {
       "field": "collections",
-      "ms": 282
+      "ms": 275
     },
     {
       "field": "skills",
-      "ms": 257
+      "ms": 258
     },
     {
       "field": "equipment",
-      "ms": 241
+      "ms": 259
     },
     {
       "field": "masteries",
-      "ms": 254
+      "ms": 220
     },
     {
       "field": "IME visible procurement",
-      "ms": 94
+      "ms": 131
     }
   ],
   "errors": []

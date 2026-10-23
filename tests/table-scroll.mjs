@@ -8,7 +8,7 @@ async function wheelOverTable(dx,dy){const r=await table.boundingBox();await pag
 async function until(fn){await page.waitForFunction(fn,null,{timeout:2000});}
 await fs.mkdir('.test-artifacts/table-scroll',{recursive:true});
 try{
- await page.goto(baseUrl);await table.waitFor();await root.locator('.resize-right').waitFor();const grip=await root.locator('.resize-right').boundingBox();await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2-300,{steps:8});await page.mouse.up();
+ await page.goto(baseUrl);await table.waitFor();await root.locator('[data-action="mode-craft"]').click();await root.locator('.resize-right').waitFor();const grip=await root.locator('.resize-right').boundingBox();await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2-300,{steps:8});await page.mouse.up();
  await reset();await wheelOverTable(0,260);await until(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('.content').scrollTop>30);checks.push('desktop craft table vertical wheel scrolls outer panel');
  const down=await top();await wheelOverTable(0,-160);await page.waitForTimeout(150);assert.ok(await top()<down);checks.push('desktop craft table upward wheel scrolls outer panel');
  await page.setViewportSize({width:390,height:844});await reset();await table.evaluate(el=>el.scrollLeft=0);await wheelOverTable(200,0);await until(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('.scroll').scrollLeft>30);assert.equal(await top(),0);checks.push('narrow table horizontal wheel retains table scrolling without moving panel vertically');

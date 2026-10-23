@@ -1,5 +1,5 @@
 {
-  "passed": 21,
+  "passed": 26,
   "checks": [
     "titlebar has only language and close buttons",
     "pointer handle resizes both width and height",
@@ -20,6 +20,11 @@
     "focused handle supports keyboard resizing",
     "close hides panel and navigation reopens at preserved position and size",
     "viewport shrink and narrow layout keep controls and resize grip visible",
+    "toolbar bottom bounds dragging, top corner resizing and keyboard resizing",
+    "toolbar height changes and newly mounted layout toolbar re-clamp panel size and position",
+    "short narrow viewport keeps the entire panel below toolbars",
+    "removed toolbars release the top boundary",
+    "old saved layout is constrained below the toolbar when restored",
     "invalid layout storage shows an error and remains protected from overwrite",
     "no uncaught browser errors"
   ],

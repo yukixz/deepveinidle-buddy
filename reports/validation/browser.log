@@ -1,6 +1,7 @@
 {
-  "passed": 44,
+  "passed": 45,
   "checks": [
+    "collection crafting is selected and automatic removal is disabled by default",
     "manufacturing removes group/sort and adds three per-attempt metric columns",
     "mode captions and shorter note are updated; selected buttons have no check mark or reserved marker",
     "shared collection table shows item/rarity, time and total coins with no missing-unit text",
@@ -40,7 +41,7 @@
     "narrow title keeps version, full status and controls visible without horizontal overflow",
     "host hostile CSS and buddy CSS are mutually isolated",
     "shared material pricing updates collection coins/point and its cost threshold immediately",
-    "progress snapshot removes completed target without game commands",
+    "completed target remains by default and is removed after opting in without game commands",
     "new snapshots update read-only levels, guild bonus and depot without manual overrides",
     "socket closure shows stale disconnected state",
     "role change uses separate GM buckets",

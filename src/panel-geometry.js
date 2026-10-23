@@ -19,17 +19,23 @@ export async function installPanelGeometry(root,{platform,key,onError}){
  }catch(error){blocked=true;onError(error);}
  function save(){if(blocked)return;const value={...box};writes=writes.then(()=>{if(!blocked)return platform.set(key,value);}).catch(error=>{blocked=true;onError(error);});}
  const clamp=(value,min,max)=>Math.min(Math.max(min,value),max);
- function limits(){const margin=0,maxWidth=Math.max(1,view.innerWidth-2*margin),maxHeight=Math.max(1,view.innerHeight-2*margin);return {margin,maxWidth,maxHeight,minWidth:Math.min(360,maxWidth),minHeight:Math.min(260,maxHeight)};}
+ const toolbarSelector='header.top,.ui-toolbar';
+ function limits(){
+  const margin=0,maxWidth=Math.max(1,view.innerWidth);
+  const top=Math.min(Math.max(0,...toolbars.map(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.top<view.innerHeight&&view.getComputedStyle(el).visibility!=='hidden'?r.bottom:0;})),Math.max(0,view.innerHeight-1));
+  const maxHeight=Math.max(1,view.innerHeight-top);
+  return {margin,top,maxWidth,maxHeight,minWidth:Math.min(360,maxWidth),minHeight:Math.min(260,maxHeight)};
+ }
  function apply(){
-  const {margin,maxWidth,maxHeight,minWidth,minHeight}=limits();
+  const {margin,top,maxWidth,maxHeight,minWidth,minHeight}=limits();
   box.width=clamp(box.width,minWidth,maxWidth);box.height=clamp(box.height,minHeight,maxHeight);
-  box.left=clamp(box.left,margin,Math.max(margin,view.innerWidth-margin-box.width));box.top=clamp(box.top,margin,Math.max(margin,view.innerHeight-margin-box.height));
+  box.left=clamp(box.left,margin,Math.max(margin,view.innerWidth-margin-box.width));box.top=clamp(box.top,top,Math.max(top,view.innerHeight-margin-box.height));
   Object.assign(host.style,{left:`${box.left}px`,top:`${box.top}px`,right:'auto',width:`${box.width}px`,height:`${box.height}px`});
  }
  function resized(start,dx,dy,side){
-  const {margin,minWidth,minHeight}=limits(),right=start.left+start.width,bottom=start.top+start.height;
+  const {margin,top:topLimit,minWidth,minHeight}=limits(),right=start.left+start.width,bottom=start.top+start.height;
   const left=side.includes('w')?clamp(start.left+dx,margin,right-minWidth):start.left;
-  const top=side.includes('n')?clamp(start.top+dy,margin,bottom-minHeight):start.top;
+  const top=side.includes('n')?clamp(start.top+dy,topLimit,bottom-minHeight):start.top;
   const width=side.includes('w')?right-left:side.includes('e')?clamp(start.width+dx,minWidth,view.innerWidth-margin-start.left):start.width;
   const height=side.includes('n')?bottom-top:side.includes('s')?clamp(start.height+dy,minHeight,view.innerHeight-margin-start.top):start.height;
   return {left,top,width,height};
@@ -56,6 +62,15 @@ export async function installPanelGeometry(root,{platform,key,onError}){
   const delta={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]}[event.key];
   if(!delta)return;box=resized(box,delta[0],delta[1],event.currentTarget.dataset.resizeSide);apply();save();event.preventDefault();event.stopPropagation();
  }
- root.addEventListener('pointerdown',down);for(const handle of handles)handle.addEventListener('keydown',keydown);view.addEventListener('resize',apply);apply();
- return ()=>{finish();root.removeEventListener('pointerdown',down);for(const handle of handles){handle.removeEventListener('keydown',keydown);handle.remove();}view.removeEventListener('resize',apply);};
+ let toolbars=[];
+ const toolbarResize=new view.ResizeObserver(apply);
+ function refreshToolbars(){
+  const next=[...host.ownerDocument.querySelectorAll(toolbarSelector)];
+  if(next.length===toolbars.length&&next.every((el,i)=>el===toolbars[i]))return;
+  toolbarResize.disconnect();toolbars=next;for(const el of toolbars)toolbarResize.observe(el);apply();
+ }
+ const toolbarChanges=new view.MutationObserver(refreshToolbars);
+ toolbarChanges.observe(host.ownerDocument,{childList:true,subtree:true});refreshToolbars();
+ root.addEventListener('pointerdown',down);for(const handle of handles)handle.addEventListener('keydown',keydown);view.addEventListener('resize',apply);view.addEventListener('scroll',apply,{passive:true});apply();
+ return ()=>{finish();toolbarChanges.disconnect();toolbarResize.disconnect();root.removeEventListener('pointerdown',down);for(const handle of handles){handle.removeEventListener('keydown',keydown);handle.remove();}view.removeEventListener('resize',apply);view.removeEventListener('scroll',apply);};
 }

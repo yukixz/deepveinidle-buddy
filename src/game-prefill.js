@@ -1,16 +1,7 @@
 import {characterRole} from './game-sync.js';
-export const verifiedGame={path:'/assets/index-D-DH9jHm.js',sha256:'5c48869cce956497c847198b8828fe01b5eda875e7c4e3222fd4e742bccb2868',version:'1.0.1200'};
 const failure=code=>{throw Error(code);};
-export async function verifyGameBundle(doc,{fetcher=fetch,digest=bytes=>crypto.subtle.digest('SHA-256',bytes)}={}){
- const scripts=[...doc.querySelectorAll('script[type="module"][src]')].map(el=>new URL(el.src,doc.location.href)).filter(url=>url.origin===doc.location.origin&&/^\/assets\/index-[^/]+\.js$/.test(url.pathname));
- if(scripts.length!==1||scripts[0].pathname!==verifiedGame.path)failure('unsupportedGameVersion');
- let response;try{response=await fetcher(scripts[0].href,{credentials:'omit',signal:AbortSignal.timeout(10000)});}catch{failure('gameVerificationFailed');}
- if(!response.ok)failure('gameVerificationFailed');
- const hash=[...new Uint8Array(await digest(await response.arrayBuffer()))].map(v=>v.toString(16).padStart(2,'0')).join('');
- if(hash!==verifiedGame.sha256)failure('unsupportedGameVersion');
-}
-export function createGamePrefill(page,{doc=document,verify=()=>verifyGameBundle(doc),wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
- let busy=false,disposed=false,verified=null;
+export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
+ let busy=false,disposed=false;
  const visible=el=>el&&el.isConnected&&!el.closest('[hidden]')&&el.getBoundingClientRect().width>0&&el.getBoundingClientRect().height>0;
  const find=selector=>{const all=[...doc.querySelectorAll(selector)].filter(visible);if(all.length>1)failure('gameControlAmbiguous');return all[0];};
  const required=selector=>find(selector)??failure('gameControlMissing');
@@ -26,7 +17,7 @@ export function createGamePrefill(page,{doc=document,verify=()=>verifyGameBundle
   if(busy)failure('prefillBusy');busy=true;
   const session=page.deepvein?.session;
   const check=()=>{if(disposed||!session||page.deepvein?.session!==session||characterRole(session.state?.id)!==request.role)failure('gameRoleChanged');if(!guard())failure('planChanged');};
-  try{check();verified??=verify().catch(error=>{verified=null;throw error;});await verified;check();await work(check);check();}
+  try{check();await work(check);check();}
   finally{busy=false;}
  }
  return {

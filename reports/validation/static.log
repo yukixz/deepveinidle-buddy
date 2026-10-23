@@ -1,6 +1,5 @@
-PASS project Markdown file links
-PASS changed JavaScript syntax
-PASS namespace, author and exactly five required grants
-PASS no public debug introduction
-PASS built file sizes / SHA-256 hashes and upstream provenance comment
-PASS git diff --check
+PASS: all changed JavaScript syntax (commit cleanup)
+PASS: changed documentation local links
+PASS: retained build sizes and SHA-256 match manifest
+PASS: staged validation evidence uses explicit execution stages; no tests rerun during cleanup
+PASS: git diff --check

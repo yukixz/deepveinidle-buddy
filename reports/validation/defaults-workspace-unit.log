@@ -1,0 +1,46 @@
+✔ mixed intent survives strict workspace roundtrip; invalid entries reject atomically (6.776917ms)
+✔ craft counts replace, zero removes; collection keeps highest target (0.196708ms)
+✔ duplicate keys and order IDs are rejected (0.1275ms)
+✔ collection progress 9 to 100 gives 91 missing units, four points; plans do not imply stock (37.506833ms)
+✔ craft and collection inputs combine before one inventory deduction (1.422ms)
+✔ unknown stock differs from an initialized empty bank (1.855375ms)
+✔ shared materials across selected orders are not allocated twice (1.813292ms)
+✔ collection duplicates across selected orders block totals; unselected orders do not conflict (3.219875ms)
+✔ valid completed targets auto remove without touching fixed counts (0.274959ms)
+✔ uninitialized progress cannot remove targets (0.832167ms)
+✔ no price needed when stock covers purchase; missing purchase price keeps unknown subtotal (1.5415ms)
+✔ fees charge fixed once, percent on consumed inputs, time on mixed expected actions (3.113417ms)
+✔ full precision collection inputs round once after aggregation (46.392375ms)
+✔ quantity overflow fails explicitly (1.683833ms)
+✔ fixed attempts use original work probability without burn adjustment and scale linearly (2.745959ms)
+✔ instant upgrades and empty or completed-only orders have zero action fee (2.575542ms)
+✔ time fee is independent of missing prices and inventory; invalid tasks block it (2.426375ms)
+✔ collection time fee retains burn, rarity and caught-stop analytical expectations (26.894875ms)
+✔ time fee overflow fails explicitly even if missing material prices hide other fees (0.785625ms)
+✔ new workspace defaults to market asks (0.066916ms)
+✔ single-order transfer contains only validated order intent (24.496625ms)
+✔ filter thresholds are required and validated (0.540417ms)
+✔ both price sides are required market ask/bid values (0.331459ms)
+✔ material pricing governs mixed requirements, purchase values and percentage fees independently of product pricing (2.42325ms)
+✔ collection defaults to cost ascending and validates explicit sorting (0.370709ms)
+✔ execution actions merge recipe and rarity across selected orders without inventory deduction (0.701333ms)
+✔ execution action collection attempts retain full fractional expectation (26.78625ms)
+✔ execution actions keep unknown or conflicting collection counts explicit (1.323209ms)
+✔ completed collections and empty orders do not add execution actions (1.915834ms)
+✔ execution actions separate rarities and include gathering collection routes (26.904417ms)
+✔ execution material highlights distinguish sufficient total shared stock from competing actions (2.583542ms)
+✔ readiness checks merged actions rather than individual orders and ignores missing market quotes (1.153625ms)
+✔ fractional collection material requirements are rounded after merged action aggregation (23.241958ms)
+✔ uninitialized or conflicting actions and material-free gathering never claim readiness (22.941042ms)
+✔ unrelated material shortages do not block green for this action, including surplus stock (1.685875ms)
+✔ multiple inputs mark partial readiness when one shared input is below total demand but enough for this action (2.161709ms)
+✔ order summary uses full material cost plus fees and expected time independently of stock (1.736667ms)
+✔ order summary keeps unknown material cost and time explicit (2.503375ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 486.049292

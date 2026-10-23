@@ -33,7 +33,7 @@ export function validateOrders(raw){
  });
 }
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
-export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',autoRemove:true,language:'zh',filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
+export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',autoRemove:false,language:'zh',filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
 export function validateWorkspace(raw){
  if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.autoRemove!=='boolean'||!['zh','en'].includes(raw.language)||!record(raw.filters)||raw.prices?.version!==4)throw Error('invalidWorkspace');
  if(!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.character?.buyMode))throw Error('invalidPriceMode');
