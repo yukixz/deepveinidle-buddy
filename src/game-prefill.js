@@ -64,7 +64,12 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
     const panels=page.deepvein.panels;if(!panels||typeof panels.show!=='function')failure('gameControlMissing');
     panels.show('skills');routes.show(request.skill);routes.preselect({jobId:request.jobId});check();
     if(routes.pending?.jobId!==request.jobId)failure('gameControlUnavailable');
+    const options=required('.routes [data-opt-line]'),expanded=options.getAttribute('aria-expanded');
+    if(expanded==='false')click('.routes [data-opt-line]');
+    else if(expanded!=='true')failure('gameControlUnavailable');
+    await until(()=>find('.routes [data-opt-line]')?.getAttribute('aria-expanded')==='true'&&find('.routes [data-stop-mode="count"]'),check);
     click('.routes [data-stop-mode="count"]');
+    await until(()=>find('.routes [data-amount-any]'),check);
     input('.routes [data-amount-any]',request.quantity);
     if(request.manufacturing)click(`.routes [data-rarity-choices] [data-rarity="${request.tier}"]`);
     if(routes.pending?.jobId!==request.jobId||routes.stopMode!=='count'||routes.amount!==request.quantity||request.manufacturing&&(routes.rarity!==request.tier||routes.best))failure('gamePrefillMismatch');

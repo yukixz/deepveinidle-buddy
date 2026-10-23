@@ -1,5 +1,5 @@
 {
-  "passed": 27,
+  "passed": 28,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
@@ -17,11 +17,12 @@
     "disabling and re-enabling debug while waiting for game controls cancels the original prefill before game navigation",
     "purchase button fills exact deficit and selected price in a buy-order draft without submitting",
     "market search follows the visible material name in both Chinese and English after switching the assistant language",
-    "execution button preselects manufacturing with aggregate expected attempts rounded up and no start or queue",
-    "existing manufacturing draft is refilled with the requested count and rarity without a draft warning",
-    "gathering execution replaces the existing manufacturing draft without commands or manufacturing rarity controls",
+    "execution expands collapsed endless options and fills manufacturing count and rarity without start or queue",
+    "already expanded manufacturing options stay open while the existing draft is refilled",
+    "gathering expands collapsed time options and switches to count while replacing the manufacturing draft without commands",
     "existing sell draft for another item is closed and replaced with the requested buy draft without submitting",
     "role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands",
+    "missing option toggle, failed expansion and role changes while waiting stop explicitly without commands",
     "client failure switches to the independent older server snapshot, disables prefill and restores live state on recovery",
     "production adapter fills drafts without registered game bundle metadata or resource verification requests",
     "purchase and execute feedback stays inside the execution plan",
@@ -32,23 +33,23 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 176
+      "ms": 186
     },
     {
       "field": "bank",
-      "ms": 198
+      "ms": 190
     },
     {
       "field": "pack",
-      "ms": 240
+      "ms": 254
     },
     {
       "field": "collections",
-      "ms": 287
+      "ms": 280
     },
     {
       "field": "skills",
-      "ms": 250
+      "ms": 248
     },
     {
       "field": "equipment",
@@ -60,7 +61,7 @@
     },
     {
       "field": "IME visible procurement",
-      "ms": 97
+      "ms": 100
     }
   ],
   "errors": []
