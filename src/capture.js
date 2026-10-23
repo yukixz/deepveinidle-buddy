@@ -1,5 +1,25 @@
-export const characterFields=['lastTick','skills','equipment','foodItemId','eatAt','foodMaxTier','foodPerTrip','brews','brewTier','brewBuckets','house','houseFurniture','masteries','perks','guildBonus','homeBank','ironman','bank','pack','collections'];
+export const characterFields=['lastTick','skills','equipment','foodItemId','eatAt','foodMaxTier','foodPerTrip','brews','brewTier','brewBuckets','house','houseFurniture','masteries','perks','guildBonus','homeBank','ironman','bank','pack','collections','route','queue','queueSlots','workJobId','workRarity','held','raidHeld'];
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
+const routeFields=['zoneId','siteId','jobId','questId','onFull','limit','phase','best','errand','until'];
+const queueFields=['kind','siteId','jobId','zoneId','questId','onFull','limit','rarity','best','ticks'];
+export function copyCharacter(player){
+ // Invalid tasks stay invalid without copying unknown nested game objects.
+ const pick=(value,fields)=>{
+  if(value===null)return null;
+  if(!record(value))return false;
+  const selected={};
+  for(const key of fields)if(Object.hasOwn(value,key)){
+   const field=value[key];
+   if(field!==null&&!['number','string','boolean','undefined'].includes(typeof field))return false;
+   selected[key]=field;
+  }
+  return selected;
+ };
+ const result=Object.fromEntries(characterFields.filter(key=>Object.hasOwn(player,key)).map(key=>[key,player[key]]));
+ if(Object.hasOwn(result,'route'))result.route=pick(result.route,routeFields);
+ if(Object.hasOwn(result,'queue'))result.queue=Array.isArray(result.queue)?result.queue.map(task=>pick(task,queueFields)):false;
+ return JSON.parse(JSON.stringify(result));
+}
 export function createCapture(emit,{now=Date.now}={}){
  let connection=0,sequence=0,player=null,role=null,guild=null,windows=null,worldTick=null,playerAt=null,worldAt=null,lastTick=-1,live=false;
  const notify=(status,error)=>emit({protocolVersion:1,connection,sequence:++sequence,status,error,role,playerCapturedAt:playerAt,worldCapturedAt:worldAt,snapshot:player?{version:2,capturedAt:playerAt,player:structuredClone(player),guild,worldBuffs:structuredClone(windows),worldTick,worldBuffsVersion:1}:null});
@@ -20,7 +40,7 @@ export function createCapture(emit,{now=Date.now}={}){
       const nextRole=Number.isSafeInteger(id)&&id>0?String(id):typeof id==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(id)?id:null;
       if(player&&role!==nextRole){player=null;notify('waiting');}
       role=nextRole;
-      player=JSON.parse(JSON.stringify(Object.fromEntries(characterFields.filter(k=>Object.hasOwn(you,k)).map(k=>[k,you[k]]))));playerAt=now();changed=true;
+      player=copyCharacter(you);playerAt=now();changed=true;
      }
      if(message?.t==='welcome'||message?.t==='guild'){
       const value=message.t==='welcome'?message.guild:message.info;guild=value==null?null:{name:value.name,tag:value.tag};changed=true;

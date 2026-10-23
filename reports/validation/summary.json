@@ -1,11 +1,21 @@
 {
   "scenarios": [
     {
+      "name": "game-integration",
+      "passed": 23,
+      "code": 0
+    },
+    {
+      "name": "action-materials",
+      "passed": 7,
+      "code": 0
+    },
+    {
       "name": "browser",
       "passed": 44,
       "code": 0
     }
   ],
-  "totalChecks": 44,
+  "totalChecks": 74,
   "complete": true
 }

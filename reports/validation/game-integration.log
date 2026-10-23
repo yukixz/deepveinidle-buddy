@@ -1,8 +1,15 @@
 {
-  "passed": 16,
+  "passed": 23,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
+    "route and fixed-rarity queue changes highlight exact rows within one second without changing plan totals or columns",
+    "best-first queue spans planned rarities with an explicit tooltip; purple running outline takes priority over blue queue outline",
+    "rarity changes move the running mark; paused routes retain queue marks without claiming current execution",
+    "gathering matches all planned output rarities by recipe rather than queue rarity",
+    "clearing game tasks clears marks; task-only changes never write or restore queue in character storage",
+    "running and queued outlines retain material-ready background and translated combined tooltips",
+    "invalid task state explicitly clears marks and recovers without discarding valid character data",
     "inventory, pack, collection, level, equipment and mastery updates are observed within one second",
     "live readonly updates preserve horizontal table scroll on narrow screens",
     "native IME keeps the composing node while readonly procurement refreshes within one second",
@@ -20,32 +27,36 @@
   ],
   "latencies": [
     {
+      "field": "route and queue",
+      "ms": 171
+    },
+    {
       "field": "bank",
-      "ms": 111
+      "ms": 148
     },
     {
       "field": "pack",
-      "ms": 201
+      "ms": 257
     },
     {
       "field": "collections",
-      "ms": 279
+      "ms": 284
     },
     {
       "field": "skills",
-      "ms": 253
+      "ms": 230
     },
     {
       "field": "equipment",
-      "ms": 244
+      "ms": 250
     },
     {
       "field": "masteries",
-      "ms": 267
+      "ms": 260
     },
     {
       "field": "IME visible procurement",
-      "ms": 122
+      "ms": 90
     }
   ],
   "errors": []

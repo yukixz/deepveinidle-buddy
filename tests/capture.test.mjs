@@ -10,3 +10,11 @@ test('only same-origin ws path is listened to and no command is sent',()=>{class
  const external=new page.WebSocket('wss://example.com/ws');external.dispatchEvent(Object.assign(new Event('message'),{data:frame([{t:'welcome',you:you()}])}));assert.equal(out.length,0);
  const socket=new page.WebSocket('wss://deepveinidle.com/ws');socket.dispatchEvent(Object.assign(new Event('message'),{data:frame([{t:'welcome',you:you(),windows:[]}])}));assert.equal(out.at(-1).status,'live');dispose();assert.equal(page.WebSocket,Socket);
 });
+
+test('server snapshots keep only approved route and queue task fields',()=>{
+ const out=[],capture=createCapture(value=>out.push(value)),token=capture.connect(),player=you();
+ Object.assign(player,{route:{zoneId:null,jobId:41,after:{token:'private'}},queue:[{kind:'job',jobId:41,rarity:0,secret:'private'}],queueSlots:3,workJobId:null,workRarity:0,held:false,raidHeld:false});
+ capture.receive(frame([{t:'welcome',you:player,windows:[]}]),token);
+ const snapshot=out.at(-1).snapshot.player;
+ assert.deepEqual(snapshot.route,{zoneId:null,jobId:41});assert.deepEqual(snapshot.queue,[{kind:'job',jobId:41,rarity:0}]);assert.equal(snapshot.queueSlots,3);
+});

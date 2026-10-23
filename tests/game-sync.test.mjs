@@ -6,3 +6,24 @@ test('client changes are delivered without a new server snapshot; unchanged read
 test('server data never overrides the client; fallback is explicit and role isolated',()=>{const page=fixture(),out=[],sync=createGameSync(page,e=>out.push(e));sync.sample();const server={role:'42',status:'live',snapshot:{...readClient(page).snapshot,player:{...readClient(page).snapshot.player,bank:{1:2}}}};sync.receive(server);assert.equal(out.at(-1).source,'client');page.deepvein.session.state.bank=null;sync.sample();assert.equal(out.at(-1).source,'server');assert.equal(out.at(-1).realtimeError,'incompatibleCharacter');page.deepvein.session.state.id=43;sync.sample();assert.equal(out.at(-1).role,null);page.deepvein.session.state.bank={};sync.sample();assert.equal(out.at(-1).role,'43');assert.equal(out.at(-1).source,'client');sync.dispose();const n=out.length;sync.sample();assert.equal(out.length,n);});
 test('session replacement cannot reuse previous server data, including logout and loading',()=>{const page=fixture(),out=[],sync=createGameSync(page,e=>out.push(e));sync.sample();sync.receive({role:'42',status:'live',snapshot:readClient(page).snapshot});page.deepvein.session={state:null};sync.sample();assert.equal(out.at(-1).role,null);assert.equal(out.at(-1).snapshot,null);});
 test('invalid identities or missing world state fail without guessing defaults',()=>{for(const value of [0,-1,1.2,'bad id',''])assert.equal(characterRole(value),null);const p=fixture();delete p.deepvein.session.context;assert.throws(()=>readClient(p),/incompatibleCharacter/);p.deepvein.session.state.id=0;assert.throws(()=>readClient(p),/incompatibleCharacter/);});
+
+test('route and queue projection crops nested extras and emits queue-only changes',()=>{
+ const page=fixture(),player=page.deepvein.session.state,out=[];
+ Object.assign(player,{route:{zoneId:null,jobId:41,phase:'toWork',after:{token:'private'},extra:'no'},queue:[{kind:'job',jobId:41,rarity:1,best:false,token:'private'}],queueSlots:3,workJobId:null,workRarity:0,held:false,raidHeld:false});
+ const sync=createGameSync(page,value=>out.push(value),{now:()=>10000});sync.sample();
+ const snapshot=out.at(-1).snapshot.player;
+ assert.equal(snapshot.route.after,undefined);assert.equal(snapshot.route.extra,undefined);assert.equal(snapshot.queue[0].token,undefined);
+ player.queue[0].rarity=2;player.route.jobId=42;sync.sample();
+ assert.equal(out.length,2);assert.equal(snapshot.queue[0].rarity,1);assert.equal(snapshot.route.jobId,41);
+ assert.equal(out.at(-1).snapshot.player.queue[0].rarity,2);assert.equal(out.at(-1).snapshot.player.queueSlots,3);
+ sync.sample();assert.equal(out.length,2);sync.dispose();
+});
+
+test('malformed nested task values are rejected without traversing or copying their objects',()=>{
+ const page=fixture(),player=page.deepvein.session.state;
+ const secret={get token(){throw Error('must not traverse');}};
+ Object.assign(player,{route:{zoneId:null,jobId:41,phase:secret},queue:[{kind:'job',jobId:41,limit:secret}],held:false});
+ const snapshot=readClient(page).snapshot.player;
+ assert.equal(snapshot.route,false);assert.deepEqual(snapshot.queue,[false]);
+ player.queue=secret;assert.equal(readClient(page).snapshot.player.queue,false);
+});

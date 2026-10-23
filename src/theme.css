@@ -80,6 +80,10 @@ table input[type=number] { width:68px; min-height:26px; padding:2px 5px; }
 #execution-actions tr.ready td:first-child { box-shadow:inset 2px 0 #9ab67a; }
 #execution-actions tr.materials-shared { background:#a47a2530; }
 #execution-actions tr.materials-shared td:first-child { box-shadow:inset 2px 0 #e0bb65; }
+#execution-actions tr.queued {outline:1px solid #70bff2;outline-offset:-1px;}
+#execution-actions tr.queued td:first-child {box-shadow:inset 3px 0 #70bff2;}
+#execution-actions tr.running {outline:1px solid #bd98e8;outline-offset:-1px;}
+#execution-actions tr.running td:first-child {box-shadow:inset 3px 0 #bd98e8;}
 #order-list>tbody>tr[data-order-row] { cursor:pointer; }
 .order-details { display:grid; gap:7px; padding:5px 3px; }
 .order-detail-row>td { padding:4px 6px; background:#1a100955; }

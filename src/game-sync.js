@@ -1,4 +1,4 @@
-import {installCapture,characterFields} from './capture.js';
+import {installCapture,copyCharacter} from './capture.js';
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 export function characterRole(value){return Number.isSafeInteger(value)&&value>0?String(value):typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value)?value:null;}
 export function readClient(page,now=Date.now()){
@@ -7,7 +7,7 @@ export function readClient(page,now=Date.now()){
  const role=characterRole(p.id);
  if(!role||!record(p.skills)||!record(p.equipment)||!record(p.bank)||!Array.isArray(p.pack)||!record(p.collections)||!Number.isSafeInteger(p.lastTick)||p.lastTick<0)throw Error('incompatibleCharacter');
  // Clone only approved data; never traverse the whole session or retain game objects.
- const player=JSON.parse(JSON.stringify(Object.fromEntries(characterFields.filter(k=>Object.hasOwn(p,k)).map(k=>[k,p[k]]))));
+ const player=copyCharacter(p);
  const windows=session.context?.windows;
  if(!Array.isArray(windows))throw Error('incompatibleCharacter');
  const worldBuffs=windows.map(w=>Object.fromEntries(['label','fromTick','toTick','xpMult','rarityMult'].filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]])));
