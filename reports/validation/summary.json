@@ -1,16 +1,16 @@
 {
   "scenarios": [
     {
-      "name": "action-materials",
-      "passed": 9,
+      "name": "orders-tables-ime",
+      "passed": 18,
       "code": 0
     },
     {
-      "name": "game-integration",
-      "passed": 23,
+      "name": "order-row-toggle",
+      "passed": 7,
       "code": 0
     }
   ],
-  "totalChecks": 32,
+  "totalChecks": 25,
   "complete": true
 }

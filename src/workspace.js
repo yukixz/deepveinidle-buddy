@@ -123,7 +123,8 @@ export function estimateOrders(workspace,prices,now=Date.now()){
   const fixed=nonempty?order.fees.fixed:0,percent=order.fees.percent===0?0:unknown||ownMaterialsUnknown?null:add(0,materialValue*(order.fees.percent/100));
   const minute=!nonempty||order.fees.minute===0?0:ownBlocked?null:add(0,ownSeconds/60*order.fees.minute);
   const total=percent===null||minute===null?null:add(add(fixed,percent),minute);
-  orders.push({id:order.id,fees:{fixed,percent,minute,total},blocked:ownBlocked,materialValue:unknown?null:materialValue});
+  const cost=unknown||ownMaterialsUnknown?null:materialValue;
+  orders.push({id:order.id,fees:{fixed,percent,minute,total},blocked:ownBlocked,seconds:ownBlocked?null:ownSeconds,materialValue:cost,suggestedPrice:cost===null||total===null?null:add(cost,total)});
  }
  let subtotal=0,missingPrices=0,unknownInventory=false;
  const rows=[...materials].sort((a,b)=>a[0]-b[0]).map(([id,exact])=>{

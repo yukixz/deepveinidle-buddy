@@ -123,3 +123,15 @@ test('multiple inputs mark partial readiness when one shared input is below tota
  w.character.bank[shared]--;
  assert.equal(evaluate(w).actions.find(row=>row.jobId===first.id).materialStatus,null);
 });
+
+test('order summary uses full material cost plus fees and expected time independently of stock',()=>{
+ const w=setup();w.prices=quote(quote(priceDefaults(),1,2),2,3);w.character.bank={1:9999,2:9999};w.orders[0].fees={fixed:10,percent:10,minute:2};putLine(w.orders[0],craft(10));putLine(w.orders[0],collection(100));
+ const plan=evaluate(w),order=plan.orders[0];assert.equal(plan.total,0);assert.equal(order.materialValue,550);assert.equal(order.seconds,plan.craftSeconds+plan.collectionSeconds);assert.equal(order.suggestedPrice,550+order.fees.total);
+ w.orders[0].lines=[];const empty=evaluate(w).orders[0];assert.equal(empty.seconds,0);assert.equal(empty.materialValue,0);assert.equal(empty.suggestedPrice,0);
+ putLine(w.orders[0],collection(100));w.character.counts[40]=100;const complete=evaluate(w).orders[0];assert.equal(complete.seconds,0);assert.equal(complete.materialValue,0);assert.equal(complete.suggestedPrice,0);
+});
+test('order summary keeps unknown material cost and time explicit',()=>{
+ const w=setup();putLine(w.orders[0],craft(10));let order=evaluate(w).orders[0];assert.equal(order.materialValue,null);assert.equal(order.suggestedPrice,null);assert.ok(order.seconds>0);
+ w.prices=quote(quote(priceDefaults(),1,2),2,3);w.character.initialized=false;order=evaluate(w).orders[0];assert.equal(order.seconds,null);assert.equal(order.materialValue,50);assert.equal(order.suggestedPrice,50);
+ putLine(w.orders[0],collection(100));order=evaluate(w).orders[0];assert.equal(order.materialValue,null);assert.equal(order.suggestedPrice,null);
+});
