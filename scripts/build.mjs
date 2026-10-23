@@ -20,9 +20,10 @@ await fs.mkdir('dist',{recursive:true});
 const header=`// ==UserScript==
 // @name         Deep Vein Idle · 工匠与精通助手
 // @name:en      Deep Vein Idle · Crafting & Mastery Buddy
-// @namespace    deepveinidle-buddy
+// @namespace    https://dvi-lab.pages.dev
+// @author       Alice
 // @version      ${version}
-// @description  游戏内制造与收藏混合订单；实时读取角色；用户点击预填游戏菜单，不提交购买或动作。
+// @description  游戏内制造与收藏混合订单助手；实时同步角色数据，汇总采购材料与执行计划。
 // @match        https://deepveinidle.com/*
 // @match        https://cn.deepveinidle.com/*
 // @run-at       document-start

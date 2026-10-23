@@ -1,5 +1,6 @@
 PASS project Markdown file links
-PASS build script syntax
-PASS exactly five required grants
-PASS provenance wording and built file sizes / SHA-256 hashes
+PASS changed JavaScript syntax
+PASS namespace, author and exactly five required grants
+PASS no public prefill introduction or debug activation guide in install description / README
+PASS built file sizes / SHA-256 hashes
 PASS git diff --check

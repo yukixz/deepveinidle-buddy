@@ -1,8 +1,8 @@
 {
   "passed": 8,
   "checks": [
-    "built userscript has full localized names and only five required grants",
-    "z-index is 7; default tables omit debug headers and cells",
+    "built userscript has full localized names, namespace, author, five grants and no public prefill introduction",
+    "z-index is 7; default panel has no debug columns or prefill instructions",
     "title blank opens menu; controls keep native context menu; Escape and outside click dismiss",
     "opt-in adds both complete action columns",
     "local preference survives reload with either enabled or disabled value",

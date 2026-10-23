@@ -1,26 +1,11 @@
 {
   "scenarios": [
     {
-      "name": "debug-menu",
-      "passed": 8,
-      "code": 0
-    },
-    {
-      "name": "game-integration",
-      "passed": 16,
-      "code": 0
-    },
-    {
       "name": "browser",
       "passed": 44,
       "code": 0
-    },
-    {
-      "name": "panel-geometry",
-      "passed": 21,
-      "code": 0
     }
   ],
-  "totalChecks": 89,
+  "totalChecks": 44,
   "complete": true
 }
