@@ -21,11 +21,11 @@
   "latencies": [
     {
       "field": "bank",
-      "ms": 70
+      "ms": 111
     },
     {
       "field": "pack",
-      "ms": 254
+      "ms": 201
     },
     {
       "field": "collections",
@@ -33,19 +33,19 @@
     },
     {
       "field": "skills",
-      "ms": 242
+      "ms": 253
     },
     {
       "field": "equipment",
-      "ms": 278
+      "ms": 244
     },
     {
       "field": "masteries",
-      "ms": 245
+      "ms": 267
     },
     {
       "field": "IME visible procurement",
-      "ms": 79
+      "ms": 122
     }
   ],
   "errors": []

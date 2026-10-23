@@ -1,11 +1,11 @@
 {
   "passed": 8,
   "checks": [
-    "built userscript keeps the game prefix and full localized install names",
+    "built userscript has full localized names and only five required grants",
     "z-index is 7; default tables omit debug headers and cells",
     "title blank opens menu; controls keep native context menu; Escape and outside click dismiss",
     "opt-in adds both complete action columns",
-    "preference survives reload and synchronizes across same-site tabs",
+    "local preference survives reload with either enabled or disabled value",
     "menu supports English and stays within viewport",
     "role reuse, site/demo isolation, explicit storage errors and invalid-value protection",
     "invalid saved preference fails closed visibly and cannot be overwritten"

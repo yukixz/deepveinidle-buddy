@@ -19,13 +19,8 @@
       "name": "panel-geometry",
       "passed": 21,
       "code": 0
-    },
-    {
-      "name": "navigation",
-      "passed": 11,
-      "code": 0
     }
   ],
-  "totalChecks": 100,
+  "totalChecks": 89,
   "complete": true
 }

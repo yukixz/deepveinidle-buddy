@@ -1,5 +1,6 @@
 PASS project Markdown file links
 PASS changed JavaScript syntax
-PASS localized install names and game prefix
+PASS exactly five required grants
+PASS no storage change listener references in source, tests or bundle
 PASS built file sizes and SHA-256 hashes
 PASS git diff --check

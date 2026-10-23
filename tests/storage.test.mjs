@@ -1,9 +1,95 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {createStore} from '../src/storage.js';
-function fixture(value=null){let raw=value;const writes=[];return {get:async()=>structuredClone(raw),set:async(_key,next)=>{raw=structuredClone(next);writes.push(next);},writes,get raw(){return raw;},set raw(v){raw=v;}};}
-const validate=v=>{if(v.bad||!Number.isSafeInteger(v.revision))throw Error('invalid');return v;};
-test('bad storage remains intact until explicit reset',async()=>{const p=fixture({bad:true}),s=createStore(p,'x',validate);await assert.rejects(s.load());await assert.rejects(s.save({revision:0}),/storageBlocked/);assert.deepEqual(p.raw,{bad:true});await s.reset();await s.save({revision:0,value:2});assert.equal(p.raw.value,2);});
-test('external revision blocks overwrites and explicit reload recovers',async()=>{const p=fixture({revision:1}),s=createStore(p,'x',validate);await s.load();p.raw={revision:2,value:9};await assert.rejects(s.save({revision:1,value:1}),/storageConflict/);assert.equal(p.raw.value,9);await s.load();await s.save({revision:2,value:3});assert.equal(p.raw.revision,3);});
-test('slow writes keep newest pending data in order',async()=>{let raw=null,release,writes=[];const s=createStore({get:async()=>raw,set:async(_k,v)=>{writes.push(v);if(writes.length===1)await new Promise(r=>release=r);raw=v;}},'x',validate);await s.load();const first=s.save({revision:0,value:1});await new Promise(r=>setTimeout(r,0));await s.save({revision:0,value:2});await s.save({revision:0,value:3});release();await first;assert.deepEqual(writes.map(w=>w.value),[1,3]);assert.equal(raw.revision,2);});
-test('remote reset cannot be overwritten by a stale tab',async()=>{const p=fixture({revision:1}),s=createStore(p,'x',validate);await s.load();p.raw=null;await assert.rejects(s.save({revision:1,value:4}),/storageConflict/);assert.equal(p.raw,null);});
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createStore} from '../src/storage.js';
 
-test('flush waits for all coalesced writes before disposal',async()=>{let raw=null,release;const writes=[];const store=createStore({get:async()=>raw,set:async(_key,value)=>{writes.push(value);if(writes.length===1)await new Promise(resolve=>release=resolve);raw=value;}},'flush',validate);const first=store.save({revision:0,value:1});await new Promise(resolve=>setTimeout(resolve,0));await store.save({revision:0,value:2});let finished=false;const flushed=store.flush().then(()=>finished=true);await new Promise(resolve=>setTimeout(resolve,0));assert.equal(finished,false);release();await first;await flushed;store.dispose();assert.equal(raw.value,2);assert.deepEqual(writes.map(value=>value.value),[1,2]);});
+function fixture(value=null){
+ let raw=value;
+ return {
+  get:async()=>structuredClone(raw),
+  set:async(_key,next)=>{raw=structuredClone(next);},
+  get raw(){return raw;},
+  set raw(value){raw=value;},
+ };
+}
+const validate=value=>{
+ if(value.bad||!Number.isSafeInteger(value.revision))throw Error('invalid');
+ return value;
+};
+const nextTurn=()=>new Promise(resolve=>setTimeout(resolve,0));
+
+test('bad storage remains intact until explicit reset',async()=>{
+ const platform=fixture({bad:true}),store=createStore(platform,'x',validate);
+ await assert.rejects(store.load());
+ await assert.rejects(store.save({revision:0}),/storageBlocked/);
+ assert.deepEqual(platform.raw,{bad:true});
+ await store.reset();
+ await store.save({revision:0,value:2});
+ assert.equal(platform.raw.value,2);
+});
+
+test('external revision blocks overwrites and explicit reload recovers',async()=>{
+ const platform=fixture({revision:1}),store=createStore(platform,'x',validate);
+ await store.load();
+ platform.raw={revision:2,value:9};
+ await assert.rejects(store.save({revision:1,value:1}),/storageConflict/);
+ assert.equal(platform.raw.value,9);
+ await store.load();
+ await store.save({revision:2,value:3});
+ assert.equal(platform.raw.revision,3);
+});
+
+test('slow writes keep newest pending data in order',async()=>{
+ let raw=null,release;
+ const writes=[];
+ const store=createStore({
+  get:async()=>raw,
+  set:async(_key,value)=>{
+   writes.push(value);
+   if(writes.length===1)await new Promise(resolve=>release=resolve);
+   raw=value;
+  },
+ },'x',validate);
+ await store.load();
+ const first=store.save({revision:0,value:1});
+ await nextTurn();
+ await store.save({revision:0,value:2});
+ await store.save({revision:0,value:3});
+ release();
+ await first;
+ assert.deepEqual(writes.map(value=>value.value),[1,3]);
+ assert.equal(raw.revision,2);
+});
+
+test('unexpected storage deletion cannot be overwritten before reload',async()=>{
+ const platform=fixture({revision:1}),store=createStore(platform,'x',validate);
+ await store.load();
+ platform.raw=null;
+ await assert.rejects(store.save({revision:1,value:4}),/storageConflict/);
+ assert.equal(platform.raw,null);
+});
+
+test('flush waits for all coalesced writes before disposal',async()=>{
+ let raw=null,release;
+ const writes=[];
+ const store=createStore({
+  get:async()=>raw,
+  set:async(_key,value)=>{
+   writes.push(value);
+   if(writes.length===1)await new Promise(resolve=>release=resolve);
+   raw=value;
+  },
+ },'flush',validate);
+ const first=store.save({revision:0,value:1});
+ await nextTurn();
+ await store.save({revision:0,value:2});
+ let finished=false;
+ const flushed=store.flush().then(()=>finished=true);
+ await nextTurn();
+ assert.equal(finished,false);
+ release();
+ await first;
+ await flushed;
+ store.dispose();
+ assert.equal(raw.value,2);
+ assert.deepEqual(writes.map(value=>value.value),[1,2]);
+});

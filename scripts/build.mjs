@@ -16,8 +16,6 @@ const header=`// ==UserScript==
 // @grant        unsafeWindow
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM_addValueChangeListener
-// @grant        GM_removeValueChangeListener
 // @grant        GM_xmlhttpRequest
 // @grant        GM_setClipboard
 // @connect      deepveinidle.com

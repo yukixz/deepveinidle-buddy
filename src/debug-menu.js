@@ -9,10 +9,6 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  function close(){menu.hidden=true;}
  function update(){toggle.textContent=label();toggle.setAttribute('aria-checked',String(enabled));toggle.disabled=busy||blocked;}
  try{enabled=validate(await platform.get(key,false));}catch(error){report(error);}
- const unsubscribe=platform.subscribe?.(key,value=>{
-  if(disposed||blocked)return;
-  try{enabled=validate(value);update();onChange();}catch(error){report(error);}
- })??(()=>{});
  function contextmenu(event){
   const title=event.target.closest?.('.titlebar');
   if(!title||event.target.closest('button,input,select,textarea,a')||root.host.hasAttribute('data-closed'))return;
@@ -35,5 +31,5 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  root.addEventListener('contextmenu',contextmenu);toggle.addEventListener('click',change);
  doc.addEventListener('pointerdown',outside,true);doc.addEventListener('keydown',escape,true);
  doc.defaultView.addEventListener('resize',close);
- return {get enabled(){return enabled;},close,dispose(){disposed=true;unsubscribe();root.removeEventListener('contextmenu',contextmenu);toggle.removeEventListener('click',change);doc.removeEventListener('pointerdown',outside,true);doc.removeEventListener('keydown',escape,true);doc.defaultView.removeEventListener('resize',close);menu.remove();}};
+ return {get enabled(){return enabled;},close,dispose(){disposed=true;root.removeEventListener('contextmenu',contextmenu);toggle.removeEventListener('click',change);doc.removeEventListener('pointerdown',outside,true);doc.removeEventListener('keydown',escape,true);doc.defaultView.removeEventListener('resize',close);menu.remove();}};
 }
