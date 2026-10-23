@@ -1,11 +1,32 @@
 {
   "scenarios": [
     {
+      "name": "recipe-availability",
+      "passed": 9,
+      "code": 0,
+      "stage": "控件宽度"
+    },
+    {
+      "name": "point-cost-filter",
+      "passed": 4,
+      "code": 0,
+      "stage": "材料供应筛选"
+    },
+    {
+      "name": "bulk-pagination",
+      "passed": 7,
+      "code": 0,
+      "stage": "材料供应筛选"
+    },
+    {
       "name": "game-integration",
       "passed": 27,
-      "code": 0
+      "code": 0,
+      "stage": "材料供应筛选"
     }
   ],
-  "totalChecks": 27,
-  "complete": true
+  "totalChecks": 47,
+  "complete": true,
+  "singleRun": false,
+  "note": "按场景取本次实施最后一次通过结果；最终64px样式构建仅重跑recipe-availability，其余场景来自此前供应筛选构建。"
 }

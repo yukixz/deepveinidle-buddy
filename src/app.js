@@ -3,10 +3,11 @@ import {installDebugMenu} from './debug-menu.js';
 import {feeInputMax,feeToInput,feeFromInput} from './fee-units.js';
 import {sortItemRows,sortNumericRows,itemLevel} from './table-sorting.js';
 import {sortCollectionRows} from './collection-sorting.js';
+import {hasAvailableAsks} from './recipe-availability.js';
 import {estimateCraftRecipe} from './crafting-estimates.js';
 import {installPanelGeometry} from './panel-geometry.js';
 import * as game from './engine/upstream.js';
-import {craftingJobs,craftingTiers,craftingSkills} from './engine/crafting-model.js';
+import {craftingJobs,craftingTiers,craftingSkills,craftingMaterials} from './engine/crafting-model.js';
 import {gatheringSkills} from './engine/gathering-model.js';
 import {collectionRows,collectionPlayers,collectionDefaults,validateCollection,importCollection,collectionPrice} from './engine/collection-model.js';
 import {translatedName,translatedItemName} from './engine/i18n.js';
@@ -46,7 +47,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
  const button=(action,label,extra='')=>`<button type="button" data-action="${action}" ${extra}>${label}</button>`;
  function pricingControls(location){
   const modes=[['ask',text('卖单','Asks')],['bid',text('买单','Bids')]];
-  return `<div class="pricing-controls">${[['material',text('材料','Material'),workspace.character.buyMode],['product',text('产物','Product'),workspace.productPriceMode]].map(([kind,label,value])=>`<label>${label}<select id="${location}-${kind}-price-mode" data-pricing="${kind}">${option(modes,value)}</select></label>`).join('')}</div>`;
+  return `<div class="pricing-controls">${[['material',text('材料','Material'),workspace.excludeInsufficientAsks&&workspace.character.buyMode==='ask'?'ask-stock':workspace.character.buyMode],['product',text('产物','Product'),workspace.productPriceMode]].map(([kind,label,value])=>`<label>${label}<select id="${location}-${kind}-price-mode" data-pricing="${kind}">${option(kind==='material'?[modes[0],['ask-stock',text('卖单（排除在售数量不足）','Asks (exclude insufficient stock)')],modes[1]]:modes,value)}</select></label>`).join('')}</div>`;
  }
 
 
@@ -64,6 +65,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
   const ps=prices(),s=workspace.character;
   let values=mode==='craft'?craftingJobs.flatMap(job=>craftingTiers(job).map(t=>({job,tier:t,jobId:job.id,kind:'craft',key:`${job.id}:${t}`}))):collectionCandidates().filter(r=>r.status==='ok').map(r=>({...r,tier:game.itemTier(r.id),itemId:r.id,kind:'collection',key:`${r.id}:${r.jobId}:${r.target}`}));
   values=values.filter(r=>(skill==='all'||r.job.skill===skill)&&(tier==='all'||r.tier===Number(tier))&&(route==='all'||(gatheringSkills.includes(r.job.skill)?'gather':'craft')===route)&&`${r.job.name} ${name(r.job.name)}`.toLowerCase().includes(query.toLowerCase()));
+  if(workspace.excludeInsufficientAsks&&s.buyMode==='ask')values=values.filter(r=>hasAvailableAsks(mode==='craft'?craftingMaterials(r.job,r.tier,1):r.materials,ps));
   if(mode==='collection')values=values.map(r=>{const q=Object.entries(r.materials).map(([id,qty])=>[qty,collectionPrice(Number(id),ps,s.buyMode).price]);const cost=q.some(([qty,p])=>qty>0&&p===null)?null:q.reduce((v,[qty,p])=>v+qty*(p??0),0);return {...r,cost,costPerPoint:cost===null?null:cost/r.points};}).filter(r=>(minPoints===''||r.points>=Number(minPoints))&&(maxSecondsPerPoint===''||r.secondsPerPoint<=Number(maxSecondsPerPoint))&&(maxCost===''||r.costPerPoint!==null&&r.costPerPoint<=Number(maxCost)));
   if(mode==='collection')values=sortCollectionRows(values,sort,sortDirection);else values=sortedItems(values,'recipes',r=>outputId(r.job,r.tier));
   const total=values.length,pages=Math.max(1,Math.ceil(total/10));page=Math.min(Math.max(1,page),pages);const visible=all?values:values.slice((page-1)*10,page*10);if(mode==='craft'){const players=collectionPlayers(s);return {values:visible.map(r=>({...r,estimate:estimateCraftRecipe(s,r.job,r.tier,ps,players,workspace.productPriceMode)})),total,pages};}return {values:visible,total,pages};
@@ -188,7 +190,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
    if(el.dataset.count){if(!el.checkValidity()||!Number.isSafeInteger(el.valueAsNumber)||el.valueAsNumber<0)throw Error('invalidNumber');const index=el.dataset.count.lastIndexOf(':'),id=el.dataset.count.slice(0,index);putLine(current(),{kind:'craft',jobId:id.startsWith('upgrade-')?id:Number(id),tier:Number(el.dataset.count.slice(index+1)),count:el.valueAsNumber});
    }else if(el.dataset.fee){if(!el.checkValidity()||!Number.isFinite(el.valueAsNumber))throw Error('invalidNumber');workspace.orders.find(o=>o.id===el.dataset.order).fees[el.dataset.fee]=feeFromInput(el.dataset.fee,el.valueAsNumber);
    }else if(el.dataset.enabled){workspace.orders.find(o=>o.id===el.dataset.enabled).enabled=el.checked;
-   }else if(el.dataset.pricing){if(!['ask','bid'].includes(el.value))throw Error('invalidPriceMode');if(el.dataset.pricing==='material')workspace.character.buyMode=el.value;else if(el.dataset.pricing==='product')workspace.productPriceMode=el.value;else throw Error('invalidPriceMode');
+   }else if(el.dataset.pricing){if(el.dataset.pricing==='material'){if(!['ask','ask-stock','bid'].includes(el.value))throw Error('invalidPriceMode');workspace.character.buyMode=el.value==='ask-stock'?'ask':el.value;workspace.excludeInsufficientAsks=el.value==='ask-stock';}else if(el.dataset.pricing==='product'){if(!['ask','bid'].includes(el.value))throw Error('invalidPriceMode');workspace.productPriceMode=el.value;}else throw Error('invalidPriceMode');
    }else if(el.id==='auto-remove')workspace.autoRemove=el.checked;
    else if(el.dataset.orderName)workspace.orders.find(o=>o.id===el.dataset.orderName).name=el.value;
    else if(el.id==='max-cost'){if(!el.checkValidity())throw Error('invalidNumber');el.removeAttribute('aria-invalid');queueRender();return;}

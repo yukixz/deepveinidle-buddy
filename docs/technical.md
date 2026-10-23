@@ -19,6 +19,7 @@
 - `app.js`、`theme.css`：Shadow DOM 内订单、筛选、共享定价和中文输入保护；不代理全局 document 或修改原游戏代码。
 - `workspace.js`、`crafting-estimates.js`：严格当前模型、解析动作／费用、合并采购与高亮。
 - `collection-sorting.js`、`table-sorting.js`：全精度稳定排序，未知值置末。
+- `recipe-availability.js`：按候选的完整物品ID和材料总需求检查卖单供应，仅影响配方候选及批量加入，不修改提取的计算模块或已有订单。
 - `fee-units.js`：界面 M／M/h 与金币／金币每分钟基础单位换算。
 - `plan-transfer.js`：固定 DVILAB-PLAN 的 gzip／Base64 封装，应用层校验当前单订单结构。
 - `storage.js`、`panel-geometry.js`：GM revision 保护、独立布局存储、拖动与四边缩放。

@@ -33,9 +33,10 @@ export function validateOrders(raw){
  });
 }
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
-export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',autoRemove:false,language:'zh',filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
+export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,language:'zh',filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
 export function validateWorkspace(raw){
  if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.autoRemove!=='boolean'||!['zh','en'].includes(raw.language)||!record(raw.filters)||raw.prices?.version!==4)throw Error('invalidWorkspace');
+ if(raw.excludeInsufficientAsks!==undefined&&typeof raw.excludeInsufficientAsks!=='boolean')throw Error('invalidPriceMode');
  if(!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.character?.buyMode))throw Error('invalidPriceMode');
  const orders=validateOrders(raw.orders),filters={};
  for(const mode of ['craft','collection']){
@@ -45,7 +46,7 @@ export function validateWorkspace(raw){
   filters[mode]={...f};
  }
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
- return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,autoRemove:raw.autoRemove,language:raw.language,filters};
+ return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks??false,autoRemove:raw.autoRemove,language:raw.language,filters};
 }
 export function putLine(order,raw){
  if(raw.kind==='craft'&&raw.count===0){order.lines=order.lines.filter(l=>lineKey(l)!==lineKey(raw));return;}
