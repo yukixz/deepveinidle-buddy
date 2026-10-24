@@ -4,6 +4,7 @@
 - [游戏移动端适配](mobile-adaptation.md)：真实移动模式的入口缺口、离线复现、分阶段方案及真机验收范围。
 - [架构调研](research.md)：userscript、Shadow DOM 与只读接入的选型。
 - [接入验收](game-integration-validation.md)：实时同步、预填、真实Chrome消息观测和验证边界。
+- [购买与执行实页排查](prefill-controls-validation.md)：材料不足时游戏隐藏品质按钮的根因、修复及两个按钮的真实桌面验证。
 - [当前验证](validation.md)：本次实际运行结果、日志、截图及验证边界。
 - [游戏样式样本](theme-sample.json)：公开面板字体与配色采样。
 

@@ -1,17 +1,17 @@
 # 当前验证
 
-日期：2026-10-24。开发版本0.1.0，分支codex/mobile-adaptation，未发布。本轮撤销4272dee，功能代码及测试恢复至4d59f49；移动端预填成功后自动隐藏，失败保留助手和错误；电脑端预填后保持显示。规则见[面板设计](../docs/panel.md)。
+日期：2026-10-24。开发版本0.1.0，分支codex/mobile-adaptation，未发布。本轮修复游戏因材料不足不生成目标品质选项时的通用控件缺失误报；在填写次数前明确拒绝。规则见[面板设计](../docs/panel.md)，根因与实页流程见[购买与执行排查](prefill-controls-validation.md)。
 
 | 检查 | 本次结果 | 证据 |
 | --- | --- | --- |
-| 构建 | 通过，userscript 942592字节，摘要与4d59f49一致 | 本机构建 dist/manifest.json |
-| 移动专项 | 15项通过，覆盖成功隐藏、失败保留及其他移动交互 | [日志](validation/mobile.log) |
-| 游戏接入专项 | 29项通过，覆盖桌面预填后保持显示及原菜单草稿／守卫 | [日志](validation/game-integration.log) |
-| 导航专项 | 11项通过，覆盖入口、重开及清理 | [日志](validation/navigation.log) |
-| 静态检查 | 功能／测试代码与4d59f49无差异；文档引用、构建摘要及差异空白通过 | git diff、文档／摘要检查 |
+| 构建 | 通过，userscript 943315字节 | 本机构建 dist/manifest.json |
+| 游戏接入专项 | 30项通过，新增双语品质不可用及次数／模式不改写检查 | [日志](validation/game-integration.log) |
+| 移动专项 | 15项通过 | [日志](validation/mobile.log) |
+| 桌面实页 | 两按钮及当前适配层成功路径、不可用品质提前拒绝通过 | [数据](validation/prefill-controls-live.json)、[市场](screenshots/prefill-live-market.png)、[动作](screenshots/prefill-live-action.png) |
+| 静态检查 | 修改脚本语法、文档引用、构建摘要及差异空白通过 | node --check、引用／摘要脚本、git diff --check |
 
-本轮3场景共55项，见[摘要](validation/revert-prefill-summary.json)。未执行全量测试或另跑单元测试。此前168项浏览器／9项单元和统一隐藏82项结果均为历史记录，不计入本次重跑。
+本地2场景共45项，本轮未执行全量测试或另跑单元测试。此前55项回退检查等为历史结果，不计入本次重跑。实页未提交购买／开始／排队／停止，未改变当前任务或队列，原动作草稿已恢复。当前适配层在局部闭包临时执行，未安装新构建或保留页面测试全局。
 
-本地夹具不替代真实游戏、真实手机、软键盘及脚本管理器权限验收；未连接账号，未发布、未部署。
+新构建仍需更新到游戏脚本后生效；移动端真机、管理器完整权限及长期运行尚未验收。未发布、未部署。
 
-当前安装脚本SHA-256：`5734a50c5900c8c265e6d8734d9064030098a3ceca8dafc9726d5eb0c8c9cd0f`。
+当前安装脚本SHA-256：`65613584a9989a5651b09ac668f684773c412b2b7691149831e29ee47a952597`。

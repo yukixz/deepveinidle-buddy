@@ -72,9 +72,15 @@ let page;try{
   await reject('changed',()=>make().purchase(base,()=>false));
   window.__roundPrice=true;await reject('price rounding',()=>make().purchase(base));window.__roundPrice=false;document.querySelector('[data-market-trade]').hidden=true;
   window.__routes.pending=null;window.__maxAmount=2;await reject('quantity clamp',()=>make().action({role:'42',jobId:41,skill:'smithing',quantity:3,tier:0,manufacturing:true}));window.__maxAmount=1e9;
-  window.__routes.pending=null;await reject('missing rarity',()=>make().action({role:'42',jobId:41,skill:'smithing',quantity:3,tier:4,manufacturing:true}));
+  window.__routes.pending=null;const previousAmount=window.__routes.amount,previousMode=window.__routes.stopMode,previousRarity=window.__routes.rarity;await reject('missing rarity',()=>make().action({role:'42',jobId:41,skill:'smithing',quantity:3,tier:4,manufacturing:true}));
+  if(window.__routes.amount!==previousAmount||window.__routes.stopMode!==previousMode||window.__routes.rarity!==previousRarity)throw Error('Unavailable rarity changed draft values');
   return results;
- });assert.deepEqual(failures,[['role','gameRoleChanged'],['changed','planChanged'],['price rounding','gamePrefillMismatch'],['quantity clamp','gamePrefillMismatch'],['missing rarity','gameControlMissing']]);assert.deepEqual(await page.evaluate(()=>window.__commands),[]);checks.push('role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands');
+ });assert.deepEqual(failures,[['role','gameRoleChanged'],['changed','planChanged'],['price rounding','gamePrefillMismatch'],['quantity clamp','gamePrefillMismatch'],['missing rarity','gameRarityUnavailable']]);assert.deepEqual(await page.evaluate(()=>window.__commands),[]);checks.push('role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands');
+ const draftBeforeUnavailable=await page.evaluate(()=>{window.__tierChoice=document.querySelector('.routes [data-rarity-choices] [data-rarity="1"]');window.__tierChoice.remove();return {amount:window.__routes.amount,mode:window.__routes.stopMode};});
+ await root.locator(`[data-action="prefill-action"][data-key="${bronze.id}:1"]`).click();await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('.prefill-error')?.textContent.includes('至少一次'));
+ assert.deepEqual(await page.evaluate(()=>({amount:window.__routes.amount,mode:window.__routes.stopMode})),draftBeforeUnavailable);
+ await root.locator('[data-action="language"]').click();await root.locator(`[data-action="prefill-action"][data-key="${bronze.id}:1"]`).click();await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('.prefill-error')?.textContent.includes('at least one craft'));await root.locator('[data-action="language"]').click();
+ await page.evaluate(()=>document.querySelector('.routes [data-rarity-choices]').append(window.__tierChoice));checks.push('unavailable quality has a bilingual material-availability message and does not overwrite amount or count mode');
  const optionFailures=await page.evaluate(async()=>{
   const toggle=document.querySelector('[data-opt-line]'),parent=toggle.parentElement,request={role:'42',jobId:41,skill:'smithing',quantity:3,tier:0,manufacturing:true},results=[];
   const reject=async(name,adapter)=>{try{await adapter.action(request);results.push([name,'unexpected success']);}catch(error){results.push([name,error.message]);}};

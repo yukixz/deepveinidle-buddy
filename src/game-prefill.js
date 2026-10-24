@@ -70,6 +70,14 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
     }
     panels.show('skills');routes.show(request.skill);routes.preselect({jobId:request.jobId});check();
     if(routes.pending?.jobId!==request.jobId)failure('gameControlUnavailable');
+    const rarityChoice=()=>{
+     required('.routes [data-rarity-choices]');
+     required('.routes [data-rarity-choices] [data-rarity="0"]');
+     const choice=find(`.routes [data-rarity-choices] [data-rarity="${request.tier}"]`);
+     if(!choice)failure('gameRarityUnavailable');
+     if(choice.disabled)failure('gameControlUnavailable');return choice;
+    };
+    if(request.manufacturing)rarityChoice();
     const options=required('.routes [data-opt-line]'),expanded=options.getAttribute('aria-expanded');
     if(expanded==='false')click('.routes [data-opt-line]');
     else if(expanded!=='true')failure('gameControlUnavailable');
@@ -77,7 +85,7 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
     click('.routes [data-stop-mode="count"]');
     await until(()=>find('.routes [data-amount-any]'),check);
     input('.routes [data-amount-any]',request.quantity);
-    if(request.manufacturing)click(`.routes [data-rarity-choices] [data-rarity="${request.tier}"]`);
+    if(request.manufacturing)rarityChoice().click();
     if(routes.pending?.jobId!==request.jobId||routes.stopMode!=='count'||routes.amount!==request.quantity||request.manufacturing&&(routes.rarity!==request.tier||routes.best))failure('gamePrefillMismatch');
     required('.routes [data-amount-any]').focus();
    });
