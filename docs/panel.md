@@ -4,7 +4,7 @@
 
 ## 面板与数据状态
 
-userscript 在 document-start 只读监听既有同源 `/ws`并采样游戏客户端白名单，DOM 就绪后挂载唯一 open Shadow Root。采用游戏面板的棕金色、字体和边框；右上角仅语言和关闭按钮。标题为“工匠与精通助手 v0.1.0 · 游戏版本 1.0.1199 · 角色实时 HH:mm:ss · 市场行情 HH:mm:ss”，助手版本与游戏版本使用小字，窄屏自然换行。游戏版本指当前计算支持版本。面板标题、导航入口中文为“工匠与精通助手”，英文为“Crafting & Mastery Buddy”。脚本安装元数据单独命名：默认name为“Deep Vein Idle · Buddy”，name:zh-CN为“Deep Vein Idle · 工匠精通助手”，name:en为“Deep Vein Idle · Crafting & Buddy”；默认description使用中文，并提供description:en英文说明。验收以构建产物的元数据字段为准。
+userscript 在 document-start 只读监听既有同源 `/ws`并采样游戏客户端白名单，DOM 就绪后挂载唯一 open Shadow Root。采用游戏面板的棕金色、字体和边框；右上角仅语言和关闭按钮。标题为“工匠与精通助手 v0.1.0 · 游戏版本 1.0.1199 · 角色实时 HH:mm:ss · 市场行情 HH:mm:ss”，助手版本与游戏版本使用小字，窄屏自然换行。游戏版本指当前计算支持版本。面板标题、导航入口中文为“工匠与精通助手”，英文为“Crafting & Mastery Buddy”。脚本安装元数据单独命名：默认name为“Deep Vein Idle - Buddy”（仅ASCII字符），name:zh-CN为“Deep Vein Idle · 工匠精通助手”，name:en为“Deep Vein Idle · Crafting & Buddy”；默认description使用中文，并提供description:en英文说明，license为MIT。验收以构建产物的元数据字段为准。
 
 角色时间指本机读取客户端或接收服务器快照的时间，行情时间指成功读取时间，不代表行情生成时间或持续健康检查。无数据时分别显示等待数据／未读取；捕获失败、断开、读取中或读取失败显示相应提示，已有成功行情时间保留。行情在连接后10秒检查周期内首次读取，此后距上次成功读取满5分钟时更新。正式脚本行情仅保存在当前角色面板的内存中，包括买卖报价、数量、采集时间及行情导入生成的估值；获取行情不触发GM写入。刷新页面或切换角色后重新获取，获取前相关估值显示未知；读取失败保留本页已有行情。重新载入或重置助手存档保留本页行情。
 

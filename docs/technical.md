@@ -29,7 +29,7 @@
 
 userscript仅声明 `unsafeWindow`、`GM_getValue`、`GM_setValue`、`GM_xmlhttpRequest` 和 `GM_setClipboard` 五项grant；无存储监听权限。
 
-userscript安装元数据使用 `@namespace https://dvi-lab.pages.dev` 和 `@author Alice`；默认名称与中英文名称按面板设计分别声明，默认安装描述使用中文并提供英文description:en；安装描述仅介绍常规用户功能。
+userscript安装元数据使用 `@namespace https://dvi-lab.pages.dev` 、`@author Alice` 和 `@license MIT`；默认name仅含ASCII字符，默认名称与中英文名称按面板设计分别声明，默认安装描述使用中文并提供英文description:en；安装描述仅介绍常规用户功能。
 
 ## 开发验证
 

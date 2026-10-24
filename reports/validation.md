@@ -1,22 +1,15 @@
 # 当前验证
 
-日期：2026-10-24。开发版本0.1.0，未发布。本次将正式脚本行情改为仅保存在当前角色面板的内存中；规则见[面板设计](../docs/panel.md)。
+日期：2026-10-24。开发版本0.1.0，未发布。本次仅调整userscript元数据：默认name为纯ASCII的“Deep Vein Idle - Buddy”，新增license MIT；规则见[面板设计](../docs/panel.md)。
 
 | 检查 | 本次结果 | 证据 |
 | --- | --- | --- |
-| 构建 | 通过，userscript 928611字节 | 本机构建 dist/manifest.json |
-| 存储与订单单元测试 | 50项通过 | [日志](validation/market-storage-unit.log) |
-| market-storage | 7项通过 | [日志](validation/market-storage.log) |
-| game-integration | 29项通过 | [日志](validation/game-integration.log) |
-| 浏览器合计 | 2场景、36项通过 | [摘要](validation/summary.json) |
+| 构建 | 通过，userscript 928631字节 | 本机构建 dist/manifest.json |
+| 元数据断言 | 通过 | [日志](validation/metadata.log) |
 | 静态检查 | 修改脚本语法、文档引用、差异空白及构建摘要通过 | [日志](validation/static.log) |
 
-行情专项覆盖：挂载时不使用GM残留报价；行情刷新改变可见估值但不写GM；用户设置保存保留订单与偏好，剔除报价、在售数量和自动导入估值；显式重新载入存档保留本页行情；行情请求失败保留已有报价且不写存档；从同一存档重新挂载时行情为空。存储投影单元测试同时验证不修改内存原值，并保留手动价格、角色快照和筛选。
+单独执行debug-menu测试中的构建元数据断言，覆盖默认名称及ASCII字符约束、中文与英文名称、MIT许可、中英文description、namespace、author、grant和公开描述约束。本次未重跑浏览器场景或计算、存储等单元测试。
 
-游戏接入专项在既有真实打包入口、角色切换、实时同步、原生组合输入和采购／动作预填检查之外，增加角色实时保存不夹带行情的检查。所有游戏控件、GM与行情为隔离夹具，没有执行购买或角色动作。
+此前行情内存存储调整的50项单元测试和2场景36项浏览器检查为历史结果，见[单元日志](validation/market-storage-unit.log)、[行情专项](validation/market-storage.log)、[游戏接入专项](validation/game-integration.log)及[摘要](validation/summary.json)，不计入本次重跑结果。未在真实脚本管理器或游戏环境验收，未部署。
 
-清理时合并了重复的存档投影调用，并移除行情测试夹具的未使用参数；重新构建并重跑表内全部专项。
-
-本次仅运行上述专项，未运行全部单元或全部浏览器场景。其余留存日志为此前验证，不计入本次结果。原始游戏资源与生成的upstream.js未修改。未手动验收真实系统输入法候选窗口、触控板惯性或ScriptCat／Tampermonkey环境，也未在真实游戏中安装／更新或部署。
-
-安装脚本SHA-256：`38f885d4879d477983dd2def290854db1f542fb1a91b260e1249165b62f1773f`。
+安装脚本SHA-256：`ea4ed9da558b96b4b437acdbd45a356b2b9a43d2d50df092807803c6e67f1d6b`。

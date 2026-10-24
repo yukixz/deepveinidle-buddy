@@ -1,6 +1,2 @@
 PASS: build
-PASS: built userscript metadata assertions (default, zh-CN and en names; Chinese and English descriptions; namespace, author, grants and public description constraints)
-PASS: modified JavaScript syntax
-PASS: modified Markdown local references
-PASS: build sizes and SHA-256 match manifest
-PASS: git diff --check
+PASS: built userscript metadata assertions (ASCII default name, localized names, MIT license, Chinese and English descriptions, namespace, author, grants and public description constraints)
