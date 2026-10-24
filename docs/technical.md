@@ -17,7 +17,7 @@
 - `capture.js`：只读旁听已有同源 WebSocket，捕获器先于面板初始化，不额外连接，不发送游戏消息。
 - `main.js`、`navigation.js`：按角色挂载／卸载面板及导航入口，清理监听与定时器。
 - `app.js`、`theme.css`：Shadow DOM 内订单、筛选、共享定价和中文输入保护；不代理全局 document 或修改原游戏代码。
-- `workspace.js`、`crafting-estimates.js`：严格当前模型、解析动作／费用、合并采购与高亮。
+- `workspace.js`、`crafting-estimates.js`：严格当前模型、解析动作／费用、合并采购与高亮。`planned-products.js`复用原始产出与品质规则，按计划整数次数汇总预计产物，仅用于采购抵扣。
 - `collection-sorting.js`、`table-sorting.js`：全精度稳定排序，未知值置末。
 - `recipe-availability.js`：按候选的完整物品ID和材料总需求检查卖单供应，仅影响配方候选及批量加入，不修改提取的计算模块或已有订单。
 - `fee-units.js`：界面 M／M/h 与金币／金币每分钟基础单位换算。

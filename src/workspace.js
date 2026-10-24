@@ -1,4 +1,5 @@
 import {encodePlanPayload,decodePlanPayload} from './plan-transfer.js';
+import {plannedProducts} from './planned-products.js';
 import {estimateCraftAction} from './crafting-estimates.js';
 import * as game from './engine/upstream.js';
 import {craftingJobs,craftingTiers,craftingMaterials} from './engine/crafting-model.js';
@@ -90,7 +91,7 @@ function summarizeExecutionActions(entries,rows,canAssess){
  }).sort((a,b)=>String(a.jobId).localeCompare(String(b.jobId),undefined,{numeric:true})||a.tier-b.tier);
 }
 export function estimateOrders(workspace,prices,now=Date.now()){
- const state=workspace.character,players=collectionPlayers(state,now),selected=workspace.orders.filter(o=>o.enabled),materials=new Map(),seen=new Set(),conflicts=new Set();
+ const state=workspace.character,players=collectionPlayers(state,now),selected=workspace.orders.filter(o=>o.enabled),materials=new Map(),products=new Map(),seen=new Set(),conflicts=new Set();
  for(const order of selected)for(const line of order.lines)if(line.kind==='collection'){
   if(seen.has(line.itemId))conflicts.add(line.itemId);seen.add(line.itemId);
  }
@@ -121,7 +122,12 @@ export function estimateOrders(workspace,prices,now=Date.now()){
      if(entry.status==='ok'){points=add(points,entry.points);collectionSeconds=add(collectionSeconds,entry.seconds);}
     }
     if(!['ok','complete'].includes(entry.status)){blocked++;ownBlocked=true;if(line.kind==='collection')ownMaterialsUnknown=true;}
-    if(entry.status==='ok')ownSeconds=add(ownSeconds,entry.seconds);
+    if(entry.status==='ok'){
+     const job=craftingJobs.find(j=>j.id===line.jobId)??game.recipes.find(j=>j.id===line.jobId);
+     entry.products=plannedProducts(job,line.kind==='craft'?line.tier:game.itemTier(line.itemId),line.kind==='craft'?line.count:entry.attempts,players);
+     for(const [id,qty]of Object.entries(entry.products))materialAdd(products,id,qty);
+     ownSeconds=add(ownSeconds,entry.seconds);
+    }
     // Fixed crafting requirements remain available even when action time is unknown.
     if(line.kind==='craft'||entry.status==='ok')for(const [id,qty]of Object.entries(entry.materials)){materialAdd(materials,id,qty);materialAdd(own,id,qty);}
    }catch(error){entry.status=error.message;blocked++;ownBlocked=true;ownMaterialsUnknown=true;}
@@ -139,11 +145,14 @@ export function estimateOrders(workspace,prices,now=Date.now()){
  let subtotal=0,missingPrices=0,unknownInventory=false;
  const rows=[...materials].sort((a,b)=>a[0]-b[0]).map(([id,exact])=>{
   const required=Math.ceil(exact);if(!quantity(required))throw Error('quantityOverflow');
-  const owned=state.bank===null||state.pack===null?null:add(state.bank[id]??0,state.pack[id]??0),purchase=owned===null?null:Math.max(0,required-owned),quote=collectionPrice(id,prices,state.buyMode);
+  const owned=state.bank===null||state.pack===null?null:add(state.bank[id]??0,state.pack[id]??0);
+  const produced=blocked?null:(products.get(id)??0);
+  const purchase=owned===null||produced===null?null:Math.ceil(Math.max(0,required-owned-produced));
+  const quote=collectionPrice(id,prices,state.buyMode);
   if(owned===null)unknownInventory=true;if(purchase>0&&quote.price===null)missingPrices++;
   const cost=purchase===0?0:purchase===null||quote.price===null?null:purchase*quote.price;
   if(cost!==null)subtotal=add(subtotal,cost);
-  return {id,required,owned,purchase,price:quote.price,cost};
+  return {id,required,owned,produced,purchase,price:quote.price,cost};
  });
  return {entries,orders,rows,actions:summarizeExecutionActions(entries,rows,blocked===0&&!unknownInventory),blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&!['ok','complete'].includes(e.status))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
 }

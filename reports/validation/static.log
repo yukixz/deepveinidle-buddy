@@ -1,4 +1,4 @@
 PASS: modified JavaScript syntax
 PASS: modified Markdown local references
-PASS: git diff --check
 PASS: build sizes and SHA-256 match manifest
+PASS: git diff --check

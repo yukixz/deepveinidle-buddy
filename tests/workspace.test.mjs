@@ -160,3 +160,50 @@ test('burning collections use whole attempts for mixed materials, procurement, f
  w.character.bank=Object.fromEntries(plan.rows.map(r=>[r.id,r.required]));assert.equal(evaluate(w).actions[0].materialStatus,'ready');
  w.character.bank[inputs[0].itemId]--;assert.equal(evaluate(w).actions[0].materialStatus,null);
 });
+
+test('selected outputs offset matching material rows once across orders without changing gross fees or time',()=>{
+ const w=setup(),consumer=craftingJobs.find(j=>j.id===51);
+ putLine(w.orders[0],craft(4));
+ const other=createOrder();other.fees={fixed:10,percent:10,minute:2};putLine(other,{kind:'craft',jobId:consumer.id,tier:0,count:5});w.orders.push(other);
+ w.character.bank={40:3};w.prices=quote(w.prices,40,5);
+ const plan=evaluate(w),row=plan.rows.find(r=>r.id===40);
+ assert.deepEqual([row.required,row.owned,row.produced,row.purchase,row.cost],[10,3,4,3,15]);
+ assert.equal(plan.orders[1].materialValue,50);assert.equal(plan.orders[1].fees.percent,5);
+ assert.equal(plan.actions.find(a=>a.jobId===consumer.id).materialStatus,null);
+ const before=plan.orders[1];w.orders[0].enabled=false;
+ const excluded=evaluate(w);assert.deepEqual(excluded.orders[0],before);assert.equal(excluded.rows.find(r=>r.id===40).produced,0);assert.equal(excluded.rows.find(r=>r.id===40).purchase,7);
+});
+
+test('surplus outputs never create negative purchases or require prices for covered rows',()=>{
+ const w=setup();putLine(w.orders[0],craft(10));putLine(w.orders[0],{kind:'craft',jobId:51,tier:0,count:1});
+ w.character.bank={1:10,2:10};
+ const plan=evaluate(w),row=plan.rows.find(r=>r.id===40);
+ assert.deepEqual([row.required,row.owned,row.produced,row.purchase,row.price,row.cost],[2,0,10,0,null,0]);
+ assert.equal(plan.total,0);assert.equal(plan.missingPrices,0);
+ assert.equal(plan.rows.some(r=>r.id===80),false);
+});
+
+test('different output rarities cannot offset each other',()=>{
+ const w=setup();putLine(w.orders[0],{kind:'craft',jobId:bronze.id,tier:1,count:100});putLine(w.orders[0],{kind:'craft',jobId:51,tier:0,count:2});
+ const row=evaluate(w).rows.find(r=>r.id===40);assert.equal(row.produced,0);assert.equal(row.purchase,4);
+});
+
+test('collection outputs use rounded attempts and all gathered qualities before rounding the net purchase',()=>{
+ const w=setup();w.character.config.levels.thieving=1;w.character.bank={300:1};
+ putLine(w.orders[0],{kind:'collection',itemId:300,jobId:244,target:10});putLine(w.orders[0],{kind:'craft',jobId:248,tier:0,count:6});
+ const plan=evaluate(w),entry=plan.entries[0],row=plan.rows.find(r=>r.id===300);
+ assert.equal(entry.attempts,Math.ceil(collectionRows(w.character).find(r=>r.id===300&&r.jobId===244&&r.target===10).attempts));
+ assert.equal(row.produced,entry.products[300]);assert.ok(row.produced>10&&row.produced<11);
+ assert.equal(row.purchase,Math.ceil(12-1-row.produced));
+ assert.ok(Object.keys(entry.products).some(id=>game.itemTier(Number(id))>0));
+ w.character.counts[300]=10;const completed=evaluate(w).rows.find(r=>r.id===300);
+ assert.equal(completed.produced,0);assert.equal(completed.purchase,11);
+});
+
+test('unknown or conflicting outputs remain unknown instead of reducing procurement',()=>{
+ const w=setup();putLine(w.orders[0],craft(4));putLine(w.orders[0],{kind:'craft',jobId:51,tier:0,count:5});
+ w.character.initialized=false;let plan=evaluate(w);assert.equal(plan.total,null);
+ assert.equal(plan.rows.find(r=>r.id===40).produced,null);assert.equal(plan.rows.find(r=>r.id===40).purchase,null);
+ w.character.initialized=true;putLine(w.orders[0],collection());const other=createOrder();putLine(other,collection());w.orders.push(other);
+ plan=evaluate(w);assert.equal(plan.total,null);assert.equal(plan.rows.find(r=>r.id===40).produced,null);
+});
