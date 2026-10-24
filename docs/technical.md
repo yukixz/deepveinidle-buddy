@@ -22,7 +22,7 @@
 - `recipe-availability.js`：按候选的完整物品ID和材料总需求检查卖单供应，仅影响配方候选及批量加入，不修改提取的计算模块或已有订单。
 - `fee-units.js`：界面 M／M/h 与金币／金币每分钟基础单位换算。
 - `plan-transfer.js`：固定 DVILAB-PLAN 的 gzip／Base64 封装，应用层校验当前单订单结构。
-- `storage.js`、`panel-geometry.js`：GM revision 保护、独立布局存储、拖动与四边缩放。
+- `storage.js`、`panel-geometry.js`：GM revision 保护、独立布局存储、拖动与四边缩放。正式角色存档保存前剔除行情报价及自动导入价格，行情更新仅修改面板内存，不触发保存。
 - `platform.js`：浏览器／GM 存储及剪贴板适配；写入使用 GM_setClipboard，读取由点击触发 navigator.clipboard.readText。
 
 助手网络用于固定公开市场 API，禁用凭据；用户点击导航产生的游戏市场只读查询允许。不读取登录信息或聊天。按游戏单页面范围，不使用GM存储变更监听或替代轮询；仅保留写入前revision检查，不能作为原子比较交换。真实管理器权限、注入时机与长期性能需独立验证。
@@ -33,6 +33,6 @@ userscript安装元数据使用 `@namespace https://dvi-lab.pages.dev` 和 `@aut
 
 ## 开发验证
 
-`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器配置，完整输出在 `.test-artifacts/verification/`。`stable-view`覆盖节点持续连接、无变化不修改DOM、编辑草稿与选择范围、原生select选项保留、滚动／指针／文本选择期间延后结构变化及即时禁用状态；`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
+`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器配置，完整输出在 `.test-artifacts/verification/`。`market-storage`覆盖行情刷新不写GM、用户保存不夹带行情、显式重新载入保留内存报价、失败保留与重新挂载清空；`stable-view`覆盖节点持续连接、无变化不修改DOM、编辑草稿与选择范围、原生select选项保留、滚动／指针／文本选择期间延后结构变化及即时禁用状态；`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
 
 项目处于开发阶段，仅接受当前数据结构，不维护历史兼容和迁移。发布授权与真实环境验证完成前不部署。

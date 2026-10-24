@@ -49,6 +49,11 @@ export function validateWorkspace(raw){
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
  return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks??false,autoRemove:raw.autoRemove,language:raw.language,filters};
 }
+// Persist user price configuration, never the current market observations or imports.
+export function workspaceForStorage(workspace){
+ const prices={...workspace.prices,prices:Object.fromEntries(Object.entries(workspace.prices.prices).filter(([,price])=>price.source==='manual')),quotes:{}};
+ return validateWorkspace({...workspace,prices});
+}
 export function putLine(order,raw){
  if(raw.kind==='craft'&&raw.count===0){order.lines=order.lines.filter(l=>lineKey(l)!==lineKey(raw));return;}
  const line=validateLine(raw),key=lineKey(line),previous=order.lines.find(l=>lineKey(l)===key);

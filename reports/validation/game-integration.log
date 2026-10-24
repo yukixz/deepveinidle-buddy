@@ -1,8 +1,9 @@
 {
-  "passed": 28,
+  "passed": 29,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
+    "live character saves retain orders and snapshots without persisting market observations",
     "route and fixed-rarity queue changes highlight exact rows within one second without changing plan totals or columns",
     "best-first queue spans planned rarities with an explicit tooltip; purple running background takes priority over blue queue background",
     "rarity changes move the running mark; paused routes retain queue marks without claiming current execution",
@@ -33,35 +34,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 186
+      "ms": 188
     },
     {
       "field": "bank",
-      "ms": 191
+      "ms": 203
     },
     {
       "field": "pack",
-      "ms": 246
+      "ms": 257
     },
     {
       "field": "collections",
-      "ms": 289
+      "ms": 283
     },
     {
       "field": "skills",
-      "ms": 245
+      "ms": 238
     },
     {
       "field": "equipment",
-      "ms": 251
+      "ms": 281
     },
     {
       "field": "masteries",
-      "ms": 224
+      "ms": 208
     },
     {
       "field": "IME visible procurement",
-      "ms": 119
+      "ms": 98
     }
   ],
   "errors": []

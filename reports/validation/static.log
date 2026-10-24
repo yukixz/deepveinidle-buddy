@@ -1,6 +1,4 @@
 PASS: modified JavaScript syntax
 PASS: modified Markdown local references
 PASS: build sizes and SHA-256 match manifest
-PASS: no composition-specific rendering path or scroll offset restoration
-PASS: no obsolete order line index attributes
 PASS: git diff --check

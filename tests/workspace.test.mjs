@@ -1,7 +1,7 @@
 import {encodePlanPayload} from '../src/plan-transfer.js';
 import test from 'node:test';import assert from 'node:assert/strict';
 import * as game from '../src/engine/upstream.js';
-import {defaults,createOrder,putLine,validateWorkspace,validateOrders,estimateOrders,removeCompleted,importOrder,exportOrder,exportOrderText} from '../src/workspace.js';
+import {defaults,createOrder,putLine,validateWorkspace,workspaceForStorage,validateOrders,estimateOrders,removeCompleted,importOrder,exportOrder,exportOrderText} from '../src/workspace.js';
 import {collectionRoutes,collectionRows,collectionPlayers} from '../src/engine/collection-model.js';
 import {createPriceSnapshot} from '../src/engine/price-protocol.js';
 import {priceDefaults} from '../src/engine/item-prices.js';
@@ -206,4 +206,19 @@ test('unknown or conflicting outputs remain unknown instead of reducing procurem
  assert.equal(plan.rows.find(r=>r.id===40).produced,null);assert.equal(plan.rows.find(r=>r.id===40).purchase,null);
  w.character.initialized=true;putLine(w.orders[0],collection());const other=createOrder();putLine(other,collection());w.orders.push(other);
  plan=evaluate(w);assert.equal(plan.total,null);assert.equal(plan.rows.find(r=>r.id===40).produced,null);
+});
+
+test('GM workspace projection excludes market observations and imported prices without changing live data',()=>{
+ const w=setup(),now=Date.now();
+ w.prices.quotes={1:{ask:{value:112,quantity:500,capturedAt:now}}};
+ const entry=(source,price)=>({price,source,locked:false,updatedAt:now,quoteCapturedAt:source==='manual'?null:now});
+ w.prices.prices={1:entry('ask',112),2:entry('bid',80),40:entry('vendor',4),3:entry('manual',9)};
+ w.prices.preferences.autoImport=false;
+ const stored=workspaceForStorage(w);
+ assert.deepEqual(stored.prices.quotes,{});
+ assert.deepEqual(stored.prices.prices,{3:w.prices.prices[3]});
+ assert.deepEqual(stored.prices.preferences,w.prices.preferences);
+ assert.deepEqual(stored.orders,w.orders);assert.deepEqual(stored.character,w.character);assert.deepEqual(stored.filters,w.filters);
+ assert.equal(w.prices.quotes[1].ask.quantity,500);assert.equal(Object.keys(w.prices.prices).length,4);
+ assert.deepEqual(validateWorkspace(stored),stored);
 });

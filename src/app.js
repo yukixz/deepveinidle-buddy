@@ -14,16 +14,17 @@ import {collectionRows,collectionPlayers,collectionDefaults,validateCollection,i
 import {translatedName,translatedItemName} from './engine/i18n.js';
 import {createPriceSnapshot} from './engine/price-protocol.js';
 import {importItemPrices} from './engine/item-prices.js';
-import {add,defaults,validateWorkspace,createOrder,putLine,lineKey,estimateOrders,removeCompleted,exportOrderText,importOrder} from './workspace.js';
+import {add,defaults,validateWorkspace,workspaceForStorage,createOrder,putLine,lineKey,estimateOrders,removeCompleted,exportOrderText,importOrder} from './workspace.js';
 import {createStore} from './storage.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillNames={mining:'Mining',fishing:'Fishing',woodcutting:'Woodcutting',thieving:'Thieving',cooking:'Cooking',smithing:'Smithing',fletching:'Fletching',herblore:'Herblore',crafting:'Crafting'};
 export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v1',initial=null,demo=false,gameIntegration=null,readCharacter=null,onVisibilityChange=()=>{}}){
  const doc=root.ownerDocument,style=doc.createElement('style');style.textContent=css;root.append(style);const container=doc.createElement('div');container.className='panel-mount';root.append(container);
- let workspace=defaults(),mode='collection',route='craft',skill='all',tier='all',query='',page=1,sort='item',sortDirection='asc',minPoints='',maxSecondsPerPoint='',maxCost='',closed=false,error='',notice='',storageError='',status=demo?'demo':'waiting',loaded=false,disposed=false,marketBusy=false,lastMarket=0,latestEnvelope=null,appliedPlayerAt=0,appliedSource=null,renderTimer=null,marketError='',live=false,transferBusy=false,importGeneration=0;
+ let workspace=defaults(),mode='collection',route='craft',skill='all',tier='all',query='',page=1,sort='item',sortDirection='asc',minPoints='',maxSecondsPerPoint='',maxCost='',closed=false,error='',notice='',storageError='',status=demo?'demo':'waiting',loaded=false,disposed=false,marketBusy=false,marketPrices=null,lastMarket=0,latestEnvelope=null,appliedPlayerAt=0,appliedSource=null,renderTimer=null,marketError='',live=false,transferBusy=false,importGeneration=0;
  let prefillError='',prefillNotice='',executionState=null,executionError='',debug=null,debugGeneration=0,prefillBusy=false,characterSaveTimer=null;const expandedOrders=new Set(),tableSorts=new Map();
  let collectionCache=null,collectionCacheKey='',savedFilter={craft:null,collection:null};
  const store=createStore(platform,storageKey,validateWorkspace);
+ const storageWorkspace=value=>demo?validateWorkspace(value):workspaceForStorage(value);
  const stableView=createStableView(container,()=>queueRender());
  const zh=()=>workspace.language==='zh',text=(a,b)=>zh()?a:b;
  const statusText=()=>text({demo:'演示模式',waiting:'等待角色快照',live:'',disconnected:'连接已断开 · 旧数据仅供参考',error:'捕获失败'}[status]??status,{demo:'Demo',waiting:'Waiting for character snapshot',live:'',disconnected:'Disconnected · stale data',error:'Capture failed'}[status]??status);
@@ -43,7 +44,8 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
  ].map(([code,cn,en])=>[code,[cn,en]])));
  const message=code=>errors[code]?.[zh()?0:1]??code;
  const current=()=>workspace.orders.find(o=>o.id===workspace.currentOrderId);
- const prices=()=>createPriceSnapshot(workspace.prices);
+ const priceState=()=>marketPrices?{...workspace.prices,prices:{...marketPrices.prices,...workspace.prices.prices},quotes:marketPrices.quotes}:workspace.prices;
+ const prices=()=>createPriceSnapshot(priceState());
  const option=(values,value)=>values.map(([v,label])=>`<option value="${esc(v)}" ${String(value)===String(v)?'selected':''}>${esc(label)}</option>`).join('');
  const outputId=(job,tier)=>job.upgrade?game.upgradeResult(job.upgrade,game.withRarity(job.upgrade.from[0],tier)):game.recipeOutput(job,tier);
  const lineItem=line=>line.kind==='collection'?line.itemId:outputId(craftingJobs.find(j=>j.id===line.jobId),line.tier);
@@ -59,10 +61,10 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
 
 
  function queueRender(){if(disposed)return;if(renderTimer!==null)return;renderTimer=setTimeout(()=>{renderTimer=null;render();},100);}
- async function save(){clearTimeout(characterSaveTimer);characterSaveTimer=null;if(!loaded||disposed)return;try{await store.save(validateWorkspace(workspace));}catch(e){storageError=message(e.message);queueRender();}}
+ async function save(){clearTimeout(characterSaveTimer);characterSaveTimer=null;if(!loaded||disposed)return;try{await store.save(storageWorkspace(workspace));}catch(e){storageError=message(e.message);queueRender();}}
  function changed(defer=false){removeCompleted(workspace);void save();if(defer)queueRender();else render();}
  function ensureOrder(){if(!workspace.orders.length){const o=createOrder();workspace.orders.push(o);workspace.currentOrderId=o.id;}if(!current())workspace.currentOrderId=workspace.orders[0].id;}
- try{workspace=await store.load()??initial??defaults();workspace=validateWorkspace(workspace);}catch(e){storageError=message(e.message);}
+ try{const saved=await store.load();workspace=saved?storageWorkspace(saved):validateWorkspace(initial??defaults());}catch(e){storageError=message(e.message);}
  loaded=true;savedFilter=workspace.filters;({skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost}=savedFilter[mode]);route='craft';if(!craftingSkills.includes(skill))skill='all';ensureOrder();
  function collectionCandidates(){
   const c=workspace.character;const key=JSON.stringify({initialized:c.initialized,config:c.config,counts:c.counts,window:c.config.hotSetting==='current'?Math.floor(Date.now()/1800000):null});if(collectionCache&&collectionCacheKey===key)return collectionCache;
@@ -117,7 +119,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
   stableView.update(template.content);
  }
  async function refreshMarket(){
-  if(marketBusy)return;marketBusy=true;render();try{const response=await platform.market();const latest=Math.max(0,...Object.values(workspace.prices.quotes).flatMap(q=>Object.values(q).map(s=>s.capturedAt)));const next=Math.max(0,...Object.values(response.quotes).flatMap(q=>Object.values(q).map(s=>s.capturedAt)));if(next<latest)throw Error('marketStale');workspace.prices=importItemPrices(workspace.prices,response).state;lastMarket=Date.now();marketError='';void save();}catch(e){marketError=message(e.message);}finally{marketBusy=false;render();}
+  if(marketBusy)return;marketBusy=true;render();try{const response=await platform.market();const currentPrices=priceState();const latest=Math.max(0,...Object.values(currentPrices.quotes).flatMap(q=>Object.values(q).map(s=>s.capturedAt)));const next=Math.max(0,...Object.values(response.quotes).flatMap(q=>Object.values(q).map(s=>s.capturedAt)));if(next<latest)throw Error('marketStale');marketPrices=importItemPrices(currentPrices,response).state;lastMarket=Date.now();marketError='';}catch(e){marketError=message(e.message);}finally{marketBusy=false;render();}
  }
  async function click(event){
   const target=event.target;let el=target.closest?.('[data-action]');
@@ -141,7 +143,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
    if(action==='sort-table'){const table=el.dataset.table,column=el.dataset.column;if(!sortableColumns(table).includes(column))throw Error('invalidSort');const pref=tablePreference(table),direction=pref.column===column&&pref.direction==='asc'?'desc':'asc';if(table==='recipes'){sort=column;sortDirection=direction;page=1;rememberFilters();}else tableSorts.set(table,{column,direction});render();container.querySelector(`[data-table="${CSS.escape(table)}"][data-column="${column}"]`)?.focus({preventScroll:true});return;}
    if(action==='sort-collection'){if(mode!=='collection'||!['points','duration','time','cost','coins'].includes(el.dataset.sort))throw Error('invalidSort');sortDirection=sort===el.dataset.sort?(sortDirection==='asc'?'desc':'asc'):'asc';sort=el.dataset.sort;page=1;rememberFilters();render();container.querySelector('[data-sort="'+sort+'"]')?.focus({preventScroll:true});return;}
    if(action.startsWith('mode-')){rememberFilters();mode=action==='mode-craft'?'craft':'collection';const f=savedFilter[mode];({skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost}=f);if(mode==='collection'){route=action==='mode-collection-gather'?'gather':'craft';if(!(route==='craft'?craftingSkills:gatheringSkills).includes(skill))skill='all';page=1;}rememberFilters();render();return;}
-   if(action==='reload'){importGeneration++;const saved=await store.load();if(saved){workspace=validateWorkspace(saved);storageError='';changed();}return;}
+   if(action==='reload'){importGeneration++;const saved=await store.load();if(saved){workspace=storageWorkspace(saved);storageError='';changed();}return;}
    if(action==='reset-storage'){if(!confirm(text('删除当前角色助手存档并恢复默认订单？','Delete this character’s buddy storage and reset orders?')))return;await store.reset();workspace=defaults();storageError='';changed();return;}
    if(action==='next'||action==='previous'){page+=action==='next'?1:-1;rememberFilters();render();return;}
    if(action==='new-order'){const o=createOrder(crypto.randomUUID(),text('订单 ','Order ')+(workspace.orders.length+1));workspace.orders.push(o);workspace.currentOrderId=o.id;expandedOrders.add(o.id);changed();return;}
