@@ -1,18 +1,23 @@
 # 当前验证
 
-日期：2026-10-23。开发版本0.1.0，未发布。本次修复数量／时间／无限选项折叠时执行预填无效的问题。规则见[面板设计](../docs/panel.md)。
+日期：2026-10-24。开发版本0.1.0，未发布。本轮覆盖收藏成本显示、执行次数取整及相关文档和测试整理；行为规则见[面板设计](../docs/panel.md)。
 
 | 检查 | 本次结果 | 证据 |
 | --- | --- | --- |
-| 构建 | 通过，userscript 921729字节 | dist/manifest.json |
+| 构建 | 通过，userscript 922602字节 | 本机构建 dist/manifest.json |
+| workspace单元测试 | 39项通过 | [日志](validation/workspace-unit.log) |
+| point-cost-filter | 5项通过 | [日志](validation/point-cost-filter.log) |
+| bulk-pagination | 7项通过 | [日志](validation/bulk-pagination.log) |
+| extra-sorting | 8项通过 | [日志](validation/extra-sorting.log) |
+| execution-summary | 8项通过 | [日志](validation/execution-summary.log) |
+| action-materials | 9项通过 | [日志](validation/action-materials.log) |
 | game-integration | 28项通过 | [日志](validation/game-integration.log) |
-| 浏览器专项 | 1场景、28项通过 | [摘要](validation/summary.json) |
-| 静态检查 | 修改脚本语法、文档引用、差异空白与构建摘要通过 | [日志](validation/static.log) |
+| browser | 45项通过 | [日志](validation/browser.log) |
+| 浏览器专项合计 | 7场景、110项通过 | [摘要](validation/summary.json) |
+| 静态检查 | 语法、文档引用、差异空白及构建摘要通过 | [日志](validation/static.log) |
 
-核对原始游戏实现：`.routes [data-opt-line]`通过`aria-expanded`表示选项展开状态，其点击事件调用原生展开逻辑；数量输入在数量模式面板内，默认无限模式下隐藏。助手通过该按钮展开，等待数量模式控件可见后选择数量，再等待数量输入可见并填写，继续执行次数、配方及品质读回校验。
+金额场景覆盖实际金币/点、两位小数及中英文K/M/B后缀、微额舍入、原有M/100筛选换算、排序与窄屏布局。执行计划覆盖烧毁后的整数次数、混合订单材料和采购金额、预计时间、费用、材料高亮、未知值及游戏预填；候选配方估算保留原始期望。
 
-接入夹具补齐折叠按钮、选项面板及三种模式的可见性。浏览器覆盖折叠无限模式下制造预填、已展开时不重复切换、折叠时间模式下采集预填，以及已有草稿重新填写。缺少展开按钮、展开不生效及等待期间角色变化均明确停止；没有购买、开始或排队提交。原购买搜索、草稿替换、异步取消、价格／次数读回和来源回退场景通过。
+通用浏览器场景清除了过时的定价选项及金额单位断言；本轮最终结果如上。仅执行上述相关测试，未运行完整测试。原始游戏资源与生成的upstream.js未修改。
 
-仅运行本次相关接入场景，未重跑单元、其他浏览器场景或完整测试。原始资源及生成的upstream.js未修改。
-
-安装脚本SHA-256：`1ce005d69894699cb7de45cb21518210b10d06fb2c0ce1793b4e5b649bca7a0a`。本次为本地隔离验证，未在真实游戏中安装／更新脚本，未进行真实游戏验收或部署。
+安装脚本SHA-256：`e33daf0e030265f2c2c245fd27be7898e658485a84c48eb4346466e75a55cd36`。验证使用本地Chrome隔离夹具，未在真实游戏中安装／更新脚本，未进行真实账号、脚本管理器或生产验收，未部署。

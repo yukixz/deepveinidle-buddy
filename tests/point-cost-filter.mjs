@@ -1,8 +1,80 @@
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import assert from 'node:assert/strict';
+import {launchBrowser,baseUrl} from './browser-helper.mjs';
+import assert from 'node:assert/strict';
+
 const browser=await launchBrowser(),checks=[],errors=[];
 try{
- const page=await browser.newPage({viewport:{width:1440,height:1080}});page.on('pageerror',e=>errors.push(e.message));await page.goto(baseUrl);const root=page.locator('#deepveinidle-buddy');await root.locator('[data-action="language"]').click();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));saved.language='zh';saved.filters.collection={...saved.filters.collection,maxCost:'100',query:'青铜锭',tier:'0'};saved.prices.quotes={1:{ask:{value:2,capturedAt:Date.now()},bid:{value:1,capturedAt:Date.now()}},2:{ask:{value:3,capturedAt:Date.now()},bid:{value:2,capturedAt:Date.now()}}};await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),saved);await page.reload();await root.locator('[data-action="mode-collection-craft"]').click();assert.equal(await root.locator('#max-cost').inputValue(),'0.01');assert.ok((await root.locator('[data-sort="cost"]').textContent()).includes('金币/点(M/100)'));assert.ok((await root.locator('#max-cost').evaluate(el=>el.parentElement.textContent)).includes('金币/点(M/100) ≤'));assert.equal(await root.locator('[data-key="40:41:100"]').count(),0);checks.push('table and filter use the new caption while 100 coins/point limit displays 0.01 M/100');
- await root.locator('#max-cost').fill('0.02');await root.locator('#max-cost').press('Tab');await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')).filters.collection.maxCost),'200');let row=root.locator('[data-key="40:41:100"]').locator('xpath=ancestor::tr');assert.equal(await row.locator('td').nth(7).textContent(),'0.01138');await root.locator('#max-cost').fill('0.01');await root.locator('#max-cost').press('Tab');await root.locator('#recipes-material-price-mode').selectOption('bid');await page.waitForTimeout(200);assert.equal(await row.locator('td').nth(7).textContent(),'0.006825');checks.push('filter conversion matches displayed M/100 values for ask and bid pricing and preserves internal units');
- await root.locator('[data-action="language"]').click();assert.ok((await root.locator('[data-sort="cost"]').textContent()).includes('Coins/pt(M/100)'));assert.ok((await root.locator('#max-cost').evaluate(el=>el.parentElement.textContent)).includes('Coins/pt(M/100)'));await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().right<=innerWidth+1);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));const tops=await root.locator('.threshold-filters label').evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().top)));assert.equal(new Set(tops).size,1);checks.push('translated long unit caption keeps all three thresholds together on narrow screens');
- await root.locator('#max-cost').fill('');await root.locator('#max-cost').press('Tab');await page.waitForTimeout(200);const tiny=await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));tiny.language='zh';tiny.character.buyMode='ask';tiny.prices.quotes={1:{ask:{value:.000001,capturedAt:Date.now()}},2:{ask:{value:.000001,capturedAt:Date.now()}}};await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),tiny);await page.reload();await root.locator('[data-action="mode-collection-craft"]').click();row=root.locator('[data-key="40:41:100"]').locator('xpath=ancestor::tr');assert.equal(await row.locator('td').nth(7).textContent(),'0.00000000455');assert.deepEqual(errors,[]);checks.push('tiny nonzero costs retain significant digits rather than rounding to zero');console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
+ const page=await browser.newPage({viewport:{width:1440,height:1080}});
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(baseUrl);
+ const root=page.locator('#deepveinidle-buddy');
+ const row=root.locator('[data-key="40:41:100"]').locator('xpath=ancestor::tr');
+ const caption=async()=>(await root.locator('[data-sort="cost"]').textContent()).replace(/[▲▼]/g,'').trim();
+ const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));
+ async function load(saved){
+  await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),saved);
+  await page.reload();
+  await root.locator('[data-action="mode-collection-craft"]').click();
+ }
+ async function setLimit(value){
+  await root.locator('#max-cost').fill(value);
+  await root.locator('#max-cost').press('Tab');
+  await page.waitForTimeout(200);
+ }
+
+ await root.locator('[data-action="language"]').click();
+ await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
+ const saved=await stored();
+ saved.language='zh';
+ saved.filters.collection={...saved.filters.collection,maxCost:'100',query:'青铜锭',tier:'0'};
+ saved.prices.quotes={
+  1:{ask:{value:2,capturedAt:Date.now()},bid:{value:1,capturedAt:Date.now()}},
+  2:{ask:{value:3,capturedAt:Date.now()},bid:{value:2,capturedAt:Date.now()}},
+ };
+ await load(saved);
+ assert.equal(await root.locator('#max-cost').inputValue(),'0.01');
+ assert.equal(await caption(),'金币/点');
+ assert.ok((await root.locator('#max-cost').evaluate(el=>el.parentElement.textContent)).includes('金币/点(M/100) ≤'));
+ assert.equal(await row.count(),0);
+ checks.push('short table caption preserves the filter unit and 100 coins/point displays 0.01 M/100');
+
+ await setLimit('0.02');
+ assert.equal((await stored()).filters.collection.maxCost,'200');
+ assert.equal(await row.locator('td').nth(7).textContent(),'113.75');
+ await setLimit('0.01');
+ await root.locator('#recipes-material-price-mode').selectOption('bid');
+ assert.equal(await row.locator('td').nth(7).textContent(),'68.25');
+ checks.push('table shows actual coins per point for ask and bid pricing while filter conversion preserves internal units');
+
+ await root.locator('[data-action="language"]').click();
+ assert.equal(await caption(),'Coins/pt');
+ assert.ok((await root.locator('#max-cost').evaluate(el=>el.parentElement.textContent)).includes('Coins/pt(M/100)'));
+ await page.setViewportSize({width:390,height:844});
+ await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().right<=innerWidth+1);
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ const tops=await root.locator('.threshold-filters label').evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().top)));
+ assert.equal(new Set(tops).size,1);
+ checks.push('translated unit caption keeps all three thresholds together on narrow screens');
+
+ await setLimit('');
+ const tiny=await stored();
+ tiny.language='zh';tiny.character.buyMode='ask';
+ tiny.prices.quotes={1:{ask:{value:.000001,capturedAt:Date.now()}},2:{ask:{value:.000001,capturedAt:Date.now()}}};
+ await load(tiny);
+ assert.equal(await row.locator('td').nth(7).textContent(),'0.00');
+ checks.push('tiny costs round to two decimal places');
+
+ for(const [factor,expected] of [[100,'11.38K'],[10000,'1.14M'],[10000000,'1.14B']]){
+  const scaled=structuredClone(tiny);
+  // The original recipe name matches in both interface languages.
+  scaled.filters.collection.query='Bronze bar';
+  scaled.prices.quotes={1:{ask:{value:2*factor,capturedAt:Date.now()}},2:{ask:{value:3*factor,capturedAt:Date.now()}}};
+  await load(scaled);
+  assert.equal(await row.locator('td').nth(7).textContent(),expected);
+  assert.match(await row.locator('td').nth(5).textContent(),/^\d+\.\d{2}[KMBTQ]?$/);
+  await root.locator('[data-action="language"]').click();
+  assert.equal(await row.locator('td').nth(7).textContent(),expected);
+ }
+ checks.push('K/M/B costs use two decimals in both languages; total coins use the same compact format');
+ assert.deepEqual(errors,[]);
+ console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
 }finally{await browser.close();}

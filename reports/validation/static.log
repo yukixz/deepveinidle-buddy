@@ -1,5 +1,4 @@
-PASS: changed JavaScript syntax (commit cleanup)
-PASS: changed documentation local links
-PASS: retained build sizes and SHA-256 match manifest
-PASS: retained browser evidence has 28 passing checks; no tests rerun during cleanup
+PASS: modified JavaScript syntax
+PASS: modified Markdown local references
 PASS: git diff --check
+PASS: build sizes and SHA-256 match manifest

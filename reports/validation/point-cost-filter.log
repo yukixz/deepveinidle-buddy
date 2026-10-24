@@ -1,10 +1,11 @@
 {
-  "passed": 4,
+  "passed": 5,
   "checks": [
-    "table and filter use the new caption while 100 coins/point limit displays 0.01 M/100",
-    "filter conversion matches displayed M/100 values for ask and bid pricing and preserves internal units",
-    "translated long unit caption keeps all three thresholds together on narrow screens",
-    "tiny nonzero costs retain significant digits rather than rounding to zero"
+    "short table caption preserves the filter unit and 100 coins/point displays 0.01 M/100",
+    "table shows actual coins per point for ask and bid pricing while filter conversion preserves internal units",
+    "translated unit caption keeps all three thresholds together on narrow screens",
+    "tiny costs round to two decimal places",
+    "K/M/B costs use two decimals in both languages; total coins use the same compact format"
   ],
   "errors": []
 }

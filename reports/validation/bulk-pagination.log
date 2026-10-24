@@ -5,7 +5,7 @@
     "all filtered craft pages are added once while existing entered counts are preserved",
     "empty filter results disable Add all without changing orders",
     "collection adds highest filtered target per item across all pages and repeated addition is idempotent",
-    "collection column uses M coins per 100 points and filter share the M/100 unit",
+    "collection header omits units while the filter retains M/100",
     "gathering bulk add respects selected skill and rarity across pages",
     "bulk button and unit caption translate and fit narrow layout"
   ],

@@ -11,7 +11,7 @@
     "collection submodes share controls and table while restricting skills and recipe sources",
     "both headings expose shared material and product pricing; obsolete global price editors are removed",
     "order name follows recipe title, both pricing groups align right and manual refresh is absent",
-    "orders start collapsed, independent transfer panel is removed and pricing offers only ask/bid",
+    "orders start collapsed, independent transfer panel is removed and material pricing includes the insufficient-stock ask filter",
     "configuration panel and manual controls are removed",
     "missing data keeps both labels with placeholders; version is smaller than title",
     "missing-data placeholders translate on language switch",

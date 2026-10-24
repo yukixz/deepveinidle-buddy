@@ -1,11 +1,41 @@
 {
   "scenarios": [
     {
+      "name": "point-cost-filter",
+      "passed": 5,
+      "code": 0
+    },
+    {
+      "name": "bulk-pagination",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "extra-sorting",
+      "passed": 8,
+      "code": 0
+    },
+    {
+      "name": "execution-summary",
+      "passed": 8,
+      "code": 0
+    },
+    {
+      "name": "action-materials",
+      "passed": 9,
+      "code": 0
+    },
+    {
       "name": "game-integration",
       "passed": 28,
       "code": 0
+    },
+    {
+      "name": "browser",
+      "passed": 45,
+      "code": 0
     }
   ],
-  "totalChecks": 28,
+  "totalChecks": 110,
   "complete": true
 }

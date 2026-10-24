@@ -106,9 +106,18 @@ export function estimateOrders(workspace,prices,now=Date.now()){
      Object.assign(entry,estimateCraftAction(state,job,line.count,players));
      if(entry.status==='ok')craftSeconds=add(craftSeconds,entry.seconds);
     }else{
-     const estimate=estimateCollection(state,line.itemId,collectionRoutes(line.itemId).find(j=>j.id===line.jobId),players,line.target);
+     const job=collectionRoutes(line.itemId).find(j=>j.id===line.jobId),estimate=estimateCollection(state,line.itemId,job,players,line.target);
      entry={...entry,...estimate,remaining:state.initialized?Math.max(0,line.target-(state.counts[line.itemId]??0)):null};
      if(conflicts.has(line.itemId))entry.status='collectionConflict';
+     if(entry.status==='ok'){
+      const attempts=Math.ceil(entry.attempts);
+      if(!quantity(attempts)||attempts<=0)throw Error('quantityOverflow');
+      const seconds=attempts===entry.attempts?entry.seconds:add(0,entry.seconds/entry.attempts*attempts);
+      const inputs=game.recipeInputs(job,game.itemTier(line.itemId));
+      entry={...entry,attempts,seconds,secondsPerPoint:seconds/entry.points,
+       materials:Object.fromEntries(inputs.map(input=>[input.itemId,add(0,input.qty*attempts)])),
+      };
+     }
      if(entry.status==='ok'){points=add(points,entry.points);collectionSeconds=add(collectionSeconds,entry.seconds);}
     }
     if(!['ok','complete'].includes(entry.status)){blocked++;ownBlocked=true;if(line.kind==='collection')ownMaterialsUnknown=true;}

@@ -1,10 +1,11 @@
 {
-  "passed": 7,
+  "passed": 8,
   "checks": [
     "mixed summary totals and purchase-before-actions order",
     "craft summary totals and purchase-before-actions order",
     "collection summary totals and purchase-before-actions order",
     "empty summary totals and purchase-before-actions order",
+    "burning summary totals and purchase-before-actions order",
     "conflict summary totals and purchase-before-actions order",
     "English summary and table headings",
     "narrow layout retains three summary fields without page overflow"

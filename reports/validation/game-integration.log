@@ -33,35 +33,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 186
+      "ms": 183
     },
     {
       "field": "bank",
-      "ms": 190
+      "ms": 210
     },
     {
       "field": "pack",
-      "ms": 254
+      "ms": 249
     },
     {
       "field": "collections",
-      "ms": 280
+      "ms": 274
     },
     {
       "field": "skills",
-      "ms": 248
+      "ms": 247
     },
     {
       "field": "equipment",
-      "ms": 251
+      "ms": 257
     },
     {
       "field": "masteries",
-      "ms": 245
+      "ms": 248
     },
     {
       "field": "IME visible procurement",
-      "ms": 100
+      "ms": 129
     }
   ],
   "errors": []
