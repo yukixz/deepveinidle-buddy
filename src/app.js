@@ -153,7 +153,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
     const make=()=>action==='prefill-purchase'?purchaseRequest(Number(el.dataset.item)):actionRequest(el.dataset.key),request=make(),signature=JSON.stringify(request),generation=debugGeneration;
     const guard=()=>{try{refreshForPrefill();return debug.enabled&&debugGeneration===generation&&live&&latestEnvelope?.source==='client'&&JSON.stringify(make())===signature;}catch{return false;}};
     prefillBusy=true;onPrefillFeedback(text('正在预填，请稍候','Prefill in progress'));render();
-    try{await gameIntegration[action==='prefill-purchase'?'purchase':'action'](request,guard);if(mobileMode(doc))closed=true;if(!disposed)onPrefillFeedback(action==='prefill-purchase'?text('已预填求购草稿，请在游戏中确认。','Buy-order draft filled; confirm in the game.'):text('已预填执行菜单，尚未开始。','Action menu filled; not started.')+(request.expected?text(' 次数为期望取整，不保证完成收藏。',' Attempts are rounded expectations, not a completion guarantee.') :''));}
+    try{await gameIntegration[action==='prefill-purchase'?'purchase':'action'](request,guard);if(mobileMode(doc))closed=true;if(!disposed)onPrefillFeedback('');}
     finally{prefillBusy=false;render();}return;
    }
    if(action==='settings'){debug.open(el);return;}

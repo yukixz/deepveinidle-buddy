@@ -1,0 +1,19 @@
+{
+  "passed": 13,
+  "checks": [
+    "launcher is the last navigation entry with an immediately preceding separator",
+    "launcher and separator reuse native navigation classes",
+    "refresh starts hidden and shows the opening hint",
+    "navigation reopens the hidden panel without forwarding a game navigation action",
+    "new native entries keep buddy at the end without duplicates",
+    "navigation replacement restores the live launcher and removes cloned duplicates",
+    "navigation language change translates launcher name",
+    "launcher remains in narrow-screen navigation while the panel is closed",
+    "late navigation mount inserts a disabled waiting entry",
+    "ready entry opens exactly once",
+    "new feedback replaces the opening hint and resets the five-second timeout",
+    "dispose removes both injected elements and observers",
+    "no uncaught browser errors"
+  ],
+  "errors": []
+}

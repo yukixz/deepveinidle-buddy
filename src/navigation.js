@@ -19,7 +19,7 @@ export function installNavigationLauncher(doc,onOpen){
   hint.style.left=`${left}px`;hint.style.top=`${Math.max(bounds.top+margin,Math.min(top,bounds.bottom-h.height-margin))}px`;
  }
  function showHint(message){
-  if(disposed)return;view.clearTimeout(hintTimer);hint.textContent=message;positionHint();
+  if(disposed)return;view.clearTimeout(hintTimer);hint.textContent=message;hint.hidden=true;if(!message){hintTimer=null;return;}positionHint();
   hintTimer=view.setTimeout(()=>{hint.hidden=true;hint.textContent='';hintTimer=null;},5000);
  }
  function updateLabels(){
