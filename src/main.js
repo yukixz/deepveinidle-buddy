@@ -9,7 +9,7 @@ import {collectionRoutes} from './engine/collection-model.js';
 import css from './theme.css';
 export async function startDemo(){
  let panel=null;
- const navigation=installNavigationLauncher(document,()=>panel?.open());
+ const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());
  const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
  const initial=defaults();initial.character.initialized=true;initial.character.bank={1:150,2:150};initial.character.pack={};initial.character.counts={40:9};
  for(const k of Object.keys(initial.character.config.levels))initial.character.config.levels[k]=70;
@@ -22,7 +22,7 @@ export async function startDemo(){
 export function startUserscript(page,api){
  if(document.getElementById('deepveinidle-buddy')||document.querySelector('[data-buddy-launcher]'))return;
  const platform=userscriptPlatform(api),gameIntegration=createGamePrefill(page);let latest=null,panel=null,host=null,currentRole=null,starting=false,disposed=false,pendingTimer=null;
- const navigation=installNavigationLauncher(document,()=>panel?.open());
+ const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());
  navigation.update({ready:false,status:'等待读取游戏角色 / Waiting for game character'});
  const disposeCapture=installGameSync(page,envelope=>{
   latest=envelope;

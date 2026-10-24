@@ -1,13 +1,13 @@
 import {gameLanguage} from './game-language.js';
 import {mobileMode,viewportBounds,visibleElement} from './mobile-layout.js';
 // Only our own markers and listener: never attach game navigation commands.
-export function installNavigationLauncher(doc,onOpen){
+export function installNavigationLauncher(doc,onOpen,onGameNavigation=()=>{}){
  const view=doc.defaultView,button=doc.createElement('button'),separator=doc.createElement('span'),style=doc.createElement('style'),hint=doc.createElement('div');
  hint.dataset.buddyHint='';hint.setAttribute('role','status');hint.setAttribute('aria-live','polite');hint.hidden=true;
  button.type='button';button.dataset.buddyLauncher='';separator.dataset.buddySeparator='';separator.setAttribute('role','separator');
  button.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9h16l-3 4h-5v4h5v3H7v-3h3v-4H7zM5 5h7v4H5z"/></svg>';
  style.textContent='[data-buddy-launcher].buddy-mobile-launcher{position:fixed;z-index:29;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--edge,#c79352);background:var(--panel,#25170d);color:var(--ink,#f5e6c8);pointer-events:auto;cursor:pointer}[data-buddy-launcher][hidden]{display:none!important}[data-buddy-launcher]:disabled{opacity:.5}[data-buddy-hint]{position:fixed;z-index:2147483647;box-sizing:border-box;width:max-content;max-width:340px;padding:10px 12px;border:1px solid #c79352;border-radius:6px;background:#25170d;color:#f5e6c8;font:14px/1.5 sans-serif;overflow-wrap:anywhere;pointer-events:none;box-shadow:0 2px 10px #0008}[data-buddy-hint][hidden]{display:none!important}';
- let nav=null,anchor=null,ready=false,open=false,status='',scheduled=false,disposed=false,missingTimer=null,hintTimer=null,introduced=false,introVisible=false;
+ let nav=null,anchor=null,ready=false,open=false,status='',scheduled=false,disposed=false,missingTimer=null,hintTimer=null,navigationTimer=null,introduced=false,introVisible=false;
  const resize=new view.ResizeObserver(()=>schedule());
  function positionHint(){
   if(!hint.textContent)return;
@@ -78,11 +78,20 @@ export function installNavigationLauncher(doc,onOpen){
   if(relevant)schedule();
  });
  observer.observe(doc,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-label','lang','class','hidden','data-mtab','style']});
+ function gameNavigation(event){
+  if(!event.isTrusted||!mobileMode(doc)||!open)return;
+  const target=event.target.closest?.('[data-m-tab]');
+  if(!target?.closest('[data-m-tabs]')||!['play','bag','bank','market','more'].includes(target.dataset.mTab))return;
+  const tab=target.dataset.mTab;
+  if(doc.documentElement.dataset.mtab===tab)return;
+  // Native event dispatch can run microtasks between listeners. Wait for the full click.
+  view.clearTimeout(navigationTimer);navigationTimer=view.setTimeout(()=>{navigationTimer=null;if(!disposed&&open&&mobileMode(doc)&&doc.documentElement.dataset.mtab===tab)onGameNavigation();},0);
+ }
  function click(event){event.preventDefault();event.stopPropagation();if(ready&&!button.hidden)onOpen();}
- button.addEventListener('click',click);view.addEventListener('resize',schedule);view.addEventListener('scroll',schedule,true);view.visualViewport?.addEventListener('resize',schedule);view.visualViewport?.addEventListener('scroll',schedule);repair();
+ doc.addEventListener('click',gameNavigation,true);button.addEventListener('click',click);view.addEventListener('resize',schedule);view.addEventListener('scroll',schedule,true);view.visualViewport?.addEventListener('resize',schedule);view.visualViewport?.addEventListener('scroll',schedule);repair();
  return {
   showHint,
   update(next){if(disposed)return;if(next.ready!==undefined)ready=next.ready;if(next.open!==undefined)open=next.open;if(next.status!==undefined)status=next.status;updateLabels();},
-  dispose(){disposed=true;view.clearTimeout(missingTimer);view.clearTimeout(hintTimer);hint.remove();observer.disconnect();resize.disconnect();view.removeEventListener('resize',schedule);view.removeEventListener('scroll',schedule,true);view.visualViewport?.removeEventListener('resize',schedule);view.visualViewport?.removeEventListener('scroll',schedule);button.removeEventListener('click',click);button.remove();separator.remove();style.remove();},
+  dispose(){disposed=true;view.clearTimeout(missingTimer);view.clearTimeout(hintTimer);view.clearTimeout(navigationTimer);hint.remove();observer.disconnect();resize.disconnect();doc.removeEventListener('click',gameNavigation,true);view.removeEventListener('resize',schedule);view.removeEventListener('scroll',schedule,true);view.visualViewport?.removeEventListener('resize',schedule);view.visualViewport?.removeEventListener('scroll',schedule);button.removeEventListener('click',click);button.remove();separator.remove();style.remove();},
  };
 }

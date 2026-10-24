@@ -1,0 +1,22 @@
+{
+  "scenarios": [
+    {
+      "name": "mobile",
+      "passed": 21
+    },
+    {
+      "name": "navigation",
+      "passed": 15
+    },
+    {
+      "name": "game-integration",
+      "passed": 30
+    },
+    {
+      "name": "ui-layout",
+      "passed": 4
+    }
+  ],
+  "totalChecks": 70,
+  "complete": true
+}

@@ -1,0 +1,27 @@
+{
+  "passed": 21,
+  "checks": [
+    "actual mobile mode hides desktop navigation and positions a 44px launcher above chat; panel touches top and sides, excludes only the bottom bar and matches the game toolbar height",
+    "title height follows game toolbar resizing and replacement, constrains close button and uses 46px when no toolbar exists",
+    "bottom bar visibility and visual viewport offsets affect only the mobile bounds without changing saved desktop geometry",
+    "trusted mobile tab taps close the assistant only after native navigation; returning stays closed and reopening preserves orders, input, nodes and scroll",
+    "failed native navigation and programmatic tab clicks leave the mobile assistant open",
+    "mobile launcher appears only on world; play, bag, bank, market, more, native overlays, chat and unknown state hide it and returning restores it",
+    "touch launcher reopens assistant without triggering game chat",
+    "launcher avoids existing game buttons and survives hidden or replaced chat anchors",
+    "mobile launcher follows game language independently of the hidden desktop navigation",
+    "long-press title shares the existing debug toggle and preserves the default hidden action columns",
+    "material and task explanations are available by touch without changing row actions",
+    "manual text export/import retains the current plan format, confirmation and invalid-input protection",
+    "clipboard read/write failures show explicit errors and retain a manual text path without altering orders",
+    "visual viewport keyboard shrink keeps input visible and restores panel height without saving mobile geometry",
+    "320–430px portrait and coarse-pointer landscape retain mobile layout without overwriting desktop geometry",
+    "leaving mobile mode restores desktop geometry, launcher and resize handles",
+    "mobile starts hidden and its opening hint stays within the viewport then closes after five seconds",
+    "mobile action prefill enters play, fills the draft and closes only after success",
+    "already active play tab is not clicked twice or toggled back to world",
+    "rejected mobile draft values keep the panel open and show the actual failure",
+    "mobile market uses the visible tab, fills quantity/price and closes after success with zero game action submissions"
+  ],
+  "errors": []
+}

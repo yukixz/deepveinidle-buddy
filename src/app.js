@@ -265,6 +265,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
    if(envelope.error)error=message(envelope.error);if(live)applySnapshot(envelope);if(sourceChanged)render();
   },
   open(){if(!disposed){closed=false;render();}},
+  close(){if(!disposed&&!closed){closed=true;render();}},
   getWorkspace:()=>structuredClone(workspace),
   dispose(){if(characterSaveTimer!==null)void save();void store.flush().then(()=>store.dispose());disposed=true;disposeLanguage();frozen.dispose();debug.dispose();disposeGeometry();clearInterval(interval);clearTimeout(renderTimer);root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',typed);root.removeEventListener('compositionend',typed);root.removeEventListener('keydown',keydown);stableView.dispose();container.remove();style.remove();},
  };

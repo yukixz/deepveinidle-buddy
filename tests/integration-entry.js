@@ -7,6 +7,6 @@ const values=new Map();window.__writes=[];
 const platform={get:async(k,v)=>values.get(k)??v,set:async(k,v)=>{values.set(k,v);window.__writes.push(v);},market:()=>Promise.reject(Error('disabled in fixture')),copy:()=>{},readClipboard:()=>{}};
 const integration=createGamePrefill(window,{wait:ms=>window.__wait?window.__wait(ms):new Promise(resolve=>setTimeout(resolve,ms))});
 const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
-let panel;const navigation=installNavigationLauncher(document,()=>panel?.open());
+let panel;const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());
 panel=await mountPanel(host.attachShadow({mode:'open'}),{platform,css,initial,gameIntegration:integration,readCharacter:()=>readClient(window),onVisibilityChange:open=>navigation.update({open,ready:true}),onPrefillFeedback:message=>navigation.showHint(message)});window.__panel=panel;
 window.__disposeSync=installGameSync(window,envelope=>panel.receive(envelope));

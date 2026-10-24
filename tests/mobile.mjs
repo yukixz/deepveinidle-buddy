@@ -30,10 +30,19 @@ try{
  bounds=await root.boundingBox();assert.deepEqual(bounds,{x:12,y:18,width:360,height:600});
  await page.evaluate(()=>{Object.assign(visualViewport,{offsetLeft:0,offsetTop:0,testWidth:null,testHeight:null});visualViewport.dispatchEvent(new Event('resize'));});await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().left===0);
  assert.equal(await page.evaluate(()=>localStorage.getItem('dvi-buddy-demo-geometry-v1')),saved);checks.push('bottom bar visibility and visual viewport offsets affect only the mobile bounds without changing saved desktop geometry');
+ await root.locator('#search').fill('青铜');await root.locator('#search').press('Tab');await page.waitForTimeout(200);
+ const ordersBeforeNavigation=await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')).orders);
+ await root.locator('.content').evaluate(el=>{el.scrollTop=120;window.__mobileContent=el;});const navigationScroll=await root.locator('.content').evaluate(el=>el.scrollTop);
  for(const tab of ['play','bag','bank','market','more']){
-  await page.locator(`[data-m-tab="${tab}"]`).tap();assert.equal(await launcher.isVisible(),false,tab);
-  await page.locator(`[data-m-tab="${tab}"]`).tap();assert.equal(await launcher.isVisible(),true,tab);
+  await page.locator(`[data-m-tab="${tab}"]`).tap();await root.waitFor({state:'hidden'});assert.equal(await launcher.isVisible(),false,tab);assert.equal(await root.isVisible(),false,tab);
+  await page.locator(`[data-m-tab="${tab}"]`).tap();assert.equal(await launcher.isVisible(),true,tab);assert.equal(await root.isVisible(),false,tab);
+  await launcher.tap();assert.equal(await root.isVisible(),true);assert.equal(await root.locator('#search').inputValue(),'青铜');assert.equal(await root.locator('.content').evaluate(el=>el.scrollTop),navigationScroll);assert.equal(await root.locator('.content').evaluate(el=>el===window.__mobileContent),true);
  }
+ assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')).orders),ordersBeforeNavigation);checks.push('trusted mobile tab taps close the assistant only after native navigation; returning stays closed and reopening preserves orders, input, nodes and scroll');
+ await root.locator('#search').fill('');await root.locator('#search').press('Tab');
+ await page.evaluate(()=>{const button=document.querySelector('[data-m-tab="play"]');window.__playClick=button.onclick;button.onclick=()=>{};});await page.locator('[data-m-tab="play"]').tap();assert.equal(await root.isVisible(),true);await page.evaluate(()=>document.querySelector('[data-m-tab="play"]').onclick=window.__playClick);
+ await page.evaluate(()=>document.querySelector('[data-m-tab="play"]').click());assert.equal(await root.isVisible(),true);await page.evaluate(()=>document.querySelector('[data-m-tab="play"]').click());assert.equal(await root.isVisible(),true);
+ checks.push('failed native navigation and programmatic tab clicks leave the mobile assistant open');
  // Native market/bank windows can mark the root tab while the shell stays on world.
  await page.evaluate(()=>document.documentElement.dataset.mtab='market');assert.equal(await launcher.isVisible(),false);await page.evaluate(()=>document.documentElement.dataset.mtab='world');assert.equal(await launcher.isVisible(),true);
  await page.evaluate(()=>{const overlay=document.createElement('div');overlay.className='veil';overlay.style.cssText='position:fixed;inset:100px;background:#333';document.body.append(overlay);});assert.equal(await launcher.isVisible(),false);
