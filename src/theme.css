@@ -149,8 +149,10 @@ details[open]>summary { margin-bottom:10px; }
 
 .mobile-only { display:none; }
 :host([data-mobile]) { z-index:31; font-size:14px; max-height:none; }
-:host([data-mobile]) .titlebar { cursor:default; touch-action:auto; padding:8px; gap:5px; }
-:host([data-mobile]) .title-info { -webkit-touch-callout:none; }
+:host([data-mobile]) .shell { border:0; border-radius:0; }
+:host([data-mobile]) .titlebar { cursor:default; touch-action:auto; padding:0 8px; gap:5px; align-items:center; height:var(--mobile-title-height,46px); flex:0 0 var(--mobile-title-height,46px); }
+:host([data-mobile]) .title-info { -webkit-touch-callout:none; max-height:100%; overflow:auto; }
+:host([data-mobile]) .titlebar button { min-height:0; height:min(44px,calc(var(--mobile-title-height,46px) - 1px)); }
 :host([data-mobile]) .titlebar h1 { font-size:15px; }
 :host([data-mobile]) .titlebar .controls { gap:4px; }
 :host([data-mobile]) .mobile-only { display:block; }

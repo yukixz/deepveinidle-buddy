@@ -1,0 +1,10 @@
+{
+  "passed": 4,
+  "checks": [
+    "compact title, bottom game version, inline small attempts and item/rarity/skill column order",
+    "language follows game changes, hidden-panel reopening and navigation replacement without saving orders",
+    "all three tables freeze both headers and data across horizontal scroll, recipe modes, language and viewport changes",
+    "mobile long press opens the hidden menu; taps, movement, cancellation and closing do not; debug toggle still works"
+  ],
+  "errors": []
+}

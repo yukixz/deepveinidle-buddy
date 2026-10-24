@@ -11,8 +11,8 @@ export function installNavigationLauncher(doc,onOpen){
  const resize=new view.ResizeObserver(()=>schedule());
  function positionHint(){
   if(!hint.textContent)return;
-  hint.hidden=!ready||!visibleElement(button);if(hint.hidden)return;
-  const bounds=viewportBounds(view),r=button.getBoundingClientRect(),margin=8;
+  hint.hidden=!ready||!anchor?.isConnected||introVisible&&!visibleElement(button);if(hint.hidden)return;
+  const bounds=viewportBounds(view),r=button.hidden&&mobileMode(doc)?{left:parseFloat(button.style.left),top:parseFloat(button.style.top),bottom:parseFloat(button.style.top)+parseFloat(button.style.height)}:button.getBoundingClientRect(),margin=8;
   hint.style.maxWidth=`${Math.max(1,Math.min(340,bounds.right-bounds.left-2*margin))}px`;
   const h=hint.getBoundingClientRect();
   const left=Math.max(bounds.left+margin,Math.min(r.left,bounds.right-h.width-margin));
@@ -59,24 +59,26 @@ export function installNavigationLauncher(doc,onOpen){
     if(nav.lastElementChild!==button||button.previousElementSibling!==separator)nav.append(separator,button);
    }
   }
-  button.hidden=!anchor;updateLabels();
+  const shell=doc.querySelector('.m-shell'),world=doc.documentElement.dataset.mtab==='world'&&shell?.dataset.mtab==='world'&&visibleElement(shell);
+  const overlay=mobile&&[...doc.querySelectorAll('.veil,[data-m-sub]')].some(visibleElement);
+  button.hidden=!anchor||mobile&&(!world||overlay);updateLabels();
   if(!anchor&&missingTimer===null)missingTimer=view.setTimeout(()=>{if(!disposed&&!anchor)console.error('[DVI Buddy] Launcher anchor missing:',mobileMode(doc)?'mobile chat button':'game navigation');},10000);
   if(anchor&&missingTimer!==null){view.clearTimeout(missingTimer);missingTimer=null;}
  }
  function schedule(){if(scheduled||disposed)return;scheduled=true;view.queueMicrotask(repair);}
- const nativeAnchors='nav[aria-label="Game navigation"],nav[aria-label="游戏导航"],[data-m-chat],[data-m-exit],[data-m-board]';
+ const nativeAnchors='nav[aria-label="Game navigation"],nav[aria-label="游戏导航"],[data-m-chat],[data-m-exit],[data-m-board],.m-shell,[data-m-sub],.veil';
  const observer=new view.MutationObserver(records=>{
   if((!button.isConnected&&anchor?.isConnected)||(!style.isConnected&&doc.documentElement)){schedule();return;}
   const relevant=records.some(r=>{
    if(r.target===button||r.target===separator||r.target===style||r.target===hint)return false;
-   if(r.type==='attributes')return r.target===doc.documentElement||r.target===nav||r.target===anchor||r.target.contains?.(anchor)||r.target.matches?.('[data-m-exit],[data-m-board]');
+   if(r.type==='attributes')return r.target===doc.documentElement||r.target===nav||r.target===anchor||r.target.contains?.(anchor)||r.target.matches?.('[data-m-exit],[data-m-board],.m-shell,[data-m-sub],.veil');
    if(r.target===nav)return nav.lastElementChild!==button||[...r.addedNodes,...r.removedNodes].some(n=>n!==button&&n!==separator);
    return [...r.addedNodes,...r.removedNodes].some(n=>n.nodeType===1&&(n.matches(nativeAnchors)||n.querySelector(nativeAnchors)));
   });
   if(relevant)schedule();
  });
  observer.observe(doc,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-label','lang','class','hidden','data-mtab','style']});
- function click(event){event.preventDefault();event.stopPropagation();if(ready)onOpen();}
+ function click(event){event.preventDefault();event.stopPropagation();if(ready&&!button.hidden)onOpen();}
  button.addEventListener('click',click);view.addEventListener('resize',schedule);view.addEventListener('scroll',schedule,true);view.visualViewport?.addEventListener('resize',schedule);view.visualViewport?.addEventListener('scroll',schedule);repair();
  return {
   showHint,
