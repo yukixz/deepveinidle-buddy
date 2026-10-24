@@ -35,7 +35,7 @@ try{
  checks.push('stock filtering survives reload');
  const enough=await saved();enough.prices.quotes={1:quote(91),2:quote(91)};await load(enough);
  assert.equal(await row(100).count(),1);assert.equal(await row(1000).count(),0);
- assert.equal(await row(100).locator('xpath=ancestor::tr').locator('td').nth(5).textContent(),'364');
+ assert.equal(await row(100).locator('xpath=ancestor::tr').locator('td').nth(5).textContent(),'364.00');
  checks.push('updated quantities equal to expected total requirements are sufficient and keep ordinary ask valuation');
  for(const change of [q=>delete q.quantity,q=>{q.quantityInvalid=true;},q=>{q.value=null;}]){
   const invalid=structuredClone(enough);change(invalid.prices.quotes[2].ask);await load(invalid);assert.equal(await row(10).count(),0);

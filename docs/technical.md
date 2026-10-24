@@ -16,7 +16,7 @@
 - `game-prefill.js`：用户点击触发的市场／普通动作草稿适配；禁止购买或动作提交。
 - `capture.js`：只读旁听已有同源 WebSocket，捕获器先于面板初始化，不额外连接，不发送游戏消息。
 - `main.js`、`navigation.js`：按角色挂载／卸载面板及导航入口，清理监听与定时器。
-- `app.js`、`theme.css`：Shadow DOM 内订单、筛选、共享定价和中文输入保护；不代理全局 document 或修改原游戏代码。
+- `app.js`、`theme.css`：Shadow DOM 内订单、筛选与共享定价；`stable-view.js`统一复用界面及控件节点，局部更新属性和文字，交互期间延后结构变化。输入确认共用普通处理函数，不保留输入法专用重绘分支。不代理全局 document 或修改原游戏代码。
 - `workspace.js`、`crafting-estimates.js`：严格当前模型、解析动作／费用、合并采购与高亮。`planned-products.js`复用原始产出与品质规则，按计划整数次数汇总预计产物，仅用于采购抵扣。
 - `collection-sorting.js`、`table-sorting.js`：全精度稳定排序，未知值置末。
 - `recipe-availability.js`：按候选的完整物品ID和材料总需求检查卖单供应，仅影响配方候选及批量加入，不修改提取的计算模块或已有订单。
@@ -33,6 +33,6 @@ userscript安装元数据使用 `@namespace https://dvi-lab.pages.dev` 和 `@aut
 
 ## 开发验证
 
-`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器配置，完整输出在 `.test-artifacts/verification/`。`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
+`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器配置，完整输出在 `.test-artifacts/verification/`。`stable-view`覆盖节点持续连接、无变化不修改DOM、编辑草稿与选择范围、原生select选项保留、滚动／指针／文本选择期间延后结构变化及即时禁用状态；`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
 
 项目处于开发阶段，仅接受当前数据结构，不维护历史兼容和迁移。发布授权与真实环境验证完成前不部署。
