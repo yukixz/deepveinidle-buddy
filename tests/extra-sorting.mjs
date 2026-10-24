@@ -1,5 +1,5 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 import * as game from '../src/engine/upstream.js';import {craftingJobs} from '../src/engine/crafting-model.js';import {estimateOrders} from '../src/workspace.js';import {createPriceSnapshot} from '../src/engine/price-protocol.js';import {setItemPrice} from '../src/engine/item-prices.js';import {decodePlanPayload} from '../src/plan-transfer.js';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{

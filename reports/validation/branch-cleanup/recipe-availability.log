@@ -1,0 +1,15 @@
+{
+  "passed": 9,
+  "checks": [
+    "new material-only option synchronizes both controls and excludes insufficient collection targets without deducting inventory or deleting orders",
+    "stock filtering survives reload",
+    "updated quantities equal to expected total requirements are sufficient and keep ordinary ask valuation",
+    "missing or invalid quantity and absent ask price exclude candidates",
+    "ordinary asks and bids restore candidates and selecting from either panel keeps controls synchronized",
+    "manufacturing availability uses a single attempt rather than the existing order count",
+    "Add all includes only eligible targets and takes the highest eligible target",
+    "gathering candidates without material requirements remain visible",
+    "option translates and stays usable in the narrow layout without page overflow"
+  ],
+  "errors": []
+}

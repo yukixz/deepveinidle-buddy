@@ -1,5 +1,6 @@
 // The game owns mode selection, including coarse-pointer landscape mode.
 export const mobileMode=doc=>doc.documentElement?.classList.contains('m-on')??false;
+export const mobilePageIs=(doc,page)=>doc.documentElement?.dataset.mtab===page&&doc.querySelector('.m-shell')?.dataset.mtab===page;
 export function viewportBounds(view){
  const v=view.visualViewport;
  const left=v?.offsetLeft??0,top=v?.offsetTop??0;

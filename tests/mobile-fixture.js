@@ -16,8 +16,11 @@ export function installMobileFixture(){
  window.__mobileTabClicks=[];window.__chatClicks=0;chat.onclick=()=>window.__chatClicks++;
  for(const button of tabs.querySelectorAll('[data-m-tab]'))button.onclick=()=>{
   const next=button.dataset.mTab;window.__mobileTabClicks.push(next);
-  shell.dataset.mtab=next===shell.dataset.mtab?'world':next;document.documentElement.dataset.mtab=shell.dataset.mtab;
-  if(next==='market'){const market=document.querySelector('[data-market-window]');if(market)market.hidden=false;}
+  const market=document.querySelector('[data-market-window]');if(market)market.hidden=true;
+  if(next===document.documentElement.dataset.mtab){shell.dataset.mtab='world';document.documentElement.dataset.mtab='world';return;}
+  if(!['market','bank'].includes(next))shell.dataset.mtab=next;
+  document.documentElement.dataset.mtab=next;
+  if(next==='market'&&market)market.hidden=false;
  };
  const mq=matchMedia('(max-width: 640px), (pointer: coarse) and (max-height: 640px)');
  const apply=()=>{document.documentElement.classList.toggle('m-on',mq.matches);if(mq.matches)document.documentElement.dataset.mtab=shell.dataset.mtab;else delete document.documentElement.dataset.mtab;};mq.addEventListener('change',apply);apply();

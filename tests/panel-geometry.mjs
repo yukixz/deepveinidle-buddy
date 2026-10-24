@@ -1,5 +1,5 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import fs from 'node:fs/promises';import assert from 'node:assert/strict';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
+import fs from 'node:fs/promises';import assert from 'node:assert/strict';
 const browser=await launchBrowser();
 const page=await browser.newPage({viewport:{width:1440,height:1080}}),checks=[],errors=[];page.on('pageerror',e=>errors.push(e.message));
 const root=page.locator('#deepveinidle-buddy'),box=()=>root.boundingBox();

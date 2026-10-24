@@ -1,5 +1,4 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const browser=await launchBrowser(),checks=[],errors=[];

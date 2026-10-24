@@ -1,10 +1,9 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';
+import {toggleGameLanguage,appVersion,gameVersion,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{
- const script=await fs.readFile('dist/deepveinidle-buddy.user.js','utf8');
+ const script=await fs.readFile('dist/deepveinidle-buddy.user.js','utf8');assert.equal(script.match(/^\/\/ @version\s+(.+)$/m)?.[1],appVersion);const manifest=JSON.parse(await fs.readFile('dist/manifest.json','utf8'));assert.equal(manifest.version,appVersion);assert.equal(manifest.engine,gameVersion);
  const name=script.match(/^\/\/ @name\s+(.+)$/m)?.[1];
  assert.equal(name,'DeepVeinIdle-Buddy');
  assert.match(name,/^[\x21-\x7E]+$/);

@@ -1,5 +1,5 @@
 {
-  "passed": 21,
+  "passed": 22,
   "checks": [
     "actual mobile mode hides desktop navigation and positions a 44px launcher above chat; panel touches top and sides, excludes only the bottom bar and matches the game toolbar height",
     "title height follows game toolbar resizing and replacement, constrains close button and uses 46px when no toolbar exists",
@@ -21,7 +21,8 @@
     "mobile action prefill enters play, fills the draft and closes only after success",
     "already active play tab is not clicked twice or toggled back to world",
     "rejected mobile draft values keep the panel open and show the actual failure",
-    "mobile market uses the visible tab, fills quantity/price and closes after success with zero game action submissions"
+    "mobile market uses the visible tab, fills quantity/price and closes after success with zero game action submissions",
+    "action prefill leaves a market overlay even when its underlying mobile container still says play"
   ],
   "errors": []
 }

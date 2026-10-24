@@ -1,5 +1,5 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 import * as game from '../src/engine/upstream.js';import {craftingJobs,craftingTiers} from '../src/engine/crafting-model.js';import {collectionRows} from '../src/engine/collection-model.js';import {translatedItemName} from '../src/engine/i18n.js';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{

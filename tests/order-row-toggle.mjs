@@ -1,5 +1,5 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import assert from 'node:assert/strict';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
+import assert from 'node:assert/strict';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();const root=page.locator('#deepveinidle-buddy');await root.locator('#orders > summary').click();const rows=root.locator('[data-order-row]'),first=rows.first(),button=first.locator('[data-action="edit-order"]');

@@ -42,5 +42,5 @@ for(const [entry,outfile] of [['src/userscript.js','dist/deepveinidle-buddy.user
  await build({entryPoints:[entry],outfile,bundle:true,format:'iife',target:'es2022',minify:false,legalComments:'inline',plugins:[upstreamProvenance],loader:{'.css':'text'},banner:{js:entry.includes('userscript')?header:''}});
 }
 const files=await Promise.all(['deepveinidle-buddy.user.js','demo.js'].map(async name=>{const bytes=await fs.readFile('dist/'+name);return {name,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')};}));
-await fs.writeFile('dist/manifest.json',JSON.stringify({version,engine:'1.0.1199',files},null,2)+'\n');
+await fs.writeFile('dist/manifest.json',JSON.stringify({version,engine:upstream.changelogVersion,files},null,2)+'\n');
 console.log(JSON.stringify({version,files}));

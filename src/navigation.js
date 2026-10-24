@@ -1,5 +1,5 @@
 import {gameLanguage} from './game-language.js';
-import {mobileMode,viewportBounds,visibleElement} from './mobile-layout.js';
+import {mobileMode,mobilePageIs,viewportBounds,visibleElement} from './mobile-layout.js';
 // Only our own markers and listener: never attach game navigation commands.
 export function installNavigationLauncher(doc,onOpen,onGameNavigation=()=>{}){
  const view=doc.defaultView,button=doc.createElement('button'),separator=doc.createElement('span'),style=doc.createElement('style'),hint=doc.createElement('div');
@@ -59,7 +59,7 @@ export function installNavigationLauncher(doc,onOpen,onGameNavigation=()=>{}){
     if(nav.lastElementChild!==button||button.previousElementSibling!==separator)nav.append(separator,button);
    }
   }
-  const shell=doc.querySelector('.m-shell'),world=doc.documentElement.dataset.mtab==='world'&&shell?.dataset.mtab==='world'&&visibleElement(shell);
+  const world=mobilePageIs(doc,'world')&&visibleElement(doc.querySelector('.m-shell'));
   const overlay=mobile&&[...doc.querySelectorAll('.veil,[data-m-sub]')].some(visibleElement);
   button.hidden=!anchor||mobile&&(!world||overlay);updateLabels();
   if(!anchor&&missingTimer===null)missingTimer=view.setTimeout(()=>{if(!disposed&&!anchor)console.error('[DVI Buddy] Launcher anchor missing:',mobileMode(doc)?'mobile chat button':'game navigation');},10000);

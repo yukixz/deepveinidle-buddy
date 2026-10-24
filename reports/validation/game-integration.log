@@ -1,5 +1,5 @@
 {
-  "passed": 30,
+  "passed": 29,
   "checks": [
     "late attachment reads the current client without a welcome frame or extra socket",
     "unchanged client reads neither save again nor rebuild the panel",
@@ -23,7 +23,6 @@
     "gathering expands collapsed time options and switches to count while replacing the manufacturing draft without commands",
     "existing sell draft for another item is closed and replaced with the requested buy draft without submitting",
     "role changes, changed plans, rounded prices, clamped counts and unavailable rarity fail without commands",
-    "unavailable quality has a bilingual material-availability message and does not overwrite amount or count mode",
     "missing option toggle, failed expansion and role changes while waiting stop explicitly without commands",
     "client failure switches to the independent older server snapshot, disables prefill and restores live state on recovery",
     "production adapter fills drafts without registered game bundle metadata or resource verification requests",
@@ -35,35 +34,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 168
+      "ms": 157
     },
     {
       "field": "bank",
-      "ms": 210
+      "ms": 203
     },
     {
       "field": "pack",
-      "ms": 251
-    },
-    {
-      "field": "collections",
-      "ms": 271
-    },
-    {
-      "field": "skills",
       "ms": 247
     },
     {
+      "field": "collections",
+      "ms": 286
+    },
+    {
+      "field": "skills",
+      "ms": 237
+    },
+    {
       "field": "equipment",
-      "ms": 253
+      "ms": 252
     },
     {
       "field": "masteries",
-      "ms": 240
+      "ms": 241
     },
     {
       "field": "IME visible procurement",
-      "ms": 90
+      "ms": 122
     }
   ],
   "errors": []

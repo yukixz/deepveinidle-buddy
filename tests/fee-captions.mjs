@@ -1,7 +1,7 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import fs from 'node:fs/promises';
 import {encodePlanPayload,decodePlanPayload} from '../src/plan-transfer.js';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import assert from 'node:assert/strict';
+import assert from 'node:assert/strict';
 import {estimateOrders} from '../src/workspace.js';import {createPriceSnapshot} from '../src/engine/price-protocol.js';import {setItemPrice} from '../src/engine/item-prices.js';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{

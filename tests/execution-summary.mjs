@@ -1,5 +1,4 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import {estimateOrders} from '../src/workspace.js';
 import * as game from '../src/engine/upstream.js';

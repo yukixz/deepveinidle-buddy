@@ -1,6 +1,6 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
+import {toggleGameLanguage,appVersion,launchBrowser,baseUrl} from './browser-helper.mjs';
 import {encodePlanPayload,decodePlanPayload} from '../src/plan-transfer.js';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import fs from 'node:fs/promises';import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';import assert from 'node:assert/strict';
 import {estimateOrders,defaults} from '../src/workspace.js';import {createPriceSnapshot} from '../src/engine/price-protocol.js';
 import {createScenario} from '../src/engine/simulation.js';import * as game from '../src/engine/upstream.js';import {craftingSlots,craftingSkills} from '../src/engine/crafting-model.js';import {gatheringSlots,gatheringSkills} from '../src/engine/gathering-model.js';
 const base=baseUrl;
@@ -67,7 +67,7 @@ await root.locator('#recipes-product-price-mode').selectOption('ask');await page
  const send=async(you,t='welcome',tick=1000)=>page.evaluate(({you,t,tick})=>{window.__socket??=new WebSocket('ws://'+location.host+'/ws');window.__socket.dispatchEvent(new MessageEvent('message',{data:JSON.stringify({tick,m:[{t,you,guild:null,windows:[]}]})}));},{you,t,tick});
  await send(player);await page.locator('[data-buddy-launcher]').click();await root.locator('[data-action="mode-collection-craft"]').waitFor();checks.push('actual userscript boots from intercepted welcome and role-specific GM storage');
  await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('.titlebar [role="status"]')?.textContent.match(/ · 角色快照 \d{1,2}:/));
- assert.ok((await root.locator('.titlebar').textContent()).includes('工匠精通助手 v0.1.0 · 实时读取不可用 · 角色快照 '));assert.equal(await root.locator('.content [role="status"]').count(),0);checks.push('title combines version, rules baseline and snapshot status without a duplicate content row');
+ assert.ok((await root.locator('.titlebar').textContent()).includes(`工匠精通助手 v${appVersion} · 实时读取不可用 · 角色快照 `));assert.equal(await root.locator('.content [role="status"]').count(),0);checks.push('title combines version, rules baseline and snapshot status without a duplicate content row');
  await page.waitForFunction(()=>window.__saved.get('dvi-buddy-v1:'+location.host+':42')?.character.config.levels.smithing===70);assert.equal(await page.evaluate(()=>window.__saved.get('dvi-buddy-v1:'+location.host+':42').character.config.levels.smithing),70);assert.equal(await root.locator('#configuration').count(),0);checks.push('game snapshots update read-only configuration in the background');assert.equal(await root.locator('#recipes-material-price-mode').inputValue(),'ask');checks.push('market ask pricing is the default');
 
 

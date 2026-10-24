@@ -27,7 +27,7 @@
     "missing option toggle, failed expansion and role changes while waiting stop explicitly without commands",
     "client failure switches to the independent older server snapshot, disables prefill and restores live state on recovery",
     "production adapter fills drafts without registered game bundle metadata or resource verification requests",
-    "purchase and execute feedback stays inside the execution plan",
+    "purchase and execute feedback is kept outside panel content",
     "production userscript attaches to an already logged-in client without refresh, server welcome or new connection",
     "production client role changes remount the correct GM bucket without leaking orders or opening sockets",
     "slow GM role changes discard obsolete mounts; mount failures surface once without an immediate retry loop"
@@ -35,35 +35,35 @@
   "latencies": [
     {
       "field": "route and queue",
-      "ms": 54
+      "ms": 79
     },
     {
       "field": "bank",
-      "ms": 203
+      "ms": 191
     },
     {
       "field": "pack",
-      "ms": 249
+      "ms": 252
     },
     {
       "field": "collections",
-      "ms": 274
+      "ms": 275
     },
     {
       "field": "skills",
-      "ms": 240
-    },
-    {
-      "field": "equipment",
       "ms": 255
     },
     {
+      "field": "equipment",
+      "ms": 243
+    },
+    {
       "field": "masteries",
-      "ms": 242
+      "ms": 243
     },
     {
       "field": "IME visible procurement",
-      "ms": 114
+      "ms": 98
     }
   ],
   "errors": []

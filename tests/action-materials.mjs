@@ -1,5 +1,5 @@
-import {toggleGameLanguage} from './browser-helper.mjs';
-import {launchBrowser,baseUrl} from './browser-helper.mjs';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
+import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 import {craftingJobs,craftingMaterials} from '../src/engine/crafting-model.js';
 import {createOrder} from '../src/workspace.js';
 const browser=await launchBrowser(),checks=[],errors=[];

@@ -1,4 +1,4 @@
-import {mobileMode} from './mobile-layout.js';
+import {mobileMode,mobilePageIs} from './mobile-layout.js';
 import {characterRole} from './game-sync.js';
 const failure=code=>{throw Error(code);};
 export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
@@ -64,7 +64,7 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
     if(!routes||typeof routes.show!=='function'||typeof routes.preselect!=='function')failure('gameControlMissing');
     const panels=page.deepvein.panels;if(!panels||typeof panels.show!=='function')failure('gameControlMissing');
     if(mobileMode(doc)){
-     const play=()=>doc.querySelector('.m-shell')?.dataset.mtab==='play';
+     const play=()=>mobilePageIs(doc,'play');
      if(!play())click('[data-m-tabs] [data-m-tab="play"]');
      await until(()=>play(),check);
     }
