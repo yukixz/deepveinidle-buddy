@@ -1,3 +1,4 @@
+import {mobileMode} from './mobile-layout.js';
 import {createStableView} from './stable-view.js';
 import {readExecutionState,executionStatus} from './execution-status.js';
 import {installDebugMenu} from './debug-menu.js';
@@ -18,7 +19,7 @@ import {add,defaults,validateWorkspace,workspaceForStorage,createOrder,putLine,l
 import {createStore} from './storage.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const skillNames={mining:'Mining',fishing:'Fishing',woodcutting:'Woodcutting',thieving:'Thieving',cooking:'Cooking',smithing:'Smithing',fletching:'Fletching',herblore:'Herblore',crafting:'Crafting'};
-export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v1',initial=null,demo=false,gameIntegration=null,readCharacter=null,onVisibilityChange=()=>{},onPrefillStateChange=()=>{}}){
+export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v1',initial=null,demo=false,gameIntegration=null,readCharacter=null,onVisibilityChange=()=>{}}){
  const doc=root.ownerDocument,style=doc.createElement('style');style.textContent=css;root.append(style);const container=doc.createElement('div');container.className='panel-mount';root.append(container);
  let workspace=defaults(),mode='collection',route='craft',skill='all',tier='all',query='',page=1,sort='item',sortDirection='asc',minPoints='',maxSecondsPerPoint='',maxCost='',closed=false,error='',notice='',storageError='',status=demo?'demo':'waiting',loaded=false,disposed=false,marketBusy=false,marketPrices=null,lastMarket=0,latestEnvelope=null,appliedPlayerAt=0,appliedSource=null,renderTimer=null,marketError='',live=false,transferBusy=false,importGeneration=0;
  let statusDetailsKey=null,transferDraft=null;
@@ -99,7 +100,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
  function lineTable(lines,orderId){const table='order-'+orderId;return `<div class="scroll"><table data-order-lines="${esc(orderId)}"><thead><tr>${sortHeader(table,'type',text('类型','Type'))}${sortHeader(table,'item',text('物品','Item'))}${sortHeader(table,'rarity',text('稀有度','Rarity'))}${sortHeader(table,'count',text('次数 / 目标','Count / Target'))}<th>${text('进度','Progress')}</th><th>${text('操作','Actions')}</th></tr></thead><tbody>${sortedItems(lines,table,lineItem).map(line=>{const id=lineItem(line);return `<tr data-line-key="${esc(lineKey(line))}" data-item-id="${id}" data-order-line><td>${line.kind==='craft'?text('制造','Craft'):text('收藏','Collection')}</td><td class="text-cell">${esc(item(id))}</td><td>${tiers()[game.itemTier(id)]}</td><td>${number(line.kind==='craft'?line.count:line.target,0)}</td><td>${line.kind==='collection'?`${number(workspace.character.counts[line.itemId]??null,0)} / ${number(line.target,0)}`:'—'}</td><td class="actions">${line.kind==='collection'?button('target-down','−',`class="compact" data-order="${esc(orderId)}" aria-label="${text('降低目标','Lower target')}"`)+button('target-up','+',`class="compact" data-order="${esc(orderId)}" aria-label="${text('提高目标','Raise target')}"`):''}${button('remove-line',text('移除','Remove'),`class="compact" data-order="${esc(orderId)}"`)}</td></tr>`;}).join('')||`<tr><td colspan="6" class="muted">${text('在上方选择配方或收藏目标加入此订单。','Add recipes or collection targets above.')}</td></tr>`}</tbody></table></div>`;}
  function prefillEnabled(){return debug?.enabled&&!!gameIntegration&&latestEnvelope?.source==='client'&&live&&!prefillBusy;}
  function refreshForPrefill(){if(!readCharacter)return;const sample=readCharacter();if(!sample||sample.role!==latestEnvelope?.role)throw Error('gameRoleChanged');if(!applySnapshot({...latestEnvelope,snapshot:sample.snapshot}))throw Error('incompatibleCharacter');}
- function purchaseRequest(id){const row=estimateOrders(workspace,prices()).rows.find(r=>r.id===id);if(!row||row.owned===null||!Number.isSafeInteger(row.purchase)||row.purchase<1||!Number.isSafeInteger(row.price)||row.price<1||row.price>1e9)throw Error('invalidPrefill');return {role:latestEnvelope?.role,itemId:id,baseId:game.baseItemId(id),tier:game.itemTier(id),quantity:row.purchase,price:row.price,search:item(id)};}
+ function purchaseRequest(id){const row=estimateOrders(workspace,prices()).rows.find(r=>r.id===id);if(!row||row.owned===null||!Number.isSafeInteger(row.purchase)||row.purchase<1||!Number.isSafeInteger(row.price)||row.price<1)throw Error('invalidPrefill');return {role:latestEnvelope?.role,itemId:id,baseId:game.baseItemId(id),tier:game.itemTier(id),quantity:row.purchase,price:row.price,search:item(id)};}
  function actionRequest(key){const row=estimateOrders(workspace,prices()).actions.find(r=>r.key===key),job=craftingJobs.find(j=>j.id===row?.jobId)??game.recipes.find(j=>j.id===row?.jobId);if(!row||!job||job.upgrade||row.issues.length||!Number.isFinite(row.count)||row.count<=0||!Number.isSafeInteger(row.count))throw Error('invalidPrefill');return {role:latestEnvelope?.role,jobId:job.id,skill:job.skill,tier:row.tier,quantity:row.count,manufacturing:job.inputs.length>0,expected:row.collectionAttempts>0};}
  function actionLabels(row,job){
  const progress=executionStatus(executionState,job,row.tier),labels=[];
@@ -140,8 +141,8 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
   const target=event.target;let el=target.closest?.('[data-action]');
   if(!el){if(target.closest?.('button,input,select,textarea,a,label'))return;el=target.closest?.('[data-order-row]');}
   if(!el||!root.contains(el))return;
-  const action=el.dataset.action??'edit-order',isPrefill=action==='prefill-purchase'||action==='prefill-action';if(isPrefill&&prefillBusy)return;error='';notice='';
-  if(isPrefill){prefillError='';prefillNotice='';}
+  const action=el.dataset.action??'edit-order';error='';notice='';
+  const isPrefill=action==='prefill-purchase'||action==='prefill-action';if(isPrefill){prefillError='';prefillNotice='';}
   try{
    if(action==='prefill-purchase'||action==='prefill-action'){
     if(!debug?.enabled)throw Error('debugDisabled');
@@ -149,10 +150,9 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
     refreshForPrefill();
     const make=()=>action==='prefill-purchase'?purchaseRequest(Number(el.dataset.item)):actionRequest(el.dataset.key),request=make(),signature=JSON.stringify(request),generation=debugGeneration;
     const guard=()=>{try{refreshForPrefill();return debug.enabled&&debugGeneration===generation&&live&&latestEnvelope?.source==='client'&&JSON.stringify(make())===signature;}catch{return false;}};
-    prefillBusy=true;closed=true;onPrefillStateChange({state:'busy',message:text('正在预填，请稍候','Prefilling; please wait')});render();
-    try{await gameIntegration[action==='prefill-purchase'?'purchase':'action'](request,guard);prefillNotice=action==='prefill-purchase'?text('已预填求购草稿，请在游戏中确认。','Buy-order draft filled; confirm in the game.'):text('已预填执行菜单，尚未开始。','Action menu filled; not started.')+(request.expected?text(' 次数为期望取整，不保证完成收藏。',' Attempts are rounded expectations, not a completion guarantee.'):'');}
-    catch(e){prefillError=message(e.message);}
-    finally{prefillBusy=false;if(!disposed)onPrefillStateChange({state:prefillError?'error':'success',message:prefillError?text('预填失败，点击助手查看：','Prefill failed; open assistant: ')+prefillError:prefillNotice});render();}return;
+    prefillBusy=true;render();
+    try{await gameIntegration[action==='prefill-purchase'?'purchase':'action'](request,guard);if(mobileMode(doc))closed=true;prefillNotice=action==='prefill-purchase'?text('已预填求购草稿，请在游戏中确认。','Buy-order draft filled; confirm in the game.'):text('已预填执行菜单，尚未开始。','Action menu filled; not started.')+(request.expected?text(' 次数为期望取整，不保证完成收藏。',' Attempts are rounded expectations, not a completion guarantee.'):'');}
+    finally{prefillBusy=false;render();}return;
    }
    if(action==='settings'){debug.open(el);return;}
    if(action==='action-status'){statusDetailsKey=statusDetailsKey===el.dataset.key?null:el.dataset.key;render();return;}
@@ -258,8 +258,8 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
    live=envelope.status==='live';status=envelope.status;if(!live||envelope.source!=='client'){executionState=null;executionError='';}
    if(envelope.error)error=message(envelope.error);if(live)applySnapshot(envelope);if(sourceChanged)render();
   },
-  open(){if(!disposed&&!prefillBusy){closed=false;onPrefillStateChange(null);render();}},
+  open(){if(!disposed){closed=false;render();}},
   getWorkspace:()=>structuredClone(workspace),
-  dispose(){if(characterSaveTimer!==null)void save();void store.flush().then(()=>store.dispose());disposed=true;onPrefillStateChange(null);debug.dispose();disposeGeometry();clearInterval(interval);clearTimeout(renderTimer);root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',typed);root.removeEventListener('compositionend',typed);root.removeEventListener('keydown',keydown);stableView.dispose();container.remove();style.remove();},
+  dispose(){if(characterSaveTimer!==null)void save();void store.flush().then(()=>store.dispose());disposed=true;debug.dispose();disposeGeometry();clearInterval(interval);clearTimeout(renderTimer);root.removeEventListener('click',click);root.removeEventListener('change',change);root.removeEventListener('input',typed);root.removeEventListener('compositionend',typed);root.removeEventListener('keydown',keydown);stableView.dispose();container.remove();style.remove();},
  };
 }

@@ -2,23 +2,17 @@ import {mobileMode,viewportBounds,visibleElement} from './mobile-layout.js';
 // Only our own markers and listener: never attach game navigation commands.
 export function installNavigationLauncher(doc,onOpen){
  const view=doc.defaultView,button=doc.createElement('button'),separator=doc.createElement('span'),style=doc.createElement('style');
- const badge=doc.createElement('span'),announcement=doc.createElement('span');badge.dataset.buddyFeedback='';badge.setAttribute('aria-hidden','true');badge.hidden=true;announcement.dataset.buddyAnnouncement='';announcement.setAttribute('role','status');announcement.setAttribute('aria-live','polite');
  button.type='button';button.dataset.buddyLauncher='';separator.dataset.buddySeparator='';separator.setAttribute('role','separator');
  button.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9h16l-3 4h-5v4h5v3H7v-3h3v-4H7zM5 5h7v4H5z"/></svg>';
- button.append(badge,announcement);
- style.textContent='[data-buddy-launcher]{position:relative}[data-buddy-feedback]{position:absolute;right:-4px;top:-4px;min-width:16px;line-height:16px;text-align:center;background:#25170d;color:#fff1c9;border:1px solid #c79352;font-size:12px}[data-buddy-announcement]{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}[data-buddy-launcher].buddy-mobile-launcher{position:fixed;z-index:29;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--edge,#c79352);background:var(--panel,#25170d);color:var(--ink,#f5e6c8);pointer-events:auto;cursor:pointer}[data-buddy-launcher][hidden]{display:none!important}[data-buddy-launcher]:disabled{opacity:.5}';
- let nav=null,anchor=null,ready=false,open=false,status='',prefill=null,scheduled=false,disposed=false,missingTimer=null;
+ style.textContent='[data-buddy-launcher].buddy-mobile-launcher{position:fixed;z-index:29;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--edge,#c79352);background:var(--panel,#25170d);color:var(--ink,#f5e6c8);pointer-events:auto;cursor:pointer}[data-buddy-launcher][hidden]{display:none!important}[data-buddy-launcher]:disabled{opacity:.5}';
+ let nav=null,anchor=null,ready=false,open=false,status='',scheduled=false,disposed=false,missingTimer=null;
  const resize=new view.ResizeObserver(()=>schedule());
  function updateLabels(){
   const lang=doc.documentElement?.lang??'';
   const zh=!mobileMode(doc)&&nav?nav.getAttribute('aria-label')==='游戏导航':lang?lang.toLowerCase().startsWith('zh'):nav?.getAttribute('aria-label')==='游戏导航',label=zh?'工匠精通助手':'Crafting & Mastery Buddy';
-  const detail=prefill?.message||status,accessible=detail?`${label} · ${detail}`:label;
-  if(button.getAttribute('aria-label')!==accessible)button.setAttribute('aria-label',accessible);
-  const title=accessible;if(button.title!==title)button.title=title;
-  const busy=prefill?.state==='busy',disabled=!ready||busy;if(button.disabled!==disabled)button.disabled=disabled;if(button.getAttribute('aria-busy')!==String(busy))button.setAttribute('aria-busy',String(busy));
-  if(badge.hidden!==!prefill)badge.hidden=!prefill;const marker=prefill?{busy:'…',success:'✓',error:'!'}[prefill.state]:'';if(badge.textContent!==marker)badge.textContent=marker;
-  if(announcement.textContent!==(prefill?.message??''))announcement.textContent=prefill?.message??'';
- if(button.getAttribute('aria-pressed')!==String(open))button.setAttribute('aria-pressed',String(open));
+  if(button.getAttribute('aria-label')!==label)button.setAttribute('aria-label',label);
+  const title=status?`${label} · ${status}`:label;if(button.title!==title)button.title=title;
+  button.disabled=!ready;if(button.getAttribute('aria-pressed')!==String(open))button.setAttribute('aria-pressed',String(open));
  }
  function repair(){
   scheduled=false;if(disposed)return;
@@ -64,10 +58,10 @@ export function installNavigationLauncher(doc,onOpen){
   if(relevant)schedule();
  });
  observer.observe(doc,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-label','lang','class','hidden','data-mtab','style']});
- function click(event){event.preventDefault();event.stopPropagation();if(ready&&prefill?.state!=='busy')onOpen();}
+ function click(event){event.preventDefault();event.stopPropagation();if(ready)onOpen();}
  button.addEventListener('click',click);view.addEventListener('resize',schedule);view.visualViewport?.addEventListener('resize',schedule);view.visualViewport?.addEventListener('scroll',schedule);repair();
  return {
-  update(next){if(disposed)return;if(next.ready!==undefined)ready=next.ready;if(next.open!==undefined)open=next.open;if(next.status!==undefined)status=next.status;if(next.prefill!==undefined)prefill=next.prefill;updateLabels();},
+  update(next){if(disposed)return;if(next.ready!==undefined)ready=next.ready;if(next.open!==undefined)open=next.open;if(next.status!==undefined)status=next.status;updateLabels();},
   dispose(){disposed=true;view.clearTimeout(missingTimer);observer.disconnect();resize.disconnect();view.removeEventListener('resize',schedule);view.visualViewport?.removeEventListener('resize',schedule);view.visualViewport?.removeEventListener('scroll',schedule);button.removeEventListener('click',click);button.remove();separator.remove();style.remove();},
  };
 }
