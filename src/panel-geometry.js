@@ -1,3 +1,4 @@
+import {mobileMode,viewportBounds,visibleElement} from './mobile-layout.js';
 // Geometry lives on the stable host and is stored separately from character data.
 export async function installPanelGeometry(root,{platform,key,onError}){
  const host=root.host,view=host.ownerDocument.defaultView;
@@ -17,9 +18,23 @@ export async function installPanelGeometry(root,{platform,key,onError}){
    box={left:saved.left,top:saved.top,width:saved.width,height:saved.height};
   }
  }catch(error){blocked=true;onError(error);}
- function save(){if(blocked)return;const value={...box};writes=writes.then(()=>{if(!blocked)return platform.set(key,value);}).catch(error=>{blocked=true;onError(error);});}
+ function save(){if(blocked||mobileMode(host.ownerDocument))return;const value={...box};writes=writes.then(()=>{if(!blocked)return platform.set(key,value);}).catch(error=>{blocked=true;onError(error);});}
  const clamp=(value,min,max)=>Math.min(Math.max(min,value),max);
- const toolbarSelector='header.top,.ui-toolbar';
+ const toolbarSelector='header.top,.ui-toolbar,.m-top,[data-m-tabs]';
+ const safe=host.ownerDocument.createElement('div');safe.style.cssText='position:absolute;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';root.append(safe);
+ function mobileBounds(){
+  const v=viewportBounds(view),insets=view.getComputedStyle(safe);
+  let top=v.top+(parseFloat(insets.paddingTop)||0),bottom=v.bottom-(parseFloat(insets.paddingBottom)||0);
+  for(const el of toolbars.filter(visibleElement)){
+   const r=el.getBoundingClientRect();
+   if(el.matches('[data-m-tabs]')){if(r.top<v.bottom&&r.bottom>v.top)bottom=Math.min(bottom,r.top);}
+   else if(r.top<v.bottom&&r.bottom>v.top)top=Math.max(top,r.bottom);
+  }
+  top=Math.min(top,v.bottom-1);bottom=Math.max(top+1,bottom);
+  const left=v.left+(parseFloat(insets.paddingLeft)||0),right=v.right-(parseFloat(insets.paddingRight)||0);
+  return {left,top,width:Math.max(1,right-left),height:Math.max(1,bottom-top)};
+ }
+
  function limits(){
   const margin=0,maxWidth=Math.max(1,view.innerWidth);
   const top=Math.min(Math.max(0,...toolbars.map(el=>{const r=el.getBoundingClientRect();return r.width>0&&r.height>0&&r.top<view.innerHeight&&view.getComputedStyle(el).visibility!=='hidden'?r.bottom:0;})),Math.max(0,view.innerHeight-1));
@@ -27,6 +42,11 @@ export async function installPanelGeometry(root,{platform,key,onError}){
   return {margin,top,maxWidth,maxHeight,minWidth:Math.min(360,maxWidth),minHeight:Math.min(260,maxHeight)};
  }
  function apply(){
+  const mobile=mobileMode(host.ownerDocument);host.toggleAttribute('data-mobile',mobile);
+  for(const handle of handles)handle.hidden=mobile;
+  if(mobile){
+   finish();const r=mobileBounds();Object.assign(host.style,{left:`${r.left}px`,top:`${r.top}px`,right:'auto',width:`${r.width}px`,height:`${r.height}px`});return;
+  }
   const {margin,top,maxWidth,maxHeight,minWidth,minHeight}=limits();
   box.width=clamp(box.width,minWidth,maxWidth);box.height=clamp(box.height,minHeight,maxHeight);
   box.left=clamp(box.left,margin,Math.max(margin,view.innerWidth-margin-box.width));box.top=clamp(box.top,top,Math.max(top,view.innerHeight-margin-box.height));
@@ -51,7 +71,7 @@ export async function installPanelGeometry(root,{platform,key,onError}){
   box=drag.side?resized(drag.box,dx,dy,drag.side):{...drag.box,left:drag.box.left+dx,top:drag.box.top+dy};apply();event.preventDefault();
  }
  function down(event){
-  if(event.button!==0||host.hasAttribute('data-closed'))return;
+  if(event.button!==0||host.hasAttribute('data-closed')||mobileMode(host.ownerDocument))return;
   const target=event.target,handle=target.closest?.('[data-resize-side]');
   if(!handle&&(!target.closest?.('.titlebar')||target.closest('button,input,select,a')))return;
   finish();drag={pointerId:event.pointerId,x:event.clientX,y:event.clientY,box:{...box},side:handle?.dataset.resizeSide};
@@ -59,6 +79,7 @@ export async function installPanelGeometry(root,{platform,key,onError}){
   view.addEventListener('pointermove',move,{passive:false});view.addEventListener('pointerup',finish);view.addEventListener('pointercancel',finish);event.preventDefault();event.stopPropagation();
  }
  function keydown(event){
+  if(mobileMode(host.ownerDocument))return;
   const delta={ArrowLeft:[-20,0],ArrowRight:[20,0],ArrowUp:[0,-20],ArrowDown:[0,20]}[event.key];
   if(!delta)return;box=resized(box,delta[0],delta[1],event.currentTarget.dataset.resizeSide);apply();save();event.preventDefault();event.stopPropagation();
  }
@@ -69,8 +90,19 @@ export async function installPanelGeometry(root,{platform,key,onError}){
   if(next.length===toolbars.length&&next.every((el,i)=>el===toolbars[i]))return;
   toolbarResize.disconnect();toolbars=next;for(const el of toolbars)toolbarResize.observe(el);apply();
  }
+ let focusFrame=null;
+ function ensureFocus(){
+  if(!mobileMode(host.ownerDocument)||host.hasAttribute('data-closed'))return;
+  const active=root.activeElement,content=root.querySelector('.content');
+  if(!active?.matches('input,select,textarea')||!content?.contains(active))return;
+  const r=active.getBoundingClientRect(),c=content.getBoundingClientRect();
+  if(r.bottom>c.bottom)content.scrollTop+=r.bottom-c.bottom+8;
+  else if(r.top<c.top)content.scrollTop-=c.top-r.top+8;
+ }
+ function viewportChanged(){if(focusFrame!==null)view.cancelAnimationFrame(focusFrame);focusFrame=view.requestAnimationFrame(()=>{focusFrame=null;apply();ensureFocus();});}
+ const modeChanges=new view.MutationObserver(viewportChanged);modeChanges.observe(host.ownerDocument.documentElement,{attributes:true,attributeFilter:['class']});
  const toolbarChanges=new view.MutationObserver(refreshToolbars);
  toolbarChanges.observe(host.ownerDocument,{childList:true,subtree:true});refreshToolbars();
- root.addEventListener('pointerdown',down);for(const handle of handles)handle.addEventListener('keydown',keydown);view.addEventListener('resize',apply);view.addEventListener('scroll',apply,{passive:true});apply();
- return ()=>{finish();toolbarChanges.disconnect();toolbarResize.disconnect();root.removeEventListener('pointerdown',down);for(const handle of handles){handle.removeEventListener('keydown',keydown);handle.remove();}view.removeEventListener('resize',apply);view.removeEventListener('scroll',apply);};
+ root.addEventListener('focusin',viewportChanged);view.visualViewport?.addEventListener('resize',viewportChanged);view.visualViewport?.addEventListener('scroll',viewportChanged);root.addEventListener('pointerdown',down);for(const handle of handles)handle.addEventListener('keydown',keydown);view.addEventListener('resize',viewportChanged);view.addEventListener('scroll',apply,{passive:true});apply();
+ return ()=>{finish();safe.remove();modeChanges.disconnect();if(focusFrame!==null)view.cancelAnimationFrame(focusFrame);root.removeEventListener('focusin',viewportChanged);view.visualViewport?.removeEventListener('resize',viewportChanged);view.visualViewport?.removeEventListener('scroll',viewportChanged);toolbarChanges.disconnect();toolbarResize.disconnect();root.removeEventListener('pointerdown',down);for(const handle of handles){handle.removeEventListener('keydown',keydown);handle.remove();}view.removeEventListener('resize',viewportChanged);view.removeEventListener('scroll',apply);};
 }

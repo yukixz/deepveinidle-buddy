@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-24",
+  "branch": "codex/mobile-adaptation",
+  "scenarios": [
+    {
+      "name": "mobile",
+      "passed": 15
+    },
+    {
+      "name": "navigation",
+      "passed": 11
+    },
+    {
+      "name": "panel-geometry",
+      "passed": 26
+    },
+    {
+      "name": "debug-menu",
+      "passed": 8
+    },
+    {
+      "name": "browser",
+      "passed": 45
+    },
+    {
+      "name": "game-integration",
+      "passed": 29
+    },
+    {
+      "name": "stable-view",
+      "passed": 7
+    },
+    {
+      "name": "orders-tables-ime",
+      "passed": 18
+    },
+    {
+      "name": "action-materials",
+      "passed": 9
+    }
+  ],
+  "totalChecks": 168,
+  "unitChecks": 9,
+  "scope": "Local synthetic mobile DOM, simulated visual viewport and related desktop regressions; no real-device or userscript-manager acceptance",
+  "finalNavigationChange": "After restricting navigation observers, mobile and navigation scenarios were rerun; other scenario results are from this implementation turn."
+}

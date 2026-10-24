@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-24",
+  "scope": "Controlled DOM fixture with current public game CSS and current buddy navigation; no game JS, account or connection; not real-device acceptance",
+  "rows": [
+    {
+      "width": 390,
+      "height": 844,
+      "coarse": true,
+      "mobileMode": true,
+      "desktopNavDisplay": "none",
+      "launcherHasArea": false,
+      "mobileTabsZIndex": "30"
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "coarse": true,
+      "mobileMode": true,
+      "desktopNavDisplay": "none",
+      "launcherHasArea": false,
+      "mobileTabsZIndex": "30"
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "coarse": true,
+      "mobileMode": false,
+      "desktopNavDisplay": "flex",
+      "launcherHasArea": true,
+      "mobileTabsZIndex": "auto"
+    }
+  ]
+}

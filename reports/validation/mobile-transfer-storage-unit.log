@@ -1,0 +1,17 @@
+✔ DVILAB-PLAN order envelope is gzip Base64 and preserves mixed tasks and fee units (18.7935ms)
+✔ empty orders use DVILAB and other payload formats are rejected (4.882ms)
+✔ corrupt compressed data and invalid payloads reject explicitly (2.419625ms)
+✔ compression and decompression unavailable do not silently change transfer format (0.627584ms)
+✔ bad storage remains intact until explicit reset (1.0805ms)
+✔ external revision blocks overwrites and explicit reload recovers (0.525667ms)
+✔ slow writes keep newest pending data in order (1.588083ms)
+✔ unexpected storage deletion cannot be overwritten before reload (0.184208ms)
+✔ flush waits for all coalesced writes before disposal (2.168042ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 204.741375

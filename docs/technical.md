@@ -12,18 +12,18 @@
 
 - `execution-status.js`：规范化只读任务状态，按配方／稀有度匹配执行动作；仅用于实时高亮，不进入角色存档或计划计算。
 - `game-sync.js`：250ms读取客户端白名单，与capture共享角色／任务字段裁剪，独立保留服务器回退；不代理游戏内部方法。
-- `debug-menu.js`：标题栏空白处右键菜单，按站点保存默认关闭的调试开关，在本页应用且挂载时读取；控制预填操作列和事件入口，开关变更使正在等待的预填失效。
+- `debug-menu.js`：桌面标题栏空白处右键菜单／移动标题栏点按设置，按站点保存默认关闭的调试开关，在本页应用且挂载时读取；控制预填操作列和事件入口，开关变更使正在等待的预填失效。
 - `game-prefill.js`：用户点击触发的市场／普通动作草稿适配；禁止购买或动作提交。
 - `capture.js`：只读旁听已有同源 WebSocket，捕获器先于面板初始化，不额外连接，不发送游戏消息。
-- `main.js`、`navigation.js`：按角色挂载／卸载面板及导航入口，清理监听与定时器。
+- `main.js`、`navigation.js`：按角色挂载／卸载面板及导航入口，清理监听与定时器；移动入口按聊天按钮边界定位，避让同列游戏按钮。
 - `app.js`、`theme.css`：Shadow DOM 内订单、筛选与共享定价；`stable-view.js`统一复用界面及控件节点，局部更新属性和文字，交互期间延后结构变化。输入确认共用普通处理函数，不保留输入法专用重绘分支。不代理全局 document 或修改原游戏代码。
 - `workspace.js`、`crafting-estimates.js`：严格当前模型、解析动作／费用、合并采购与高亮。`planned-products.js`复用原始产出与品质规则，按计划整数次数汇总预计产物，仅用于采购抵扣。
 - `collection-sorting.js`、`table-sorting.js`：全精度稳定排序，未知值置末。
 - `recipe-availability.js`：按候选的完整物品ID和材料总需求检查卖单供应，仅影响配方候选及批量加入，不修改提取的计算模块或已有订单。
 - `fee-units.js`：界面 M／M/h 与金币／金币每分钟基础单位换算。
 - `plan-transfer.js`：固定 DVILAB-PLAN 的 gzip／Base64 封装，应用层校验当前单订单结构。
-- `storage.js`、`panel-geometry.js`：GM revision 保护、独立布局存储、拖动与四边缩放。正式角色存档保存前剔除行情报价及自动导入价格，行情更新仅修改面板内存，不触发保存。
-- `platform.js`：浏览器／GM 存储及剪贴板适配；写入使用 GM_setClipboard，读取由点击触发 navigator.clipboard.readText。
+- `storage.js`、`panel-geometry.js`：GM revision 保护、独立桌面布局存储、拖动与四边缩放；移动端固定可视区域，不覆盖桌面布局。`mobile-layout.js`共用游戏移动模式、可视视口和可见性读取。正式角色存档保存前剔除行情报价及自动导入价格，行情更新仅修改面板内存，不触发保存。
+- `platform.js`：浏览器／GM 存储及剪贴板适配；写入使用 GM_setClipboard，读取由点击触发 navigator.clipboard.readText，受限时在面板提供手动文本路径并明确显示失败。
 
 助手网络用于固定公开市场 API，禁用凭据；用户点击导航产生的游戏市场只读查询允许。不读取登录信息或聊天。按游戏单页面范围，不使用GM存储变更监听或替代轮询；仅保留写入前revision检查，不能作为原子比较交换。真实管理器权限、注入时机与长期性能需独立验证。
 
@@ -33,6 +33,6 @@ userscript安装元数据使用 `@namespace https://dvi-lab.pages.dev` 、`@auth
 
 ## 开发验证
 
-`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器配置，完整输出在 `.test-artifacts/verification/`。`market-storage`覆盖行情刷新不写GM、用户保存不夹带行情、显式重新载入保留内存报价、失败保留与重新挂载清空；`stable-view`覆盖节点持续连接、无变化不修改DOM、编辑草稿与选择范围、原生select选项保留、滚动／指针／文本选择期间延后结构变化及即时禁用状态；`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
+`npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器启动配置，mobile场景使用触屏上下文与游戏移动DOM夹具，模拟可视视口及菜单切换；完整输出在 `.test-artifacts/verification/`。`market-storage`覆盖行情刷新不写GM、用户保存不夹带行情、显式重新载入保留内存报价、失败保留与重新挂载清空；`stable-view`覆盖节点持续连接、无变化不修改DOM、编辑草稿与选择范围、原生select选项保留、滚动／指针／文本选择期间延后结构变化及即时禁用状态；`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
 
 项目处于开发阶段，仅接受当前数据结构，不维护历史兼容和迁移。发布授权与真实环境验证完成前不部署。

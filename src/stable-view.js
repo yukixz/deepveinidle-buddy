@@ -94,10 +94,12 @@ export function createStableView(container,onIdle){
    if(current.innerHTML!==next.innerHTML||current.value!==next.value)pending=true;
    return;
   }
+  // Moving template children can empty a textarea's default value. Capture it first.
+  const nextValue=isControl(next)?next.value:null;
   patchChildren(current,next,busy,active,range);
   if(isControl(current)){
-   if(editing){if(current.value!==next.value)pending=true;return;}
-   if(current.value!==next.value)current.value=next.value;
+   if(editing){if(current.value!==nextValue)pending=true;return;}
+   if(current.value!==nextValue)current.value=nextValue;
    if(current.tagName==='INPUT'&&current.checked!==next.checked)current.checked=next.checked;
   }
  }

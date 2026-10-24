@@ -9,15 +9,17 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  function close(){menu.hidden=true;}
  function update(){toggle.textContent=label();toggle.setAttribute('aria-checked',String(enabled));toggle.disabled=busy||blocked;}
  try{enabled=validate(await platform.get(key,false));}catch(error){report(error);}
+ function openAt(x,y){
+  if(root.host.hasAttribute('data-closed'))return;
+  update();menu.hidden=false;menu.style.left='0px';menu.style.top='0px';
+  const bounds=menu.getBoundingClientRect(),view=doc.defaultView;
+  menu.style.left=Math.max(0,Math.min(x,view.innerWidth-bounds.width))+'px';
+  menu.style.top=Math.max(0,Math.min(y,view.innerHeight-bounds.height))+'px';toggle.focus({preventScroll:true});
+ }
  function contextmenu(event){
   const title=event.target.closest?.('.titlebar');
-  if(!title||event.target.closest('button,input,select,textarea,a')||root.host.hasAttribute('data-closed'))return;
-  event.preventDefault();event.stopPropagation();update();menu.hidden=false;
-  menu.style.left='0px';menu.style.top='0px';
-  const bounds=menu.getBoundingClientRect(),view=doc.defaultView;
-  menu.style.left=Math.max(0,Math.min(event.clientX,view.innerWidth-bounds.width))+'px';
-  menu.style.top=Math.max(0,Math.min(event.clientY,view.innerHeight-bounds.height))+'px';
-  toggle.focus({preventScroll:true});
+  if(!title||event.target.closest('button,input,select,textarea,a'))return;
+  event.preventDefault();event.stopPropagation();openAt(event.clientX,event.clientY);
  }
  async function change(event){
   event.stopPropagation();if(busy||blocked||disposed)return;
@@ -31,5 +33,5 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  root.addEventListener('contextmenu',contextmenu);toggle.addEventListener('click',change);
  doc.addEventListener('pointerdown',outside,true);doc.addEventListener('keydown',escape,true);
  doc.defaultView.addEventListener('resize',close);
- return {get enabled(){return enabled;},close,dispose(){disposed=true;root.removeEventListener('contextmenu',contextmenu);toggle.removeEventListener('click',change);doc.removeEventListener('pointerdown',outside,true);doc.removeEventListener('keydown',escape,true);doc.defaultView.removeEventListener('resize',close);menu.remove();}};
+ return {open(el){const r=el.getBoundingClientRect();openAt(r.left,r.bottom);},get enabled(){return enabled;},close,dispose(){disposed=true;root.removeEventListener('contextmenu',contextmenu);toggle.removeEventListener('click',change);doc.removeEventListener('pointerdown',outside,true);doc.removeEventListener('keydown',escape,true);doc.defaultView.removeEventListener('resize',close);menu.remove();}};
 }

@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-24",
+  "site": "https://deepveinidle.com/",
+  "method": "Unauthenticated static HTTP GET only; no game JavaScript execution or WebSocket connection",
+  "assets": [
+    {
+      "url": "https://deepveinidle.com/assets/index-t_ec2EGN.js",
+      "bytes": 6423878,
+      "sha256": "62044383f2435db28a74a37c41ca95315d9e7031a01ca05d0c974c394708e77b"
+    },
+    {
+      "url": "https://deepveinidle.com/assets/index-vH25gT_y.css",
+      "bytes": 654152,
+      "sha256": "04ba4acbdfccf45bff3d1a40f539ba5cbe0ac02b90cbbe1684204f44e21111ea"
+    }
+  ]
+}

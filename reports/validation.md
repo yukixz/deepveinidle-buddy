@@ -1,33 +1,21 @@
 # 当前验证
 
-日期：2026-10-24。开发版本0.1.0，未发布。面板、游戏导航入口、安装元数据及演示页统一中文名称“工匠精通助手”，英文名称“Crafting & Mastery Buddy”；导航随游戏语言切换，面板随助手语言切换。默认安装name继续使用无空格ASCII标识“DeepVeinIdle-Buddy”。
+日期：2026-10-24。开发版本0.1.0，分支codex/mobile-adaptation，未发布。本轮实现移动端入口、触摸布局、可视视口避让、状态／设置点按、手动计划文本及移动菜单预填。规则见[面板设计](../docs/panel.md)，调研与公开资源依据见[移动适配调研](mobile-adaptation.md)。
 
 | 检查 | 本次结果 | 证据 |
 | --- | --- | --- |
-| 构建 | 通过，userscript 928611字节 | 本机构建 dist/manifest.json |
-| 导航专项 | 11项通过，覆盖中文名称、悬停提示、英文切换与重开 | [日志](validation/navigation.log) |
-| 面板专项 | 45项通过，覆盖中英文标题及原有面板交互 | [日志](validation/browser.log) |
-| 调试与元数据专项 | 8项通过，包含中英文安装名称断言 | [日志](validation/debug-menu.log) |
-| 静态检查 | 当前代码、测试及文档无旧名称；差异空白检查通过 | rg、git diff --check |
+| 构建 | 通过，userscript 942592字节 | 本机构建 dist/manifest.json |
+| 移动专项 | 15项通过 | [日志](validation/mobile.log) |
+| 导航及布局回归 | 11＋26项通过 | [导航](validation/navigation.log)、[布局](validation/panel-geometry.log) |
+| 调试、面板与游戏接入 | 8＋45＋29项通过 | [调试](validation/debug-menu.log)、[面板](validation/browser.log)、[接入](validation/game-integration.log) |
+| 稳定节点、订单输入与材料高亮 | 7＋18＋9项通过 | [稳定节点](validation/stable-view.log)、[订单](validation/orders-tables-ime.log)、[高亮](validation/action-materials.log) |
+| 计划传输及存储单元 | 9项通过 | [日志](validation/mobile-transfer-storage-unit.log) |
+| 视觉核对 | 移动入口、面板及预填失败保持／成功关闭截图已核对 | [入口](screenshots/mobile-launcher.png)、[面板](screenshots/mobile-portrait.png)、[失败](screenshots/mobile-prefill-failure.png)、[成功](screenshots/mobile-prefill.png) |
 
-本次仅运行相关专项共64项，未运行全量测试，未在真实游戏或脚本管理器验收，未发布。
+9场景共168项浏览器检查，另9项单元检查；摘要见[数据](validation/mobile-summary.json)。导航观察范围收窄后重跑mobile与navigation，其他专项为本轮实施中的实际运行结果。未执行全量测试。
 
-当前安装脚本SHA-256：`50ca0d0d012dbbc739721f54d502d9a04b6519ec09f5b15615a766a81db94016`。
+移动夹具包含隐藏桌面导航、聊天锚点及同列按钮、底栏、移动模式切换和路线节点搬移；覆盖320／360／390／430px竖屏与844×390触屏横屏。键盘通过VisualViewport变化模拟；剪贴板拒绝通过抛错夹具验证。预填测试使用隔离角色、菜单与提交记录，不访问真实账号，购买／开始／排队提交记录为零。
 
-## 执行动作高亮验证（此前结果）
+Android Firefox＋Tampermonkey、iOS Safari＋Tampermonkey、真实软键盘、地址栏伸缩、安全区域、页面注入及五项GM权限尚未验收。模拟视口与窄屏截图不能代替真机。未发布、未部署。
 
-日期：2026-10-24。开发版本0.1.0，未发布。本次调整执行动作表高亮：材料满足使用深绿／琥珀底色，执行中／队列中使用紫／蓝边框，同时命中时紫色优先；规则见[面板设计](../docs/panel.md)。
-
-| 检查 | 本次结果 | 证据 |
-| --- | --- | --- |
-| 构建 | 通过，userscript 928615字节 | 本机构建 dist/manifest.json |
-| 材料高亮专项 | 9项通过，覆盖底色、库存状态、提示、双语及窄屏 | [日志](validation/action-materials.log) |
-| 游戏接入专项 | 29项通过，覆盖实时匹配、边框优先级、材料底色叠加及原有只读预填流程 | [日志](validation/game-integration.log) |
-| 视觉核对 | 桌面、窄屏及材料与实时状态叠加截图已核对 | [材料桌面](screenshots/action-materials-desktop.png)、[材料窄屏](screenshots/action-materials-mobile.png)、[实时状态叠加](screenshots/execution-status.png) |
-| 静态检查 | 差异空白检查通过 | git diff --check |
-
-本次仅运行上述影响范围内验证，未重跑全量测试。浏览器验证使用本地合成场景，未在真实脚本管理器或游戏环境验收，未部署。
-
-此前元数据与行情内存存储验证为历史结果，不计入本次重跑结果。
-
-当时安装脚本SHA-256：`f401351055a3e03bd3061fe9bd54f9c44c53422558f44d697ab0cf47d10da61f`。
+此前名称统一及高亮等记录为历史结果，不计入本次重跑。当前安装脚本SHA-256：`5734a50c5900c8c265e6d8734d9064030098a3ceca8dafc9726d5eb0c8c9cd0f`。

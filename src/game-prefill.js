@@ -1,3 +1,4 @@
+import {mobileMode} from './mobile-layout.js';
 import {characterRole} from './game-sync.js';
 const failure=code=>{throw Error(code);};
 export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolve=>setTimeout(resolve,ms))}={}){
@@ -28,7 +29,7 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
      click('[data-market-trade] [data-trade-close]');
      await until(()=>!find('[data-market-trade]'),check);
     }
-    if(!find('[data-market-window]'))click('[data-open="market"]');
+    if(!find('[data-market-window]'))click(mobileMode(doc)?'[data-m-tabs] [data-m-tab="market"]':'[data-open="market"]');
     await until(()=>find('[data-market-window]'),check);
     click('[data-market-mode="buy"]');
     if(find('[data-market-sheet]'))click('[data-sheet-back]');
@@ -62,6 +63,11 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
     const routes=page.deepvein?.routes?.();
     if(!routes||typeof routes.show!=='function'||typeof routes.preselect!=='function')failure('gameControlMissing');
     const panels=page.deepvein.panels;if(!panels||typeof panels.show!=='function')failure('gameControlMissing');
+    if(mobileMode(doc)){
+     const play=()=>doc.querySelector('.m-shell')?.dataset.mtab==='play';
+     if(!play())click('[data-m-tabs] [data-m-tab="play"]');
+     await until(()=>play(),check);
+    }
     panels.show('skills');routes.show(request.skill);routes.preselect({jobId:request.jobId});check();
     if(routes.pending?.jobId!==request.jobId)failure('gameControlUnavailable');
     const options=required('.routes [data-opt-line]'),expanded=options.getAttribute('aria-expanded');
