@@ -1,3 +1,4 @@
+import {toggleGameLanguage} from './browser-helper.mjs';
 import {launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 
@@ -21,10 +22,10 @@ try{
   await page.waitForTimeout(200);
  }
 
- await root.locator('[data-action="language"]').click();
+ await root.locator('[data-action="mode-collection-craft"]').click();
  await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
  const saved=await stored();
- saved.language='zh';
+
  saved.filters.collection={...saved.filters.collection,maxCost:'100',query:'青铜锭',tier:'0'};
  saved.prices.quotes={
   1:{ask:{value:2,capturedAt:Date.now()},bid:{value:1,capturedAt:Date.now()}},
@@ -45,7 +46,7 @@ try{
  assert.equal(await row.locator('td').nth(7).textContent(),'68.25');
  checks.push('table shows actual coins per point for ask and bid pricing while filter conversion preserves internal units');
 
- await root.locator('[data-action="language"]').click();
+ await toggleGameLanguage(page);
  assert.equal(await caption(),'Coins/pt');
  assert.ok((await root.locator('#max-cost').evaluate(el=>el.parentElement.textContent)).includes('Coins/pt(M/100)'));
  await page.setViewportSize({width:390,height:844});
@@ -57,7 +58,7 @@ try{
 
  await setLimit('');
  const tiny=await stored();
- tiny.language='zh';tiny.character.buyMode='ask';
+ tiny.character.buyMode='ask';
  tiny.prices.quotes={1:{ask:{value:.000001,capturedAt:Date.now()}},2:{ask:{value:.000001,capturedAt:Date.now()}}};
  await load(tiny);
  assert.equal(await row.locator('td').nth(7).textContent(),'0.00');
@@ -71,7 +72,7 @@ try{
   await load(scaled);
   assert.equal(await row.locator('td').nth(7).textContent(),expected);
   assert.match(await row.locator('td').nth(5).textContent(),/^\d+\.\d{2}[KMBTQ]?$/);
-  await root.locator('[data-action="language"]').click();
+  await toggleGameLanguage(page);
   assert.equal(await row.locator('td').nth(7).textContent(),expected);
  }
  checks.push('K/M/B costs use two decimals in both languages; total coins use the same compact format');

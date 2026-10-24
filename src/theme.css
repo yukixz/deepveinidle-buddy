@@ -65,6 +65,18 @@ table { width:100%; border-collapse:collapse; font-size:12px; }
 th,td { text-align:left; padding:4px 5px; border-bottom:1px solid #73553766; vertical-align:middle; width:1%; white-space:nowrap; }
 th { background:#1d1209; color:#d7bd8d; font-weight:700; }
 td small { display:block; }
+td small.expected-attempts { display:inline; margin-left:6px; }
+.game-version { color:var(--muted); }
+/* Only the three planning tables freeze their item and rarity columns. */
+.frozen-table { border-collapse:separate; border-spacing:0; }
+#recipe-candidates { --frozen-first-width:var(--recipes-item-width,100px); }
+#purchase-materials { --frozen-first-width:var(--procurement-item-width,100px); }
+#execution-actions { --frozen-first-width:var(--actions-item-width,100px); }
+.frozen-table :is(th,td):nth-child(-n+2):not([colspan]) { position:sticky; z-index:1; background:var(--frozen-row-bg,#25170d); }
+.frozen-table :is(th,td):first-child:not([colspan]) { left:0; }
+.frozen-table :is(th,td):nth-child(2):not([colspan]) { left:var(--frozen-first-width); border-right:1px solid #80613d; }
+.frozen-table thead th:nth-child(-n+2) { z-index:2; background:#1d1209; }
+.frozen-table tbody tr:hover { --frozen-row-bg:#38291a; }
 tbody tr:hover { background:#b0803520; }
 .text-cell { width:auto; min-width:100px; max-width:240px; white-space:normal; overflow-wrap:break-word; }
 .candidate-name { min-width:100px; }
@@ -77,8 +89,8 @@ table input[type=number] { width:68px; min-height:26px; padding:2px 5px; }
 .sort-header { background:transparent; color:inherit; box-shadow:none; padding:0; font-weight:inherit; white-space:nowrap; }
 .sort-arrow { display:inline-block; margin-left:3px; font-size:10px; color:var(--edge); }
 .sort-arrow:empty { display:none; }
-#execution-actions tr.ready { background:#284c3b; }
-#execution-actions tr.materials-shared { background:#665020; }
+#execution-actions tr.ready { background:#284c3b; --frozen-row-bg:#284c3b; }
+#execution-actions tr.materials-shared { background:#665020; --frozen-row-bg:#665020; }
 #execution-actions tr.queued { outline:2px solid #70bff2; outline-offset:-2px; }
 #execution-actions tr.queued td:first-child { box-shadow:inset 3px 0 #70bff2; }
 #execution-actions tr.running { outline:2px solid #bd98e8; outline-offset:-2px; }
@@ -138,6 +150,7 @@ details[open]>summary { margin-bottom:10px; }
 .mobile-only { display:none; }
 :host([data-mobile]) { z-index:31; font-size:14px; max-height:none; }
 :host([data-mobile]) .titlebar { cursor:default; touch-action:auto; padding:8px; gap:5px; }
+:host([data-mobile]) .title-info { -webkit-touch-callout:none; }
 :host([data-mobile]) .titlebar h1 { font-size:15px; }
 :host([data-mobile]) .titlebar .controls { gap:4px; }
 :host([data-mobile]) .mobile-only { display:block; }

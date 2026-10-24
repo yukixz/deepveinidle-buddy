@@ -1,3 +1,4 @@
+import {gameLanguage} from './game-language.js';
 import {mobileMode,viewportBounds,visibleElement} from './mobile-layout.js';
 // Only our own markers and listener: never attach game navigation commands.
 export function installNavigationLauncher(doc,onOpen){
@@ -6,7 +7,7 @@ export function installNavigationLauncher(doc,onOpen){
  button.type='button';button.dataset.buddyLauncher='';separator.dataset.buddySeparator='';separator.setAttribute('role','separator');
  button.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9h16l-3 4h-5v4h5v3H7v-3h3v-4H7zM5 5h7v4H5z"/></svg>';
  style.textContent='[data-buddy-launcher].buddy-mobile-launcher{position:fixed;z-index:29;display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--edge,#c79352);background:var(--panel,#25170d);color:var(--ink,#f5e6c8);pointer-events:auto;cursor:pointer}[data-buddy-launcher][hidden]{display:none!important}[data-buddy-launcher]:disabled{opacity:.5}[data-buddy-hint]{position:fixed;z-index:2147483647;box-sizing:border-box;width:max-content;max-width:340px;padding:10px 12px;border:1px solid #c79352;border-radius:6px;background:#25170d;color:#f5e6c8;font:14px/1.5 sans-serif;overflow-wrap:anywhere;pointer-events:none;box-shadow:0 2px 10px #0008}[data-buddy-hint][hidden]{display:none!important}';
- let nav=null,anchor=null,ready=false,open=false,status='',scheduled=false,disposed=false,missingTimer=null,hintTimer=null,introduced=false;
+ let nav=null,anchor=null,ready=false,open=false,status='',scheduled=false,disposed=false,missingTimer=null,hintTimer=null,introduced=false,introVisible=false;
  const resize=new view.ResizeObserver(()=>schedule());
  function positionHint(){
   if(!hint.textContent)return;
@@ -19,16 +20,16 @@ export function installNavigationLauncher(doc,onOpen){
   hint.style.left=`${left}px`;hint.style.top=`${Math.max(bounds.top+margin,Math.min(top,bounds.bottom-h.height-margin))}px`;
  }
  function showHint(message){
-  if(disposed)return;view.clearTimeout(hintTimer);hint.textContent=message;hint.hidden=true;if(!message){hintTimer=null;return;}positionHint();
-  hintTimer=view.setTimeout(()=>{hint.hidden=true;hint.textContent='';hintTimer=null;},5000);
+  if(disposed)return;view.clearTimeout(hintTimer);hint.textContent=message;introVisible=false;hint.hidden=true;if(!message){hintTimer=null;return;}positionHint();
+  hintTimer=view.setTimeout(()=>{hint.hidden=true;hint.textContent='';hintTimer=null;introVisible=false;},5000);
  }
  function updateLabels(){
-  const lang=doc.documentElement?.lang??'';
-  const zh=!mobileMode(doc)&&nav?nav.getAttribute('aria-label')==='游戏导航':lang?lang.toLowerCase().startsWith('zh'):nav?.getAttribute('aria-label')==='游戏导航',label=zh?'工匠精通助手':'Crafting & Mastery Buddy';
+  const zh=gameLanguage(doc)==='zh',label=zh?'工匠精通助手':'Crafting & Mastery Buddy';
   if(button.getAttribute('aria-label')!==label)button.setAttribute('aria-label',label);
   const title=status?`${label} · ${status}`:label;if(button.title!==title)button.title=title;
   button.disabled=!ready;if(button.getAttribute('aria-pressed')!==String(open))button.setAttribute('aria-pressed',String(open));
-  if(ready&&visibleElement(button)&&!introduced){introduced=true;showHint(zh?'点击此按钮打开工匠精通助手':'Click this button to open Crafting & Mastery Buddy');}else positionHint();
+  const opening=zh?'点击此按钮打开工匠精通助手':'Click this button to open Crafting & Mastery Buddy';
+  if(ready&&visibleElement(button)&&!introduced){introduced=true;showHint(opening);introVisible=true;}else{if(introVisible&&hint.textContent!==opening)hint.textContent=opening;positionHint();}
  }
  function repair(){
   scheduled=false;if(disposed)return;

@@ -1,3 +1,4 @@
+import {toggleGameLanguage} from './browser-helper.mjs';
 import {launchBrowser,baseUrl} from './browser-helper.mjs';import fs from 'node:fs/promises';import assert from 'node:assert/strict';
 const browser=await launchBrowser();
 const page=await browser.newPage({viewport:{width:1440,height:1080}}),checks=[],errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -8,7 +9,7 @@ async function visible(){await page.waitForFunction(()=>{const r=document.queryS
 await fs.mkdir('.test-artifacts/panel-geometry',{recursive:true});
 try{
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();
- assert.deepEqual(await root.locator('.titlebar .controls button').evaluateAll(els=>els.map(e=>e.dataset.action)),['language','close']);checks.push('titlebar has only language and close buttons');
+ assert.deepEqual(await root.locator('.titlebar .controls button').evaluateAll(els=>els.map(e=>e.dataset.action)),['close']);checks.push('titlebar has only the close button');
  const initial=await box();await drag(root.locator('.resize-right'),-300,-300);const small=await visible();assert.ok(small.width<initial.width-250&&small.height<initial.height-250);checks.push('pointer handle resizes both width and height');
  const beforeLeft=await box();await drag(root.locator('.resize-left'),80,-60);const afterLeft=await visible();near(afterLeft.x,beforeLeft.x+80);near(afterLeft.width,beforeLeft.width-80);near(afterLeft.height,beforeLeft.height-60);near(afterLeft.x+afterLeft.width,beforeLeft.x+beforeLeft.width);checks.push('left bottom handle resizes both axes while anchoring the opposite corner');
  await drag(root.locator('.resize-left'),-80,60);
@@ -19,17 +20,17 @@ try{
   await drag(root.locator('.resize-'+side),-dx,-dy);checks.push(side+' resizes the intended axes with opposite edges anchored');
  }
  const persisted=await box();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-geometry-v1')!==null);await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-top').waitFor();const restored=await visible();for(const key of ['x','y','width','height'])near(restored[key],persisted[key]);checks.push('refresh restores saved position and size');
- await root.locator('[data-action="language"]').click();const redraw=await box();near(redraw.width,small.width);near(redraw.height,small.height);checks.push('language redraw preserves geometry');
+ await toggleGameLanguage(page);const redraw=await box();near(redraw.width,small.width);near(redraw.height,small.height);checks.push('language redraw preserves geometry');
  const header=await root.locator('.titlebar h1').boundingBox();await page.mouse.move(header.x+20,header.y+8);await page.mouse.down();await page.mouse.move(header.x-230,header.y+108,{steps:8});await page.mouse.up();const moved=await visible();assert.ok(moved.x<small.x-200&&moved.y>small.y+90);checks.push('dragging titlebar moves panel');
  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-geometry-v1')).left===parseFloat(document.querySelector('#deepveinidle-buddy').style.left));await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();const movedRestored=await box();for(const key of ['x','y','width','height'])near(movedRestored[key],moved[key]);checks.push('refresh restores titlebar movement as well as size');
- await root.locator('[data-action="language"]').click();const afterButton=await box();near(moved.x,afterButton.x);near(moved.y,afterButton.y);checks.push('titlebar buttons do not initiate dragging');
+ await root.locator('[data-action="close"]').click();await page.locator('[data-buddy-launcher]').click();const afterButton=await box();near(moved.x,afterButton.x);near(moved.y,afterButton.y);checks.push('titlebar buttons do not initiate dragging');
  await drag(root.locator('.titlebar h1'),-1500,-1500);const edge=await visible();near(edge.x,0);near(edge.y,0);checks.push('dragging is clamped to viewport');
  await drag(root.locator('.resize-right'),1600,1600);const full=await visible();near(full.width,1440);near(full.height,1080);assert.equal(await root.locator('.resize-handle svg').count(),0);checks.push('resize reaches all viewport edges with no corner grip artwork');
  await root.locator('.resize-right').focus();const beforeKey=await box();await page.keyboard.press('ArrowLeft');await page.keyboard.press('ArrowUp');const afterKey=await box();near(afterKey.width,beforeKey.width-20);near(afterKey.height,beforeKey.height-20);checks.push('focused handle supports keyboard resizing');
  await root.locator('[data-action="close"]').click();assert.equal(await root.isVisible(),false);assert.equal(await page.locator('[data-buddy-launcher]').isVisible(),true);assert.equal(await root.locator('.resize-right').isVisible(),false);await page.locator('[data-buddy-launcher]').click();const reopened=await box();for(const key of ['x','y','width','height'])near(reopened[key],afterKey[key]);checks.push('close hides panel and navigation reopens at preserved position and size');
- await page.setViewportSize({width:390,height:844});await visible();assert.equal(await root.locator('.titlebar .controls button').count(),2);await root.locator('.resize-right').focus();await page.keyboard.press('ArrowLeft');await visible();checks.push('viewport shrink and narrow layout keep controls and resize grip visible');
+ await page.setViewportSize({width:390,height:844});await visible();assert.equal(await root.locator('.titlebar .controls button').count(),1);await root.locator('.resize-right').focus();await page.keyboard.press('ArrowLeft');await visible();checks.push('viewport shrink and narrow layout keep controls and resize grip visible');
  await page.screenshot({path:'.test-artifacts/panel-geometry/mobile.png'});
- await page.setViewportSize({width:1440,height:1080});await root.locator('[data-action="language"]').click();await drag(root.locator('.resize-right'),500,0);await visible();await page.screenshot({path:'.test-artifacts/panel-geometry/desktop.png'});
+ await page.setViewportSize({width:1440,height:1080});await toggleGameLanguage(page);await drag(root.locator('.resize-right'),500,0);await visible();await page.screenshot({path:'.test-artifacts/panel-geometry/desktop.png'});
  await page.evaluate(()=>{const bar=document.createElement('header');bar.className='top';bar.style.cssText='position:fixed;inset:0 0 auto;height:72px;z-index:10;background:#555';bar.textContent='Game toolbar';document.body.append(bar);});
  await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().top>=72);
  await drag(root.locator('.titlebar h1'),-1800,-1800);near((await visible()).y,72);

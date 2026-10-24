@@ -1,3 +1,4 @@
+import {toggleGameLanguage} from './browser-helper.mjs';
 import {launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -26,13 +27,13 @@ try{
  const open=()=>root.locator('.titlebar h1').click({button:'right'});
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();
  assert.equal(await root.evaluate(el=>getComputedStyle(el).zIndex),'7');assert.equal(await root.locator('#execution-actions th').count(),5);assert.equal(await root.locator('#purchase-materials th').count(),6);assert.equal(await root.locator('[data-action^="prefill-"]').count(),0);assert.doesNotMatch(await root.locator('.panel-mount').textContent(),/预填|prefill|调试|debug/i);checks.push('z-index is 7; default panel has no debug columns or prefill instructions');
- await root.locator('[data-action="language"]').click({button:'right'});assert.equal(await menu.isVisible(),false);
+ await root.locator('[data-action="close"]').click({button:'right'});assert.equal(await menu.isVisible(),false);
  await open();assert.equal(await toggle.textContent(),'启用调试功能');assert.equal(await toggle.getAttribute('aria-checked'),'false');await page.keyboard.press('Escape');assert.equal(await menu.isVisible(),false);
  await open();await root.locator('h2').first().click();assert.equal(await menu.isVisible(),false);checks.push('title blank opens menu; controls keep native context menu; Escape and outside click dismiss');
  await open();await toggle.click();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-debug-v1')==='true');assert.equal(await root.locator('#execution-actions th').count(),6);assert.equal(await root.locator('#purchase-materials th').count(),7);assert.ok(await root.locator('[data-action^="prefill-"]').count()>0);checks.push('opt-in adds both complete action columns');
  await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();assert.equal(await root.locator('#execution-actions th').count(),6);
  await open();await toggle.click();assert.equal(await root.locator('#execution-actions th').count(),5);await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();assert.equal(await root.locator('#execution-actions th').count(),5);checks.push('local preference survives reload with either enabled or disabled value');
- await root.locator('[data-action="language"]').click();await open();assert.equal(await toggle.textContent(),'Enable debug features');await page.keyboard.press('Escape');
+ await toggleGameLanguage(page);await open();assert.equal(await toggle.textContent(),'Enable debug features');await page.keyboard.press('Escape');
  await page.setViewportSize({width:390,height:844});await root.locator('.titlebar').dispatchEvent('contextmenu',{clientX:389,clientY:843});const bounds=await menu.boundingBox();assert.ok(bounds.x>=0&&bounds.y>=0&&bounds.x+bounds.width<=390&&bounds.y+bounds.height<=844);await page.keyboard.press('Escape');checks.push('menu supports English and stays within viewport');
  // Exercise storage failures and site/role boundaries with the same production menu module.
  const result=await page.evaluate(async()=>{
@@ -50,6 +51,6 @@ try{
   return {boundaries,failedSave,protectedValue,readFailed,seen};
  });
  assert.deepEqual(result.boundaries,[true,false,false]);assert.deepEqual(result.failedSave,[true,true]);assert.deepEqual(result.protectedValue,{invalid:true});assert.equal(result.readFailed,false);assert.deepEqual(result.seen,['write failed','invalidDebugPreference','read failed']);checks.push('role reuse, site/demo isolation, explicit storage errors and invalid-value protection');
- await page.evaluate(()=>localStorage.setItem('dvi-buddy-demo-debug-v1','"bad"'));await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();assert.ok((await root.locator('[role="alert"]').textContent()).includes('Invalid debug preference'));assert.equal(await root.locator('#execution-actions th').count(),5);await open();assert.equal(await toggle.isDisabled(),true);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-debug-v1'))),'bad');checks.push('invalid saved preference fails closed visibly and cannot be overwritten');
+ await page.evaluate(()=>localStorage.setItem('dvi-buddy-demo-debug-v1','"bad"'));await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();assert.ok((await root.locator('[role="alert"]').textContent()).includes('调试设置无效'));assert.equal(await root.locator('#execution-actions th').count(),5);await open();assert.equal(await toggle.isDisabled(),true);assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-debug-v1'))),'bad');checks.push('invalid saved preference fails closed visibly and cannot be overwritten');
  assert.deepEqual(errors,[]);await fs.mkdir('.test-artifacts/debug-menu',{recursive:true});await fs.writeFile('.test-artifacts/debug-menu/summary.json',JSON.stringify({checks,errors},null,2)+'\n');console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
 }finally{await browser.close();}

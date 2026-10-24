@@ -1,0 +1,14 @@
+{
+  "passed": 8,
+  "checks": [
+    "built userscript has ASCII default name, localized names, MIT license, namespace, author, five grants and no public prefill introduction",
+    "z-index is 7; default panel has no debug columns or prefill instructions",
+    "title blank opens menu; controls keep native context menu; Escape and outside click dismiss",
+    "opt-in adds both complete action columns",
+    "local preference survives reload with either enabled or disabled value",
+    "menu supports English and stays within viewport",
+    "role reuse, site/demo isolation, explicit storage errors and invalid-value protection",
+    "invalid saved preference fails closed visibly and cannot be overwritten"
+  ],
+  "errors": []
+}

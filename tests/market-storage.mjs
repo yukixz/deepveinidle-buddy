@@ -41,11 +41,11 @@ try{
  await page.evaluate(response=>{window.marketResponse=response;window.marketTick();},quote());
  await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('[data-material="1"] td:nth-child(5)')?.textContent==='112');
  assert.equal(await page.evaluate(()=>window.savedWrites.length),0);checks.push('market refresh updates rendered estimates without a GM write');
- await root.locator('[data-action="language"]').click();await page.waitForFunction(()=>window.savedWrites.length>0);
- const saved=await page.evaluate(()=>window.savedValues['market-test']);assert.deepEqual(saved.prices.quotes,{});assert.deepEqual(saved.prices.prices,{});assert.equal(saved.language,'en');assert.deepEqual(saved.orders,initial.orders);
+ await root.locator('#orders > summary').click();await root.locator('#auto-remove').check();await page.waitForFunction(()=>window.savedWrites.length>0);
+ const saved=await page.evaluate(()=>window.savedValues['market-test']);assert.deepEqual(saved.prices.quotes,{});assert.deepEqual(saved.prices.prices,{});assert.equal(saved.autoRemove,true);assert.equal(Object.hasOwn(saved,'language'),false);assert.deepEqual(saved.orders,initial.orders);
  assert.equal(await unitPrice.textContent(),'112');checks.push('saving user settings keeps orders and preferences while excluding quotes and generated prices');
  await page.evaluate(()=>{window.savedValues['market-test'].revision++;});
- await root.locator('[data-action="language"]').click();await root.locator('[data-action="reload"]').waitFor();await root.locator('[data-action="reload"]').click();
+ await root.locator('#auto-remove').uncheck();await root.evaluate(el=>el.shadowRoot.activeElement?.blur());await root.locator('[data-action="reload"]').waitFor();await root.locator('[data-action="reload"]').click();
  await page.waitForFunction(()=>!document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('[data-action="reload"]'));
  assert.equal(await unitPrice.textContent(),'112');checks.push('explicit storage reload recovers user data while retaining current in-memory market prices');
  const beforeFailure=await page.evaluate(()=>window.savedWrites.length);

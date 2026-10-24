@@ -1,3 +1,4 @@
+import {toggleGameLanguage} from './browser-helper.mjs';
 import {launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -10,9 +11,9 @@ try{
  const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64,64,64]);};
  const row=target=>root.locator(`[data-key="40:41:${target}"]`);
  const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));
- await root.locator('[data-action="language"]').click();
+ await root.locator('[data-action="mode-collection-craft"]').click();
  await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
- const state=await saved();state.language='zh';state.character.bank={1:1000000,2:1000000};
+ const state=await saved();state.character.bank={1:1000000,2:1000000};
  state.filters.collection={...state.filters.collection,query:'青铜锭',tier:'0'};
  state.filters.craft={...state.filters.craft,query:'青铜锭',tier:'0'};
  const quote=quantity=>({ask:{value:2,quantity,capturedAt:Date.now()},bid:{value:1,quantity:9999,capturedAt:Date.now()}});
@@ -57,7 +58,7 @@ try{
  checks.push('gathering candidates without material requirements remain visible');
  await root.locator('[data-action="mode-collection-craft"]').click();await root.locator('#search').fill('青铜锭');await root.locator('#search').press('Tab');await page.waitForTimeout(200);
  await fs.mkdir('.test-artifacts/recipe-availability',{recursive:true});await compactPricing();await page.screenshot({path:'.test-artifacts/recipe-availability/desktop.png'});
- await root.locator('[data-action="language"]').click();assert.equal(await material.locator('option[value="ask-stock"]').textContent(),'Asks (exclude insufficient stock)');await root.locator('#search').fill('Bronze');await root.locator('#search').press('Tab');await page.waitForTimeout(200);assert.equal(await row(100).count(),1);
+ await toggleGameLanguage(page);assert.equal(await material.locator('option[value="ask-stock"]').textContent(),'Asks (exclude insufficient stock)');await root.locator('#search').fill('Bronze');await root.locator('#search').press('Tab');await page.waitForTimeout(200);assert.equal(await row(100).count(),1);
  await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().right<=innerWidth+1);
  assert.equal(await material.inputValue(),'ask-stock');assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await compactPricing();await page.screenshot({path:'.test-artifacts/recipe-availability/mobile.png'});assert.deepEqual(errors,[]);

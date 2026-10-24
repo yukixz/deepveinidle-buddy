@@ -1,0 +1,7 @@
+{
+  "command": "node --test tests/workspace.test.mjs tests/storage.test.mjs tests/order-transfer.test.mjs",
+  "tests": 54,
+  "pass": 54,
+  "fail": 0,
+  "skipped": 0
+}

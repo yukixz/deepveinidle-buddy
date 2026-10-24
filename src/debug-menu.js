@@ -1,12 +1,14 @@
+import {mobileMode} from './mobile-layout.js';
 // Site-wide UI preference; deliberately separate from character/order storage.
 export async function installDebugMenu(root,{platform,key,label,onChange,onError}){
  const doc=root.ownerDocument,menu=doc.createElement('div'),toggle=doc.createElement('button');
  menu.className='debug-menu';menu.hidden=true;menu.setAttribute('role','menu');
  toggle.type='button';toggle.setAttribute('role','menuitemcheckbox');menu.append(toggle);root.append(menu);
- let enabled=false,blocked=false,busy=false,disposed=false;
+ let enabled=false,blocked=false,busy=false,disposed=false,press=null,pressTimer=null;
+ function cancelPress(){doc.defaultView.clearTimeout(pressTimer);pressTimer=null;press=null;}
  const validate=value=>{if(typeof value!=='boolean')throw Error('invalidDebugPreference');return value;};
  const report=error=>{blocked=true;enabled=false;close();onError(error);onChange();};
- function close(){menu.hidden=true;}
+ function close(){cancelPress();menu.hidden=true;}
  function update(){toggle.textContent=label();toggle.setAttribute('aria-checked',String(enabled));toggle.disabled=busy||blocked;}
  try{enabled=validate(await platform.get(key,false));}catch(error){report(error);}
  function openAt(x,y){
@@ -19,8 +21,16 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  function contextmenu(event){
   const title=event.target.closest?.('.titlebar');
   if(!title||event.target.closest('button,input,select,textarea,a'))return;
-  event.preventDefault();event.stopPropagation();openAt(event.clientX,event.clientY);
+  cancelPress();event.preventDefault();event.stopPropagation();openAt(event.clientX,event.clientY);
  }
+ function down(event){
+  cancelPress();
+  if(!mobileMode(doc)||!['touch','pen'].includes(event.pointerType)||!event.isPrimary||event.button!==0||!event.target.closest?.('.titlebar')||event.target.closest('button,input,select,textarea,a'))return;
+  press={id:event.pointerId,x:event.clientX,y:event.clientY};
+  pressTimer=doc.defaultView.setTimeout(()=>{const point=press;cancelPress();if(point&&!disposed&&mobileMode(doc))openAt(point.x,point.y);},600);
+ }
+ function move(event){if(press&&event.pointerId===press.id&&Math.hypot(event.clientX-press.x,event.clientY-press.y)>10)cancelPress();}
+ function end(event){if(press&&event.pointerId===press.id)cancelPress();}
  async function change(event){
   event.stopPropagation();if(busy||blocked||disposed)return;
   const next=!enabled;busy=true;update();
@@ -30,8 +40,9 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  }
  function outside(event){if(!event.composedPath().includes(menu))close();}
  function escape(event){if(event.key==='Escape'&&!menu.hidden){event.preventDefault();event.stopPropagation();close();}}
- root.addEventListener('contextmenu',contextmenu);toggle.addEventListener('click',change);
+ root.addEventListener('contextmenu',contextmenu);root.addEventListener('pointerdown',down);toggle.addEventListener('click',change);
+ doc.addEventListener('pointermove',move,true);doc.addEventListener('pointerup',end,true);doc.addEventListener('pointercancel',end,true);doc.defaultView.addEventListener('blur',cancelPress);
  doc.addEventListener('pointerdown',outside,true);doc.addEventListener('keydown',escape,true);
  doc.defaultView.addEventListener('resize',close);
- return {open(el){const r=el.getBoundingClientRect();openAt(r.left,r.bottom);},get enabled(){return enabled;},close,dispose(){disposed=true;root.removeEventListener('contextmenu',contextmenu);toggle.removeEventListener('click',change);doc.removeEventListener('pointerdown',outside,true);doc.removeEventListener('keydown',escape,true);doc.defaultView.removeEventListener('resize',close);menu.remove();}};
+ return {get enabled(){return enabled;},close,dispose(){disposed=true;cancelPress();root.removeEventListener('contextmenu',contextmenu);root.removeEventListener('pointerdown',down);toggle.removeEventListener('click',change);doc.removeEventListener('pointermove',move,true);doc.removeEventListener('pointerup',end,true);doc.removeEventListener('pointercancel',end,true);doc.defaultView.removeEventListener('blur',cancelPress);doc.removeEventListener('pointerdown',outside,true);doc.removeEventListener('keydown',escape,true);doc.defaultView.removeEventListener('resize',close);menu.remove();}};
 }

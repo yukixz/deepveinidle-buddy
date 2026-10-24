@@ -1,3 +1,4 @@
+import {toggleGameLanguage} from './browser-helper.mjs';
 import {launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import {estimateOrders} from '../src/workspace.js';
@@ -10,8 +11,8 @@ try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});page.on('pageerror',e=>errors.push(e.message));
  const root=page.locator('#deepveinidle-buddy');
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();await root.locator('.summary').waitFor();
- await root.locator('[data-action="language"]').click();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
- const base=await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));base.language='zh';
+ await root.locator('[data-action="mode-collection-craft"]').click();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
+ const base=await page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));
  const number=(v,lang='zh')=>v===null?'—':v.toLocaleString(lang==='zh'?'zh-CN':'en',{maximumFractionDigits:2});
  const duration=(v,lang='zh')=>v===null?'—':(v>=3600?(v/3600).toLocaleString(lang==='zh'?'zh-CN':'en',{maximumFractionDigits:1})+(lang==='zh'?' 小时':' h'):v>=60?(v/60).toLocaleString(lang==='zh'?'zh-CN':'en',{maximumFractionDigits:1})+(lang==='zh'?' 分钟':' min'):v.toLocaleString(lang==='zh'?'zh-CN':'en',{maximumFractionDigits:1})+(lang==='zh'?' 秒':' s'));
  for(const kind of ['mixed','craft','collection','empty','burning','outputs','conflict']){
@@ -40,7 +41,7 @@ try{
   if(kind==='outputs'){const cells=root.locator('[data-material="40"] td');assert.equal(await cells.nth(2).textContent(),'3');assert.equal(await cells.nth(3).textContent(),'10 / 3 / 4');assert.equal(await cells.nth(5).textContent(),'15');assert.ok((await root.locator('[data-column="required"]').textContent()).includes('需求 / 库存 / 产物'));}
   checks.push(kind+' summary totals and purchase-before-actions order');
  }
- await root.locator('[data-action="language"]').click();assert.deepEqual((await root.locator('.summary > span').allTextContents()).map(s=>s.split(' ')[0]),['Purchase','Time','Mastery']);assert.deepEqual(await root.locator('#execution-plan .procurement-heading h3,#execution-plan > h3').allTextContents(),['Purchase materials','Execution actions']);checks.push('English summary and table headings');
+ await toggleGameLanguage(page);assert.deepEqual((await root.locator('.summary > span').allTextContents()).map(s=>s.split(' ')[0]),['Purchase','Time','Mastery']);assert.deepEqual(await root.locator('#execution-plan .procurement-heading h3,#execution-plan > h3').allTextContents(),['Purchase materials','Execution actions']);checks.push('English summary and table headings');
  await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().right<=innerWidth+1);assert.equal(await root.locator('.summary > span').count(),3);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));checks.push('narrow layout retains three summary fields without page overflow');
  assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
 }finally{await browser.close();}

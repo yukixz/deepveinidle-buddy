@@ -1,0 +1,54 @@
+{
+  "scenarios": [
+    {
+      "name": "ui-layout",
+      "passed": 4
+    },
+    {
+      "name": "mobile",
+      "passed": 16
+    },
+    {
+      "name": "navigation",
+      "passed": 13
+    },
+    {
+      "name": "debug-menu",
+      "passed": 8
+    },
+    {
+      "name": "game-integration",
+      "passed": 30
+    },
+    {
+      "name": "table-scroll",
+      "passed": 7
+    },
+    {
+      "name": "action-materials",
+      "passed": 9
+    },
+    {
+      "name": "extra-sorting",
+      "passed": 8
+    },
+    {
+      "name": "panel-geometry",
+      "passed": 26
+    },
+    {
+      "name": "browser",
+      "passed": 45
+    },
+    {
+      "name": "market-storage",
+      "passed": 7
+    },
+    {
+      "name": "orders-tables-ime",
+      "passed": 18
+    }
+  ],
+  "totalChecks": 191,
+  "complete": true
+}
