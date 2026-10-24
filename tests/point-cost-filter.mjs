@@ -5,14 +5,14 @@ const browser=await launchBrowser(),checks=[],errors=[];
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});
  page.on('pageerror',e=>errors.push(e.message));
- await page.goto(baseUrl);
+ await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();
  const root=page.locator('#deepveinidle-buddy');
  const row=root.locator('[data-key="40:41:100"]').locator('xpath=ancestor::tr');
  const caption=async()=>(await root.locator('[data-sort="cost"]').textContent()).replace(/[▲▼]/g,'').trim();
  const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));
  async function load(saved){
   await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),saved);
-  await page.reload();
+  await page.reload();await page.locator("[data-buddy-launcher]").click();
   await root.locator('[data-action="mode-collection-craft"]').click();
  }
  async function setLimit(value){

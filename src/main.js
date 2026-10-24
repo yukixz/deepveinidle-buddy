@@ -16,7 +16,7 @@ export async function startDemo(){
  const bronze=craftingJobs.find(j=>j.output.itemId===40&&!j.upgrade);
  putLine(initial.orders[0],{kind:'craft',jobId:bronze.id,tier:0,count:10});
  putLine(initial.orders[0],{kind:'collection',itemId:40,jobId:collectionRoutes(40)[0].id,target:100});
- panel=await mountPanel(host.attachShadow({mode:'open'}),{platform:browserPlatform(),css,initial,demo:true,onVisibilityChange:open=>navigation.update({open,ready:true})});
+ panel=await mountPanel(host.attachShadow({mode:'open'}),{platform:browserPlatform(),css,initial,demo:true,onPrefillFeedback:message=>navigation.showHint(message),onVisibilityChange:open=>navigation.update({open,ready:true})});
  return {...panel,dispose(){panel.dispose();navigation.dispose();host.remove();}};
 }
 export function startUserscript(page,api){
@@ -38,7 +38,7 @@ export function startUserscript(page,api){
   starting=true;let mountingHost=null,mountFailed=false;navigation.update({ready:false,status:'载入中 / Loading'});
   try{
    panel?.dispose();panel=null;host?.remove();mountingHost=document.createElement('div');host=mountingHost;host.id='deepveinidle-buddy';document.documentElement.append(host);currentRole=role;
-   const nextPanel=await mountPanel(mountingHost.attachShadow({mode:'open'}),{platform,css,storageKey:`dvi-buddy-v1:${location.host}:${role}`,gameIntegration,readCharacter:()=>readClient(page),onVisibilityChange:open=>navigation.update({open,ready:true,status:''})});
+   const nextPanel=await mountPanel(mountingHost.attachShadow({mode:'open'}),{platform,css,storageKey:`dvi-buddy-v1:${location.host}:${role}`,gameIntegration,readCharacter:()=>readClient(page),onPrefillFeedback:message=>{if(host===mountingHost)navigation.showHint(message);},onVisibilityChange:open=>navigation.update({open,ready:true,status:''})});
    if(disposed||latest?.role!==role||host!==mountingHost){nextPanel.dispose();mountingHost.remove();if(host===mountingHost){host=null;currentRole=null;}return;}
    panel=nextPanel;panel.receive(latest);
   }catch(error){mountFailed=true;mountingHost?.remove();if(host===mountingHost){host=null;panel=null;currentRole=null;}navigation.update({ready:false,status:`载入失败 / Load failed: ${error.message}`});console.error('[DVI Buddy]',error);}

@@ -5,7 +5,7 @@ const browser=await launchBrowser(),checks=[],errors=[];
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});
  page.on('pageerror',error=>errors.push(error.message));
- await page.goto(baseUrl);
+ await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();
  const root=page.locator('#deepveinidle-buddy'),material=root.locator('#recipes-material-price-mode');
  const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64,64,64]);};
  const row=target=>root.locator(`[data-key="40:41:${target}"]`);
@@ -17,7 +17,7 @@ try{
  state.filters.craft={...state.filters.craft,query:'青铜锭',tier:'0'};
  const quote=quantity=>({ask:{value:2,quantity,capturedAt:Date.now()},bid:{value:1,quantity:9999,capturedAt:Date.now()}});
  state.prices.quotes={1:quote(90),2:quote(90)};
- async function load(value){await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),value);await page.reload();await material.waitFor();}
+ async function load(value){await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),value);await page.reload();await page.locator("[data-buddy-launcher]").click();await material.waitFor();}
  async function select(value){await material.selectOption(value);await page.waitForTimeout(200);}
  await load(state);
  assert.equal(await material.locator('option[value="ask-stock"]').textContent(),'卖单（排除在售数量不足）');
@@ -31,7 +31,7 @@ try{
  assert.equal(await root.locator('#execution-plan .summary').textContent(),plan);
  assert.deepEqual((await saved()).orders,existing);
  checks.push('new material-only option synchronizes both controls and excludes insufficient collection targets without deducting inventory or deleting orders');
- await page.reload();await material.waitFor();assert.equal(await material.inputValue(),'ask-stock');assert.equal(await row(100).count(),0);
+ await page.reload();await page.locator("[data-buddy-launcher]").click();await material.waitFor();assert.equal(await material.inputValue(),'ask-stock');assert.equal(await row(100).count(),0);
  checks.push('stock filtering survives reload');
  const enough=await saved();enough.prices.quotes={1:quote(91),2:quote(91)};await load(enough);
  assert.equal(await row(100).count(),1);assert.equal(await row(1000).count(),0);

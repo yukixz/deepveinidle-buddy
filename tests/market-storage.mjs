@@ -34,7 +34,7 @@ try{
  initial.orders[0].lines=[{kind:'craft',jobId:job.id,tier:0,count:100}];
  // Residual data in an existing current-format GM bucket must not become live quotes.
  initial.prices.quotes={1:{ask:{value:999,capturedAt:Date.now()}}};
- await page.evaluate(async initial=>{window.savedValues['market-test']=initial;window.panel=await window.mountMarketPanel();window.panel.receive({role:42,status:'live',source:'client'});},initial);
+ await page.evaluate(async initial=>{window.savedValues['market-test']=initial;window.panel=await window.mountMarketPanel();window.panel.open();window.panel.receive({role:42,status:'live',source:'client'});},initial);
  const root=page.locator('#deepveinidle-buddy'),unitPrice=root.locator('[data-material="1"] td').nth(4);
  assert.equal(await unitPrice.textContent(),'—');checks.push('mount ignores residual GM quotes and shows unknown prices before the first market read');
  const quote=()=>({version:1,quotes:{1:{ask:{value:112,quantity:500,capturedAt:Date.now()}},2:{ask:{value:80,quantity:600,capturedAt:Date.now()}}},invalid:0});
@@ -52,7 +52,7 @@ try{
  await page.evaluate(()=>{const now=Date.now.bind(Date);Date.now=()=>now()+300001;window.failMarket=true;window.marketTick();});
  await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('#execution-plan .alert')?.textContent.length>0);
  assert.equal(await unitPrice.textContent(),'112');assert.equal(await page.evaluate(()=>window.savedWrites.length),beforeFailure);checks.push('failed refresh keeps current market estimates without writing storage');
- await page.evaluate(async()=>{window.panel.dispose();document.querySelector('#deepveinidle-buddy').remove();window.panel=await window.mountMarketPanel();});
+ await page.evaluate(async()=>{window.panel.dispose();document.querySelector('#deepveinidle-buddy').remove();window.panel=await window.mountMarketPanel();window.panel.open();});
  assert.equal(await unitPrice.textContent(),'—');checks.push('remounting from the same saved bucket starts without cached market prices');
  assert.deepEqual(errors,[]);checks.push('no browser errors');
  console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
