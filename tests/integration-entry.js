@@ -1,3 +1,4 @@
+import {installNavigationLauncher} from '../src/navigation.js';
 import {mountPanel} from '../src/app.js';import css from '../src/theme.css';
 import {defaults} from '../src/workspace.js';import {createGameSync,installGameSync,readClient} from '../src/game-sync.js';import {createGamePrefill} from '../src/game-prefill.js';
 window.buddyTest={defaults,createGameSync,createGamePrefill};
@@ -6,5 +7,6 @@ const values=new Map();window.__writes=[];
 const platform={get:async(k,v)=>values.get(k)??v,set:async(k,v)=>{values.set(k,v);window.__writes.push(v);},market:()=>Promise.reject(Error('disabled in fixture')),copy:()=>{},readClipboard:()=>{}};
 const integration=createGamePrefill(window,{wait:ms=>window.__wait?window.__wait(ms):new Promise(resolve=>setTimeout(resolve,ms))});
 const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
-const panel=await mountPanel(host.attachShadow({mode:'open'}),{platform,css,initial,gameIntegration:integration,readCharacter:()=>readClient(window)});window.__panel=panel;
+let panel;const navigation=installNavigationLauncher(document,()=>panel?.open());
+panel=await mountPanel(host.attachShadow({mode:'open'}),{platform,css,initial,gameIntegration:integration,readCharacter:()=>readClient(window),onVisibilityChange:open=>navigation.update({open,ready:true}),onPrefillStateChange:prefill=>navigation.update({prefill})});window.__panel=panel;window.__navigation=navigation;
 window.__disposeSync=installGameSync(window,envelope=>panel.receive(envelope));

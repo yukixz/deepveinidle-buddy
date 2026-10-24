@@ -12,9 +12,9 @@
     "visual viewport keyboard shrink keeps input visible and restores panel height without saving mobile geometry",
     "320–430px portrait and coarse-pointer landscape retain mobile layout without overwriting desktop geometry",
     "leaving mobile mode restores desktop geometry, launcher and resize handles",
-    "mobile action prefill enters play, fills the draft and closes only after success",
+    "mobile action prefill enters play, fills the draft and hides before opening the draft",
     "already active play tab is not clicked twice or toggled back to world",
-    "rejected mobile draft values keep the panel open and show the actual failure",
+    "rejected mobile draft values keep the panel hidden and show the failure after manual return",
     "mobile market uses the visible tab, fills quantity/price and closes after success with zero game action submissions"
   ],
   "errors": []

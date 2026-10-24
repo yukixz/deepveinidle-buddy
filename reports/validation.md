@@ -1,21 +1,20 @@
 # 当前验证
 
-日期：2026-10-24。开发版本0.1.0，分支codex/mobile-adaptation，未发布。本轮实现移动端入口、触摸布局、可视视口避让、状态／设置点按、手动计划文本及移动菜单预填。规则见[面板设计](../docs/panel.md)，调研与公开资源依据见[移动适配调研](mobile-adaptation.md)。
+日期：2026-10-24。开发版本0.1.0，分支codex/mobile-adaptation，未发布。基线提交4d59f49。本轮统一桌面／移动购买与执行的临时隐藏及入口反馈；规则见[面板设计](../docs/panel.md#购买执行期间的显示与恢复)。
 
 | 检查 | 本次结果 | 证据 |
 | --- | --- | --- |
-| 构建 | 通过，userscript 942592字节 | 本机构建 dist/manifest.json |
-| 移动专项 | 15项通过 | [日志](validation/mobile.log) |
-| 导航及布局回归 | 11＋26项通过 | [导航](validation/navigation.log)、[布局](validation/panel-geometry.log) |
-| 调试、面板与游戏接入 | 8＋45＋29项通过 | [调试](validation/debug-menu.log)、[面板](validation/browser.log)、[接入](validation/game-integration.log) |
-| 稳定节点、订单输入与材料高亮 | 7＋18＋9项通过 | [稳定节点](validation/stable-view.log)、[订单](validation/orders-tables-ime.log)、[高亮](validation/action-materials.log) |
-| 计划传输及存储单元 | 9项通过 | [日志](validation/mobile-transfer-storage-unit.log) |
-| 视觉核对 | 移动入口、面板及预填失败保持／成功关闭截图已核对 | [入口](screenshots/mobile-launcher.png)、[面板](screenshots/mobile-portrait.png)、[失败](screenshots/mobile-prefill-failure.png)、[成功](screenshots/mobile-prefill.png) |
+| 构建 | 通过，userscript 944862字节 | 本机构建 dist/manifest.json |
+| 预填显示专项 | 12项通过，分别覆盖两端提前隐藏、本地失败保持显示、忙碌锁定、成功／失败不弹回、手动恢复及零提交 | [日志](validation/prefill-visibility.log) |
+| 游戏接入 | 29项通过，菜单草稿与异步守卫回归 | [日志](validation/game-integration.log) |
+| 移动端 | 15项通过，接入失败通过入口返回查看 | [日志](validation/mobile.log) |
+| 导航、调试、稳定节点 | 11＋8＋7项通过 | [导航](validation/navigation.log)、[调试](validation/debug-menu.log)、[稳定节点](validation/stable-view.log) |
+| 静态检查 | 脚本语法、文档引用、构建摘要及差异空白通过 | node --check、文档／摘要脚本、git diff --check |
 
-9场景共168项浏览器检查，另9项单元检查；摘要见[数据](validation/mobile-summary.json)。导航观察范围收窄后重跑mobile与navigation，其他专项为本轮实施中的实际运行结果。未执行全量测试。
+6场景共82项浏览器检查，见[摘要](validation/prefill-visibility-summary.json)。入口避免重复属性写入的最后调整后，已复验预填显示与导航；其他场景为本轮实施中实际运行结果。未执行全量测试或另跑单元测试。
 
-移动夹具包含隐藏桌面导航、聊天锚点及同列按钮、底栏、移动模式切换和路线节点搬移；覆盖320／360／390／430px竖屏与844×390触屏横屏。键盘通过VisualViewport变化模拟；剪贴板拒绝通过抛错夹具验证。预填测试使用隔离角色、菜单与提交记录，不访问真实账号，购买／开始／排队提交记录为零。
+视觉核对：[桌面成功](screenshots/prefill-desktop-success.png)、[桌面失败](screenshots/prefill-desktop-failure.png)、[移动成功](screenshots/prefill-mobile-success.png)、[移动失败](screenshots/prefill-mobile-failure.png)。截图来自隔离游戏控件夹具，不代表实际游戏外观或真机效果。新专项保留并核对原节点、窗口位置尺寸、滚动位置、筛选值及计划文本草稿；处理期间入口禁用，完成后显示标记，用户返回时确认并清除标记，结果正文仍保留。
 
-Android Firefox＋Tampermonkey、iOS Safari＋Tampermonkey、真实软键盘、地址栏伸缩、安全区域、页面注入及五项GM权限尚未验收。模拟视口与窄屏截图不能代替真机。未发布、未部署。
+预填测试使用隔离角色、菜单及命令记录；没有连接真实账号，也未提交购买／开始／排队。Android Firefox＋Tampermonkey、iOS Safari＋Tampermonkey、真实键盘与管理器权限仍待验收。未发布、未部署。
 
-此前名称统一及高亮等记录为历史结果，不计入本次重跑。当前安装脚本SHA-256：`5734a50c5900c8c265e6d8734d9064030098a3ceca8dafc9726d5eb0c8c9cd0f`。
+此前移动适配168项浏览器／9项单元等记录为历史结果，不计入本次重跑。当前安装脚本SHA-256：`e0c487bad55b081bbc68c61eaf90f08dca508566c0b31d0073bac522b5a6fa2c`。
