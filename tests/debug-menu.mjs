@@ -8,7 +8,7 @@ try{
  assert.equal(name,'DeepVeinIdle-Buddy');
  assert.match(name,/^[\x21-\x7E]+$/);
  assert.match(script,/^\/\/ @name:zh-CN +Deep Vein Idle · 工匠精通助手$/m);
- assert.match(script,/^\/\/ @name:en +Deep Vein Idle · Crafting & Buddy$/m);
+ assert.match(script,/^\/\/ @name:en +Deep Vein Idle · Crafting & Mastery Buddy$/m);
  assert.match(script,/^\/\/ @namespace\s+https:\/\/dvi-lab\.pages\.dev$/m);
  assert.match(script,/^\/\/ @author\s+Alice$/m);
  assert.match(script,/^\/\/ @license\s+MIT$/m);

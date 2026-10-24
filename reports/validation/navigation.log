@@ -6,7 +6,7 @@
     "navigation reopens the hidden panel without forwarding a game navigation action",
     "new native entries keep buddy at the end without duplicates",
     "navigation replacement restores the live launcher and removes cloned duplicates",
-    "navigation language change updates accessible launcher label",
+    "navigation language change translates launcher name",
     "launcher remains in narrow-screen navigation while the panel is closed",
     "late navigation mount inserts a disabled waiting entry",
     "ready entry opens exactly once",

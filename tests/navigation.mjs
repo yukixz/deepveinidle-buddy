@@ -4,7 +4,7 @@ const page=await browser.newPage({viewport:{width:1440,height:1080}}),checks=[],
 const base=baseUrl;await fs.mkdir('.test-artifacts/navigation',{recursive:true});
 try{
  await page.goto(base);const panel=page.locator('#deepveinidle-buddy'),nav=page.locator('nav[aria-label="游戏导航"]'),launcher=nav.locator('[data-buddy-launcher]');
- await launcher.waitFor();assert.equal(await launcher.isEnabled(),true);assert.equal(await launcher.getAttribute('aria-label'),'工匠与精通助手');
+ await launcher.waitFor();assert.equal(await launcher.isEnabled(),true);assert.equal(await launcher.getAttribute('aria-label'),'工匠精通助手');assert.ok((await launcher.getAttribute('title')).startsWith('工匠精通助手'));
  assert.ok(await nav.evaluate(n=>n.lastElementChild.matches('[data-buddy-launcher]')&&n.lastElementChild.previousElementSibling.matches('[data-buddy-separator][role="separator"]')));checks.push('launcher is the last navigation entry with an immediately preceding separator');
  assert.equal(await launcher.getAttribute('class'),await nav.locator('button').first().getAttribute('class'));assert.equal(await nav.locator('[data-buddy-separator]').getAttribute('class'),await nav.locator('[role="separator"]').first().getAttribute('class'));checks.push('launcher and separator reuse native navigation classes');
  await page.evaluate(()=>{window.originalNavClicks=0;document.querySelector('nav').addEventListener('click',()=>window.originalNavClicks++);});
@@ -12,7 +12,7 @@ try{
  await nav.evaluate(n=>{const extra=document.createElement('button');extra.className='nav-icon';extra.textContent='New native entry';n.append(extra);});
  await page.waitForFunction(()=>document.querySelector('nav').lastElementChild.matches('[data-buddy-launcher]'));assert.equal(await nav.locator('[data-buddy-launcher]').count(),1);assert.equal(await nav.locator('[data-buddy-separator]').count(),1);checks.push('new native entries keep buddy at the end without duplicates');
  await nav.evaluate(n=>{const replacement=n.cloneNode(true);n.replaceWith(replacement);});await page.waitForFunction(()=>document.querySelectorAll('nav [data-buddy-launcher]').length===1&&document.querySelector('nav').lastElementChild.matches('[data-buddy-launcher]'));await panel.locator('[data-action="close"]').click();await page.locator('nav [data-buddy-launcher]').click();assert.equal(await panel.isVisible(),true);checks.push('navigation replacement restores the live launcher and removes cloned duplicates');
- await page.locator('nav').evaluate(n=>n.setAttribute('aria-label','Game navigation'));await page.getByRole('button',{name:'Crafting & Mastery Buddy',exact:true}).waitFor();checks.push('navigation language change updates accessible launcher label');
+ await page.locator('nav').evaluate(n=>n.setAttribute('aria-label','Game navigation'));await page.getByRole('button',{name:'Crafting & Mastery Buddy',exact:true}).waitFor();checks.push('navigation language change translates launcher name');
  await panel.locator('[data-action="close"]').click();await page.screenshot({path:'.test-artifacts/navigation/closed-launcher.png'});
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:'.test-artifacts/navigation/mobile-launcher.png'});assert.equal(await page.locator('nav [data-buddy-launcher]').isVisible(),true);checks.push('launcher remains in narrow-screen navigation while the panel is closed');
  // No game or account: exercise late navigation and cleanup directly against an authored fixture.

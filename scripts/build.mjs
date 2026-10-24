@@ -20,7 +20,7 @@ await fs.mkdir('dist',{recursive:true});
 const header=`// ==UserScript==
 // @name         DeepVeinIdle-Buddy
 // @name:zh-CN   Deep Vein Idle · 工匠精通助手
-// @name:en      Deep Vein Idle · Crafting & Buddy
+// @name:en      Deep Vein Idle · Crafting & Mastery Buddy
 // @namespace    https://dvi-lab.pages.dev
 // @author       Alice
 // @license      MIT

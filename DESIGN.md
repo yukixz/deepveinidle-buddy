@@ -1,4 +1,4 @@
-# Deep Vein Idle · Buddy 设计
+# 工匠精通助手 · Crafting & Mastery Buddy 设计
 
 独立 userscript，在游戏内使用 Shadow DOM 提供只读同步的制造／收藏混合订单助手。
 
