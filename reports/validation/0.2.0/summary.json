@@ -1,0 +1,21 @@
+{
+  "scenarios": [
+    {
+      "name": "debug-menu",
+      "passed": 8,
+      "code": 0
+    },
+    {
+      "name": "ui-layout",
+      "passed": 4,
+      "code": 0
+    },
+    {
+      "name": "browser",
+      "passed": 45,
+      "code": 0
+    }
+  ],
+  "totalChecks": 57,
+  "complete": true
+}

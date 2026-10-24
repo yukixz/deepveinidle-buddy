@@ -11,6 +11,14 @@
 - `node scripts/test-ui.mjs`：19个场景、250项检查全部通过，见[汇总](validation/branch-cleanup/summary.json)及同目录场景日志。覆盖移动入口、切页关闭、市场覆盖层切回执行页、预填失败反馈与成功静默、共享表格及桌面回归。
 - 修改的JS／MJS语法、本地文档链接、构建字节与摘要、差异空白检查通过。
 
+## main升版验证
+
+清理提交`9f69033`已快进合并至main，版本改为0.2.0，仍为开发中，仅支持当前结构和格式，无历史版本兼容或迁移。版本号变更不代表发布。
+
+- `npm run build`通过，产物字节及SHA-256检查通过，见[构建清单](validation/0.2.0/build-manifest.json)。
+- `node scripts/test-ui.mjs debug-menu ui-layout browser`：3个场景、57项检查全部通过，见[汇总](validation/0.2.0/summary.json)及同目录日志。验证安装元数据、构建清单、标题版本和桌面交互；这是升版后的针对性复验，不与前述250项累计。
+- package.json与package-lock.json版本一致；分支修改的JS／MJS语法、当前文档及报告本地链接、`git diff --check`通过。
+
 ## 验证边界
 
 未发布、未部署，未操作真实游戏或安装脚本。本地夹具及模拟触摸不能代替Android／iOS真机、真实键盘、安全区域和脚本管理器权限验收；未重跑与本次变更无关的完整计算测试。
