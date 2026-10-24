@@ -5,8 +5,8 @@ const browser=await launchBrowser(),checks=[],errors=[];
 try{
  const script=await fs.readFile('dist/deepveinidle-buddy.user.js','utf8');
  const name=script.match(/^\/\/ @name\s+(.+)$/m)?.[1];
- assert.equal(name,'Deep Vein Idle - Buddy');
- assert.match(name,/^[\x20-\x7E]+$/);
+ assert.equal(name,'DeepVeinIdle-Buddy');
+ assert.match(name,/^[\x21-\x7E]+$/);
  assert.match(script,/^\/\/ @name:zh-CN +Deep Vein Idle · 工匠精通助手$/m);
  assert.match(script,/^\/\/ @name:en +Deep Vein Idle · Crafting & Buddy$/m);
  assert.match(script,/^\/\/ @namespace\s+https:\/\/dvi-lab\.pages\.dev$/m);

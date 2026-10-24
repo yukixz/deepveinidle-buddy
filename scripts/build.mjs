@@ -18,7 +18,7 @@ const upstreamProvenance={name:'upstream-provenance',setup(builder){
 }};
 await fs.mkdir('dist',{recursive:true});
 const header=`// ==UserScript==
-// @name         Deep Vein Idle - Buddy
+// @name         DeepVeinIdle-Buddy
 // @name:zh-CN   Deep Vein Idle · 工匠精通助手
 // @name:en      Deep Vein Idle · Crafting & Buddy
 // @namespace    https://dvi-lab.pages.dev

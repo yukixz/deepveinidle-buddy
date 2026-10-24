@@ -1,2 +1,2 @@
 PASS: build
-PASS: built userscript metadata assertions (ASCII default name, localized names, MIT license, Chinese and English descriptions, namespace, author, grants and public description constraints)
+PASS: built userscript metadata assertions (whitespace-free ASCII default name, localized names, MIT license, Chinese and English descriptions, namespace, author, grants and public description constraints)
