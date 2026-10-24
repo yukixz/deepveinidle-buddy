@@ -18,12 +18,14 @@ const upstreamProvenance={name:'upstream-provenance',setup(builder){
 }};
 await fs.mkdir('dist',{recursive:true});
 const header=`// ==UserScript==
-// @name         Deep Vein Idle · 工匠与精通助手
-// @name:en      Deep Vein Idle · Crafting & Mastery Buddy
+// @name         Deep Vein Idle · Buddy
+// @name:zh-CN   Deep Vein Idle · 工匠精通助手
+// @name:en      Deep Vein Idle · Crafting & Buddy
 // @namespace    https://dvi-lab.pages.dev
 // @author       Alice
 // @version      ${version}
 // @description  游戏内制造与收藏混合订单助手；实时同步角色数据，汇总采购材料与执行计划。
+// @description:en In-game assistant for mixed crafting and collection orders; syncs character data in real time and summarizes procurement materials and execution plans.
 // @match        https://deepveinidle.com/*
 // @match        https://cn.deepveinidle.com/*
 // @run-at       document-start
