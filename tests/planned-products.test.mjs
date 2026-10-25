@@ -6,7 +6,7 @@ import {collectionDefaults,collectionPlayers,estimateCollection} from '../src/en
 import {plannedProducts} from '../src/planned-products.js';
 
 function fixture(){
- const state=collectionDefaults();state.initialized=true;
+ const state=collectionDefaults();state.initialized=true;state.worldTick=1000000;
  for(const skill in state.config.levels)state.config.levels[skill]=100;
  return state;
 }
@@ -30,8 +30,8 @@ test('upgrades yield the real result once per planned action',()=>{
 
 test('gathering distributes all output rarities with the collection estimate modifiers',()=>{
  const state=fixture(),job=game.recipes.find(j=>j.skill==='mining'&&j.output.itemId===1);
- for(const hotSetting of ['off','game','current']){
-  state.config.hotSetting=hotSetting;state.config.worldRarity=15;
+ for(const tick of [1000000,42978000,42981000]){
+  state.worldTick=tick;state.config.worldRarity=15;
   const players=collectionPlayers(state),products=plannedProducts(job,0,123,players);
   close(Object.values(products).reduce((sum,value)=>sum+value,0),123*job.output.qty);
   for(let tier=0;tier<5;tier++){

@@ -1,0 +1,3 @@
+npm notice run deepveinidle-buddy@0.2.0 build
+npm notice run node scripts/build.mjs
+{"version":"0.2.0","files":[{"name":"deepveinidle-buddy.user.js","bytes":822695,"sha256":"8f30183f305cccc2ad2001450713d443eec9850f4658d88bb0a3430335d0622f"},{"name":"demo.js","bytes":800763,"sha256":"6715f612503b8f3efca61ea242b293ff41a85596da5bdf8a5a336d4e60f663e9"}]}

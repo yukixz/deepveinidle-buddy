@@ -1,7 +1,11 @@
-export const characterFields=['lastTick','skills','equipment','foodItemId','eatAt','foodMaxTier','foodPerTrip','brews','brewTier','brewBuckets','house','houseFurniture','masteries','perks','guildBonus','homeBank','ironman','bank','pack','collections','route','queue','queueSlots','workJobId','workRarity','held','raidHeld'];
+import {craftingSkills,craftingSlots,craftingRooms} from './engine/crafting-model.js';
+import {gatheringSkills,gatheringSlots,gatheringRooms} from './engine/gathering-model.js';
+import {readWorldBuffs} from './engine/world-buffs.js';
+export const characterFields=['lastTick','skills','equipment','brews','brewTier','brewBuckets','house','houseFurniture','masteries','perks','bank','pack','collections','route','queue','queueSlots','workJobId','workRarity','held','raidHeld'];
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const routeFields=['zoneId','siteId','jobId','questId','onFull','limit','phase','best','errand','until'];
 const queueFields=['kind','siteId','jobId','zoneId','questId','onFull','limit','rarity','best','ticks'];
+const characterGroups={skills:[...craftingSkills,...gatheringSkills],equipment:[...craftingSlots,...gatheringSlots],masteries:['craft','gather','rare'],perks:['quick','hands'],brews:['hunter','blessing'],brewTier:['hunter'],brewBuckets:['hunter'],house:[...craftingRooms,...gatheringRooms].map(r=>r.id)};
 export function copyCharacter(player){
  // Invalid tasks stay invalid without copying unknown nested game objects.
  const pick=(value,fields)=>{
@@ -16,15 +20,18 @@ export function copyCharacter(player){
   return selected;
  };
  const result=Object.fromEntries(characterFields.filter(key=>Object.hasOwn(player,key)).map(key=>[key,player[key]]));
+
+ for(const [key,fields]of Object.entries(characterGroups))if(record(result[key]))result[key]=Object.fromEntries(fields.filter(field=>Object.hasOwn(result[key],field)).map(field=>[field,result[key][field]]));
+ if(record(result.houseFurniture))result.houseFurniture=Object.fromEntries(characterGroups.house.filter(id=>Object.hasOwn(result.houseFurniture,id)).map(id=>[id,record(result.houseFurniture[id])?{}:result.houseFurniture[id]]));
  if(Object.hasOwn(result,'route'))result.route=pick(result.route,routeFields);
  if(Object.hasOwn(result,'queue'))result.queue=Array.isArray(result.queue)?result.queue.map(task=>pick(task,queueFields)):false;
  return JSON.parse(JSON.stringify(result));
 }
 export function createCapture(emit,{now=Date.now}={}){
- let connection=0,sequence=0,player=null,role=null,guild=null,windows=null,worldTick=null,playerAt=null,worldAt=null,lastTick=-1,live=false;
- const notify=(status,error)=>emit({protocolVersion:1,connection,sequence:++sequence,status,error,role,playerCapturedAt:playerAt,worldCapturedAt:worldAt,snapshot:player?{version:2,capturedAt:playerAt,player:structuredClone(player),guild,worldBuffs:structuredClone(windows),worldTick,worldBuffsVersion:1}:null});
+ let connection=0,sequence=0,player=null,role=null,windows=null,worldTick=null,playerAt=null,worldAt=null,lastTick=-1,live=false;
+ const notify=(status,error)=>emit({protocolVersion:1,connection,sequence:++sequence,status,error,role,playerCapturedAt:playerAt,worldCapturedAt:worldAt,snapshot:player?{version:2,capturedAt:playerAt,player:structuredClone(player),worldBuffs:structuredClone(windows),worldTick,worldBuffsVersion:1}:null});
  return {
-  connect(){connection++;sequence=0;player=role=null;guild=windows=worldTick=playerAt=worldAt=null;lastTick=-1;live=true;notify('waiting');return connection;},
+  connect(){connection++;sequence=0;player=role=null;windows=worldTick=playerAt=worldAt=null;lastTick=-1;live=true;notify('waiting');return connection;},
   receive(raw,token){
    if(token!==connection||!live||typeof raw!=='string')return;
    let frame;try{frame=JSON.parse(raw);}catch{return;}
@@ -32,7 +39,7 @@ export function createCapture(emit,{now=Date.now}={}){
    let changed=false;
    try{
     for(const message of frame.m){
-     if(message?.t==='welcome') {player=role=null;guild=null;windows=null;}
+     if(message?.t==='welcome') {player=role=null;windows=null;}
      if(['welcome','snapshot'].includes(message?.t)){
       const you=message.you;
       if(!record(you)||!record(you.skills)||!record(you.equipment)||!Number.isSafeInteger(you.lastTick))throw Error('incompatibleCharacter');
@@ -42,15 +49,13 @@ export function createCapture(emit,{now=Date.now}={}){
       role=nextRole;
       player=copyCharacter(you);playerAt=now();changed=true;
      }
-     if(message?.t==='welcome'||message?.t==='guild'){
-      const value=message.t==='welcome'?message.guild:message.info;guild=value==null?null:{name:value.name,tag:value.tag};changed=true;
-     }
      if(['welcome','snapshot','windows','guild'].includes(message?.t)&&Object.hasOwn(message,'windows')){
-      windows=Array.isArray(message.windows)?message.windows.map(w=>record(w)?Object.fromEntries(['label','fromTick','toTick','xpMult','rarityMult'].filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]])):w):null;worldTick=frame.tick;worldAt=now();changed=true;
+      windows=Array.isArray(message.windows)?message.windows.map(w=>record(w)?Object.fromEntries(['fromTick','toTick','rarityMult'].filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]])):w):null;worldTick=frame.tick;worldAt=now();changed=true;
      }
     }
-    lastTick=frame.tick;if(changed&&player)notify('live');
-   }catch(error){live=false;notify('error',error.message);}
+    lastTick=frame.tick;if(player&&Array.isArray(windows)&&worldTick!==frame.tick){worldTick=frame.tick;worldAt=now();changed=true;}
+    if(changed&&player){readWorldBuffs({worldTick,worldBuffs:windows,worldBuffsVersion:1});notify('live');}
+   }catch(error){if(error.message!=='invalidWorldBuffs')live=false;notify('error',error.message);}
   },
   disconnect(token){if(token===connection){live=false;notify('disconnected');}},
   dispose(){live=false;player=null;},

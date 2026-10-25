@@ -1,10 +1,11 @@
+import {requireKeys} from './engine/record-shape.js';
 import {encodePlanPayload,decodePlanPayload} from './plan-transfer.js';
 import {plannedProducts} from './planned-products.js';
 import {estimateCraftAction} from './crafting-estimates.js';
 import * as game from './engine/upstream.js';
 import {craftingJobs,craftingTiers,craftingMaterials} from './engine/crafting-model.js';
 import {collectionDefaults,validateCollection,collectionTarget,collectionRoutes,collectionPlayers,estimateCollection,collectionPrice} from './engine/collection-model.js';
-import {validateCollectionPlan} from './engine/collection-plan.js';
+import {validateCollectionSelection} from './engine/collection-plan.js';
 import {priceDefaults,normalizePriceState} from './engine/item-prices.js';
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 const safe=v=>Number.isFinite(v)&&v>=0&&v<=Number.MAX_SAFE_INTEGER;
@@ -15,18 +16,21 @@ export const lineKey=line=>line.kind==='craft'?`craft:${line.jobId}:${line.tier}
 export function validateLine(raw){
  if(!record(raw))throw Error('invalidLine');
  if(raw.kind==='craft'){
+  requireKeys(raw,['kind','jobId','tier','count'],'invalidLine');
   const job=craftingJobs.find(j=>j.id===raw.jobId);
   if(!job||!craftingTiers(job).includes(raw.tier)||!quantity(raw.count)||raw.count===0)throw Error('invalidLine');
   return {kind:'craft',jobId:job.id,tier:raw.tier,count:raw.count};
  }
  if(raw.kind==='collection'){
-  const {selections}=validateCollectionPlan({version:1,selections:[raw]});return {kind:'collection',...selections[0]};
+  requireKeys(raw,['kind','itemId','jobId','target'],'invalidLine');
+  return {kind:'collection',...validateCollectionSelection(raw)};
  }
  throw Error('invalidLine');
 }
 export function validateOrders(raw){
  if(!Array.isArray(raw)||raw.length>1000)throw Error('invalidOrders');
  const ids=new Set();return raw.map(order=>{
+  requireKeys(order,['id','name','enabled','fees','lines'],'invalidOrders');requireKeys(order.fees,['fixed','percent','minute'],'invalidOrders');
   if(!record(order)||typeof order.id!=='string'||!order.id||order.id.length>100||ids.has(order.id)||typeof order.name!=='string'||order.name.length>120||typeof order.enabled!=='boolean'||!record(order.fees)||!['fixed','percent','minute'].every(k=>safe(order.fees[k]))||!Array.isArray(order.lines)||order.lines.length>10000)throw Error('invalidOrders');
   ids.add(order.id);const keys=new Set(),lines=order.lines.map(validateLine);
   for(const line of lines){const key=lineKey(line);if(keys.has(key))throw Error('duplicateLine');keys.add(key);}
@@ -36,24 +40,24 @@ export function validateOrders(raw){
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
 export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
 export function validateWorkspace(raw){
- if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.autoRemove!=='boolean'||!record(raw.filters)||raw.prices?.version!==4)throw Error('invalidWorkspace');
- if(raw.excludeInsufficientAsks!==undefined&&typeof raw.excludeInsufficientAsks!=='boolean')throw Error('invalidPriceMode');
+ requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
+ requireKeys(raw.filters,['craft','collection'],'invalidFilters');
+ if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.autoRemove!=='boolean'||!record(raw.filters)||raw.prices?.version!==1)throw Error('invalidWorkspace');
+ if(typeof raw.excludeInsufficientAsks!=='boolean')throw Error('invalidPriceMode');
  if(!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.character?.buyMode))throw Error('invalidPriceMode');
  const orders=validateOrders(raw.orders),filters={};
  for(const mode of ['craft','collection']){
   const f=raw.filters[mode],columns=mode==='craft'?['item','rarity']:['item','rarity','points','duration','time','cost','coins'];
   const keys=['skill','tier','query','route','sort','sortDirection','page','minPoints','maxSecondsPerPoint','maxCost'];
+  requireKeys(f,keys,'invalidFilters');
   if(!record(f)||Object.keys(f).some(key=>!keys.includes(key))||!['all',...game.allSkills].includes(f.skill)||!['all','0','1','2','3','4'].includes(f.tier)||typeof f.query!=='string'||!['all','craft','gather'].includes(f.route)||!columns.includes(f.sort)||!['asc','desc'].includes(f.sortDirection)||!Number.isSafeInteger(f.page)||f.page<1||!['minPoints','maxSecondsPerPoint','maxCost'].every(key=>typeof f[key]==='string'&&(f[key]===''||safe(Number(f[key])))))throw Error('invalidFilters');
   filters[mode]={...f};
  }
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
- return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks??false,autoRemove:raw.autoRemove,filters};
+ return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
 }
-// Persist user price configuration, never the current market observations or imports.
-export function workspaceForStorage(workspace){
- const prices={...workspace.prices,prices:Object.fromEntries(Object.entries(workspace.prices.prices).filter(([,price])=>price.source==='manual')),quotes:{}};
- return validateWorkspace({...workspace,prices});
-}
+// Market observations are memory-only in the installed script.
+export function workspaceForStorage(workspace){return validateWorkspace({...workspace,prices:priceDefaults()});}
 export function putLine(order,raw){
  if(raw.kind==='craft'&&raw.count===0){order.lines=order.lines.filter(l=>lineKey(l)!==lineKey(raw));return;}
  const line=validateLine(raw),key=lineKey(line),previous=order.lines.find(l=>lineKey(l)===key);

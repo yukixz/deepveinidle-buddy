@@ -18,3 +18,10 @@ test('server snapshots keep only approved route and queue task fields',()=>{
  const snapshot=out.at(-1).snapshot.player;
  assert.deepEqual(snapshot.route,{zoneId:null,jobId:41});assert.deepEqual(snapshot.queue,[{kind:'job',jobId:41,rarity:0}]);assert.equal(snapshot.queueSlots,3);
 });
+
+test('invalid world frames report failure and recover only after clean authoritative windows',()=>{
+ const out=[],capture=createCapture(e=>out.push(e)),token=capture.connect();capture.receive(frame([{t:'welcome',you:you(),windows:[]}]),token);
+ capture.receive(frame([{t:'windows',windows:[{fromTick:0,toTick:200,rarityMult:'invalid'}]}],101),token);assert.equal(out.at(-1).status,'error');assert.equal(out.at(-1).error,'invalidWorldBuffs');
+ capture.receive(frame([{t:'windows',windows:[]}],102),token);assert.equal(out.at(-1).status,'live');assert.equal(out.at(-1).snapshot.worldTick,102);
+ capture.disconnect(token);capture.receive(frame([{t:'windows',windows:[]}],103),token);assert.equal(out.at(-1).status,'disconnected');
+});

@@ -27,9 +27,9 @@ test('no positive requirements need no market data; invalid requirements fail ex
  assert.equal(hasAvailableAsks({1:0},snapshot({})),true);
  for(const qty of [-1,NaN,Infinity,Number.MAX_SAFE_INTEGER+1])assert.throws(()=>hasAvailableAsks({1:qty},snapshot({})),/quantityOverflow/);
 });
-test('optional stock filter preference defaults off, roundtrips and rejects invalid values',()=>{
+test('required stock filter preference defaults off, roundtrips and rejects invalid values',()=>{
  const state=defaults();assert.equal(state.excludeInsufficientAsks,false);
  state.excludeInsufficientAsks=true;assert.equal(validateWorkspace(state).excludeInsufficientAsks,true);
- delete state.excludeInsufficientAsks;assert.equal(validateWorkspace(state).excludeInsufficientAsks,false);
+ delete state.excludeInsufficientAsks;assert.throws(()=>validateWorkspace(state),/invalidWorkspace/);
  state.excludeInsufficientAsks='true';assert.throws(()=>validateWorkspace(state),/invalidPriceMode/);
 });

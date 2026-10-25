@@ -1,7 +1,7 @@
 import {longPressTitle,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';
 import {build} from 'esbuild';
-import * as game from '../src/engine/upstream.js';import {createScenario} from '../src/engine/simulation.js';
+import * as game from '../src/engine/upstream.js';import {createScenario} from './reference/simulation.js';
 import {craftingSkills,craftingSlots} from '../src/engine/crafting-model.js';import {gatheringSkills,gatheringSlots} from '../src/engine/gathering-model.js';
 const browser=await launchBrowser(),checks=[],errors=[];let page;
 await fs.mkdir('.test-artifacts/mobile',{recursive:true});

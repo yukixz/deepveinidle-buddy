@@ -1,0 +1,13 @@
+{
+  "passed": 7,
+  "checks": [
+    "mount ignores residual GM quotes and shows unknown prices before the first market read",
+    "market refresh updates rendered estimates without a GM write",
+    "saving user settings keeps orders and pricing directions while excluding market observations",
+    "explicit storage reload recovers user data while retaining current in-memory market prices",
+    "failed refresh keeps current market estimates without writing storage",
+    "remounting from the same saved bucket starts without cached market prices",
+    "no browser errors"
+  ],
+  "errors": []
+}

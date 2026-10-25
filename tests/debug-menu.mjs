@@ -33,7 +33,8 @@ try{
  await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();assert.equal(await root.locator('#execution-actions th').count(),6);
  await open();await toggle.click();assert.equal(await root.locator('#execution-actions th').count(),5);await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.resize-right').waitFor();assert.equal(await root.locator('#execution-actions th').count(),5);checks.push('local preference survives reload with either enabled or disabled value');
  await toggleGameLanguage(page);await open();assert.equal(await toggle.textContent(),'Enable debug features');await page.keyboard.press('Escape');
- await page.setViewportSize({width:390,height:844});await root.locator('.titlebar').dispatchEvent('contextmenu',{clientX:389,clientY:843});const bounds=await menu.boundingBox();assert.ok(bounds.x>=0&&bounds.y>=0&&bounds.x+bounds.width<=390&&bounds.y+bounds.height<=844);await page.keyboard.press('Escape');checks.push('menu supports English and stays within viewport');
+ const resized=page.evaluate(()=>new Promise(resolve=>window.addEventListener('resize',()=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())),{once:true})));
+ await page.setViewportSize({width:390,height:844});await resized;await root.locator('.titlebar').dispatchEvent('contextmenu',{clientX:389,clientY:843});await menu.waitFor({state:'visible'});const bounds=await menu.boundingBox();assert.ok(bounds&&bounds.x>=0&&bounds.y>=0&&bounds.x+bounds.width<=390&&bounds.y+bounds.height<=844);await page.keyboard.press('Escape');checks.push('menu supports English and stays within viewport');
  // Exercise storage failures and site/role boundaries with the same production menu module.
  const result=await page.evaluate(async()=>{
   const {installDebugMenu}=await import('/src/debug-menu.js');const values=new Map(),seen=[],hosts=[];let failWrite=false;

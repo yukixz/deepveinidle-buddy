@@ -40,21 +40,6 @@
 
 本次用当前公开CSS和调研时助手导航代码（bcf1279）运行最小离线DOM复现：390×844、844×390且粗指针时，桌面导航为none，助手按钮无可见面积；1024×768粗指针时移动条件不成立，按钮可见。见[探针结果](validation/mobile-layout-probe.json)。该实验没有运行游戏JS，也没有模拟完整游戏状态或真实手机。
 
-## 浏览器与脚本管理器路线
+## 证据与验收边界
 
-建议先选择Android Firefox＋Tampermonkey作为真机基线，再单独核验iOS Safari＋Tampermonkey。Mozilla官方扩展页明确列出[Firefox Android可用](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)，Tampermonkey官网列出[iOS 15+版本](https://www.tampermonkey.net/)。这两点只确认安装候选，不是助手兼容结论；不推断任意系统浏览器或主屏幕PWA都能运行脚本。
-
-每个平台分别验证document-start注入、`unsafeWindow`页面状态访问、五项GM权限、公开行情请求、保存、复制及用户粘贴。未验证前不宣称兼容，也不以localStorage替代正式GM存档。Safari Userscripts若作为后续候选，需要单独适配API及脚本上下文；其[项目文档](https://github.com/quoid/userscripts#api)区分content/page上下文和异步GM API，不能当作现有userscript的无改动替换。
-
-软键盘可能改变可视视口而不改变布局视口，见[MDN VisualViewport](https://developer.mozilla.org/en-US/docs/Web/API/VisualViewport)。安全区域使用[CSS env](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Values/env)。[剪贴板读取](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText)有权限与安全上下文约束。[WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)给出的最低目标通常为24×24 CSS px并有例外，44px是本方案为触摸提出的产品目标。
-
-## 后续验收与边界
-
-- 离线夹具应包含真实移动DOM层次、`.m-on`切换、隐藏桌面导航、底栏、更多页及路线节点搬移；不再只改变viewport宽度。
-- 尺寸覆盖320、360、390、430px竖屏，触屏横屏、平板与桌面模式切换；明确640px及粗指针横屏条件，保留桌面导航回归。
-- 真机覆盖中文／英文、键盘弹出收起、地址栏伸缩、安全区域、长名称、大字号、文本选择、表格滑动及状态详情；关闭后能重新打开，当前编辑不丢失。
-- 订单及偏好保存失败明确显示；GM延迟读取、切角、恢复布局以及连续模式切换不串档、不覆盖桌面布局。
-- 预填另验两种入口、已有草稿、重复tab点击、可见控件唯一性、输入读回和零动作提交。
-- 性能继续采用现有250ms只读采样和稳定节点更新，记录真机输入、滚动和实时更新延迟；不先增加另一条轮询或重建整个面板。
-
-本次实际执行：当前仓库代码阅读、游戏公开HTML／CSS／JS静态检查、官方浏览器资料核对、3种尺寸的离线入口可见性复现、文档引用与差异检查。未运行完整助手测试；未连接登录账号、未建立游戏WebSocket、未做真实手机或脚本管理器验收，未修改功能、未发布。
+本文是2026-10-24的静态资源和离线入口复现记录，未运行真实游戏JS、未连接账号或新建WebSocket、未做真机或脚本管理器验收。旧实施建议、触摸尺寸和状态详情方案已由现行设计取代，不再维护另一套规则。当前双端布局、长按菜单、统一状态说明及验收范围见[面板设计](../docs/panel.md#移动端适配范围)。Android／iOS真机、安全区域、系统键盘与脚本管理器权限仍待独立验证。

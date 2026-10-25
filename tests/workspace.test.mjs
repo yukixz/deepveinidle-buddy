@@ -7,7 +7,7 @@ import {createPriceSnapshot} from '../src/engine/price-protocol.js';
 import {priceDefaults} from '../src/engine/item-prices.js';
 import {craftingJobs,craftingTiers,craftingMaterials} from '../src/engine/crafting-model.js';
 const bronze=craftingJobs.find(j=>j.output.itemId===40&&!j.upgrade),craft=(count=1)=>({kind:'craft',jobId:bronze.id,tier:0,count}),collection=(target=100)=>({kind:'collection',itemId:40,jobId:collectionRoutes(40)[0].id,target});
-function setup(){const w=defaults();w.character.initialized=true;w.character.bank={};w.character.pack={};for(const k in w.character.config.levels)w.character.config.levels[k]=100;return w;}
+function setup(){const w=defaults();w.character.initialized=true;w.character.worldTick=1000000;w.character.bank={};w.character.pack={};for(const k in w.character.config.levels)w.character.config.levels[k]=100;return w;}
 const quote=(state,id,value)=>({...state,quotes:{...state.quotes,[id]:{ask:{value,capturedAt:Date.now()}}}});
 const evaluate=w=>estimateOrders(w,createPriceSnapshot(w.prices));
 test('mixed intent survives strict workspace roundtrip; invalid entries reject atomically',()=>{const w=setup();putLine(w.orders[0],craft(10));putLine(w.orders[0],collection());assert.deepEqual(validateWorkspace(w),w);assert.throws(()=>validateWorkspace({...w,orders:[{...w.orders[0],lines:[{...craft(),count:1.2}]}]}),/invalidLine/);});
@@ -62,7 +62,7 @@ test('single-order transfer contains only validated order intent',async()=>{
 });
 test('filter thresholds are required and validated',()=>{const w=defaults();w.filters.collection.maxSecondsPerPoint='5';assert.equal(validateWorkspace(w).filters.collection.maxSecondsPerPoint,'5');delete w.filters.collection.maxSecondsPerPoint;assert.throws(()=>validateWorkspace(w),/invalidFilters/);w.filters.collection.maxSecondsPerPoint='-1';assert.throws(()=>validateWorkspace(w),/invalidFilters/);});
 
-test('both price sides are required market ask/bid values',()=>{const w=defaults();assert.equal(w.productPriceMode,'bid');w.productPriceMode='ask';assert.equal(validateWorkspace(w).productPriceMode,'ask');delete w.productPriceMode;assert.throws(()=>validateWorkspace(w),/invalidPriceMode/);w.productPriceMode='bid';w.character.buyMode='global';assert.throws(()=>validateWorkspace(w),/invalidPriceMode/);});
+test('both price sides are required market ask/bid values',()=>{const w=defaults();assert.equal(w.productPriceMode,'bid');w.productPriceMode='ask';assert.equal(validateWorkspace(w).productPriceMode,'ask');delete w.productPriceMode;assert.throws(()=>validateWorkspace(w),/invalidWorkspace/);w.productPriceMode='bid';w.character.buyMode='global';assert.throws(()=>validateWorkspace(w),/invalidPriceMode/);});
 
 test('material pricing governs mixed requirements, purchase values and percentage fees independently of product pricing',()=>{const w=setup();w.character.buyMode='ask';putLine(w.orders[0],craft(10));putLine(w.orders[0],collection(100));w.orders[0].fees.percent=10;for(const [id,ask,bid]of [[1,2,1],[2,3,2]])w.prices.quotes[id]={ask:{value:ask,capturedAt:Date.now()},bid:{value:bid,capturedAt:Date.now()}};const a=evaluate(w);assert.equal(a.total,550);assert.equal(a.orders[0].fees.percent,55);w.productPriceMode='ask';assert.deepEqual(evaluate(w),a);w.character.buyMode='bid';const b=evaluate(w);assert.equal(b.total,330);assert.equal(b.orders[0].fees.percent,33);assert.deepEqual(a.rows.map(r=>r.required),b.rows.map(r=>r.required));assert.equal(a.craftSeconds,b.craftSeconds);assert.equal(a.collectionSeconds,b.collectionSeconds);});
 
@@ -70,7 +70,7 @@ test('collection defaults to cost ascending and validates explicit sorting',()=>
 
 test('execution actions merge recipe and rarity across selected orders without inventory deduction',()=>{const w=setup();w.character.counts[40]=9;w.character.bank={1:999,2:999};putLine(w.orders[0],craft(10));putLine(w.orders[0],collection(100));const second=createOrder();putLine(second,craft(4));w.orders.push(second);const excluded=createOrder();excluded.enabled=false;putLine(excluded,craft(1000));w.orders.push(excluded);const p=evaluate(w);assert.equal(p.actions.length,1);const a=p.actions[0];assert.equal(a.craftCount,14);assert.equal(a.collectionAttempts,91);assert.equal(a.count,105);assert.equal(a.seconds,p.craftSeconds+p.collectionSeconds);assert.deepEqual(a.issues,[]);});
 test('execution action collection attempts round up and scale dependent time',()=>{const w=setup();const candidate=collectionRows(w.character).find(r=>r.status==='ok'&&!Number.isInteger(r.attempts));assert.ok(candidate);putLine(w.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});const p=evaluate(w);assert.equal(p.actions[0].count,p.entries[0].attempts);assert.equal(p.actions[0].count,Math.ceil(candidate.attempts));assert.equal(p.actions[0].seconds,candidate.seconds/candidate.attempts*Math.ceil(candidate.attempts));assert.equal(p.points,candidate.points);assert.equal(p.actions[0].seconds,p.entries[0].seconds);});
-test('execution actions keep unknown or conflicting collection counts explicit',()=>{const w=setup();putLine(w.orders[0],craft(10));putLine(w.orders[0],collection(100));w.character.initialized=false;let a=evaluate(w).actions[0];assert.equal(a.craftCount,10);assert.equal(a.collectionAttempts,null);assert.equal(a.count,null);assert.equal(a.seconds,null);assert.ok(a.issues.includes('uninitialized'));w.character.initialized=true;const second=createOrder();putLine(second,collection(100));w.orders.push(second);a=evaluate(w).actions[0];assert.equal(a.count,null);assert.ok(a.issues.includes('collectionConflict'));});
+test('execution actions keep unknown or conflicting collection counts explicit',()=>{const w=setup();putLine(w.orders[0],craft(10));putLine(w.orders[0],collection(100));w.character.initialized=false;let a=evaluate(w).actions[0];assert.equal(a.craftCount,10);assert.equal(a.collectionAttempts,null);assert.equal(a.count,null);assert.equal(a.seconds,null);assert.ok(a.issues.includes('uninitialized'));w.character.initialized=true;w.character.worldTick=1000000;const second=createOrder();putLine(second,collection(100));w.orders.push(second);a=evaluate(w).actions[0];assert.equal(a.count,null);assert.ok(a.issues.includes('collectionConflict'));});
 test('completed collections and empty orders do not add execution actions',()=>{const w=setup();assert.deepEqual(evaluate(w).actions,[]);w.autoRemove=false;w.character.counts[40]=100;putLine(w.orders[0],collection(100));assert.deepEqual(evaluate(w).actions,[]);putLine(w.orders[0],craft(2));assert.equal(evaluate(w).actions[0].count,2);});
 test('execution actions separate rarities and include gathering collection routes',()=>{const w=setup(),job=craftingJobs.find(j=>craftingTiers(j).includes(1)&&j.levelReq<=100);assert.ok(job);putLine(w.orders[0],{kind:'craft',jobId:job.id,tier:0,count:2});putLine(w.orders[0],{kind:'craft',jobId:job.id,tier:1,count:3});let actions=evaluate(w).actions;assert.equal(actions.length,2);assert.deepEqual(actions.map(a=>[a.tier,a.count]),[[0,2],[1,3]]);w.orders[0].lines=[];const candidate=collectionRows(w.character).find(r=>r.status==='ok'&&game.recipes.find(j=>j.id===r.jobId).skill==='mining');assert.ok(candidate);putLine(w.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});actions=evaluate(w).actions;assert.equal(actions[0].craftCount,0);assert.equal(actions[0].count,Math.ceil(candidate.attempts));});
 
@@ -91,7 +91,7 @@ test('whole collection attempts merge with fixed crafts for material readiness',
  const w=setup(),candidate=collectionRows(w.character).find(r=>r.status==='ok'&&Object.values(r.materials).some(q=>q!==Math.ceil(q))&&craftingJobs.some(j=>j.id===r.jobId&&craftingTiers(j).includes(game.itemTier(r.id))));assert.ok(candidate);putLine(w.orders[0],{kind:'craft',jobId:candidate.jobId,tier:game.itemTier(candidate.id),count:2});putLine(w.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});const p=evaluate(w);assert.equal(p.actions.length,1);w.character.bank=Object.fromEntries(p.rows.map(r=>[r.id,r.required]));assert.equal(evaluate(w).actions[0].materialStatus,'ready');w.character.bank[p.rows[0].id]--;assert.equal(evaluate(w).actions[0].materialStatus,null);
 });
 test('uninitialized or conflicting actions and material-free gathering never claim readiness',()=>{
- const w=setup();putLine(w.orders[0],craft(2));putLine(w.orders[0],collection(100));w.character.bank={1:9999,2:9999};w.character.initialized=false;assert.ok(evaluate(w).actions.every(a=>a.materialStatus===null));w.character.initialized=true;const second=createOrder();putLine(second,collection(100));w.orders.push(second);assert.ok(evaluate(w).actions.every(a=>a.materialStatus===null));
+ const w=setup();putLine(w.orders[0],craft(2));putLine(w.orders[0],collection(100));w.character.bank={1:9999,2:9999};w.character.initialized=false;assert.ok(evaluate(w).actions.every(a=>a.materialStatus===null));w.character.initialized=true;w.character.worldTick=1000000;const second=createOrder();putLine(second,collection(100));w.orders.push(second);assert.ok(evaluate(w).actions.every(a=>a.materialStatus===null));
  const gather=setup(),candidate=collectionRows(gather.character).find(r=>r.status==='ok'&&Object.keys(r.materials).length===0);assert.ok(candidate);putLine(gather.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});assert.equal(evaluate(gather).actions[0].materialStatus,null);
 });
 
@@ -204,21 +204,11 @@ test('unknown or conflicting outputs remain unknown instead of reducing procurem
  const w=setup();putLine(w.orders[0],craft(4));putLine(w.orders[0],{kind:'craft',jobId:51,tier:0,count:5});
  w.character.initialized=false;let plan=evaluate(w);assert.equal(plan.total,null);
  assert.equal(plan.rows.find(r=>r.id===40).produced,null);assert.equal(plan.rows.find(r=>r.id===40).purchase,null);
- w.character.initialized=true;putLine(w.orders[0],collection());const other=createOrder();putLine(other,collection());w.orders.push(other);
+ w.character.initialized=true;w.character.worldTick=1000000;putLine(w.orders[0],collection());const other=createOrder();putLine(other,collection());w.orders.push(other);
  plan=evaluate(w);assert.equal(plan.total,null);assert.equal(plan.rows.find(r=>r.id===40).produced,null);
 });
 
-test('GM workspace projection excludes market observations and imported prices without changing live data',()=>{
- const w=setup(),now=Date.now();
- w.prices.quotes={1:{ask:{value:112,quantity:500,capturedAt:now}}};
- const entry=(source,price)=>({price,source,locked:false,updatedAt:now,quoteCapturedAt:source==='manual'?null:now});
- w.prices.prices={1:entry('ask',112),2:entry('bid',80),40:entry('vendor',4),3:entry('manual',9)};
- w.prices.preferences.autoImport=false;
- const stored=workspaceForStorage(w);
- assert.deepEqual(stored.prices.quotes,{});
- assert.deepEqual(stored.prices.prices,{3:w.prices.prices[3]});
- assert.deepEqual(stored.prices.preferences,w.prices.preferences);
- assert.deepEqual(stored.orders,w.orders);assert.deepEqual(stored.character,w.character);assert.deepEqual(stored.filters,w.filters);
- assert.equal(w.prices.quotes[1].ask.quantity,500);assert.equal(Object.keys(w.prices.prices).length,4);
- assert.deepEqual(validateWorkspace(stored),stored);
+test('GM projection strips observations while retaining orders and pricing direction',()=>{
+ const w=setup(),now=Date.now();w.prices.quotes={1:{ask:{value:112,quantity:500,capturedAt:now}}};w.productPriceMode='ask';w.excludeInsufficientAsks=true;
+ const stored=workspaceForStorage(w);assert.deepEqual(stored.prices,{version:1,quotes:{}});assert.deepEqual(stored.orders,w.orders);assert.deepEqual(stored.character,w.character);assert.equal(stored.productPriceMode,'ask');assert.equal(stored.excludeInsufficientAsks,true);assert.equal(w.prices.quotes[1].ask.quantity,500);
 });

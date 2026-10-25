@@ -1,0 +1,105 @@
+{
+  "missingHomeBank": "incompleteSnapshot",
+  "hotTiming": {
+    "tick": 42978000,
+    "now": "2026-10-26T11:00:00.000Z",
+    "actualHot": {
+      "skill": "mining",
+      "kind": "rarity",
+      "mult": 1.25,
+      "from": 42978000,
+      "until": 42981000
+    },
+    "predictionStartTick": 1000000,
+    "hotAtPredictionStart": {
+      "skill": "cooking",
+      "kind": "xp",
+      "mult": 1.2,
+      "from": 999000,
+      "until": 1002000
+    },
+    "importedMode": "game",
+    "game": {
+      "quality": 0.000006666666666666667,
+      "attempts": 150000,
+      "seconds": 334572.49070631963
+    },
+    "current": {
+      "quality": 0.000008333333333333334,
+      "attempts": 120000,
+      "seconds": 267657.9925650557
+    }
+  },
+  "effectivePricing": {
+    "effectivePricesA": 2,
+    "effectivePricesB": 278,
+    "autoImportFalseStillUpdated": 278,
+    "statsA": {
+      "updated": 2,
+      "vendor": 0,
+      "locked": 0,
+      "missing": 276,
+      "unavailable": 0,
+      "stale": 0,
+      "invalid": 0
+    },
+    "statsB": {
+      "updated": 278,
+      "vendor": 278,
+      "locked": 0,
+      "missing": 0,
+      "unavailable": 0,
+      "stale": 0,
+      "invalid": 0
+    },
+    "equalOrders": true,
+    "priceA": 112,
+    "priceB": 1,
+    "askA": 112,
+    "askB": 112
+  },
+  "metadata": {
+    "equalOrders": true
+  },
+  "invalidWorld": {
+    "previousWorldRarity": 20,
+    "nextWorldRarity": 0,
+    "previousWeeklyXp": 10,
+    "nextWeeklyXp": 0,
+    "initialized": true,
+    "warnings": [
+      "weeklyXp.reset"
+    ],
+    "estimateStatus": "ok",
+    "quality": 0.000006666666666666667,
+    "seconds": 334572.49070631963
+  },
+  "extraCapture": {
+    "foodOnlyChanges": 2,
+    "deliveredEnvelopes": 3,
+    "copiedFields": [
+      "lastTick",
+      "skills",
+      "equipment",
+      "foodItemId",
+      "eatAt",
+      "foodMaxTier",
+      "foodPerTrip",
+      "brews",
+      "brewTier",
+      "house",
+      "houseFurniture",
+      "masteries",
+      "perks",
+      "guildBonus",
+      "homeBank",
+      "ironman",
+      "bank",
+      "pack",
+      "collections",
+      "route",
+      "queue",
+      "workJobId"
+    ]
+  }
+}

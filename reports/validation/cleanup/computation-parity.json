@@ -1,0 +1,24 @@
+{
+  "baseline": "c507fc3",
+  "configurations": 9,
+  "hotSettings": [
+    "game",
+    "current",
+    "off"
+  ],
+  "skillLevels": [
+    1,
+    50,
+    100
+  ],
+  "guildXp": 1.25,
+  "weeklyXp": 2.75,
+  "worldRarity": 8.125,
+  "elixirTier": 3,
+  "hunterTier": 2,
+  "evaluatedAt": "2026-10-25T00:00:00.000Z",
+  "rowCount": 71280,
+  "equal": true,
+  "beforeSha256": "fd31793ee58a6a19a816e5d19980b6c4ad0b1dfc5ab8735a7f36645dd8bbd8ba",
+  "afterSha256": "fd31793ee58a6a19a816e5d19980b6c4ad0b1dfc5ab8735a7f36645dd8bbd8ba"
+}

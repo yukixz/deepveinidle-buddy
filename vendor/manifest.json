@@ -6,102 +6,47 @@
   "exports": {
     "questDay": "an",
     "questWeek": "v2",
-    "monsters": "Rt",
     "equipment": "DH",
     "items": "cs",
-    "marketFamilies": "QK",
     "marketFamily": "JO",
     "gear": "He",
     "item": "Ho",
-    "canSell": "De",
-    "vendorPrice": "ee",
     "encode": "as",
     "withRarity": "xc",
     "levelXp": "tt",
     "level": "$o",
     "maxLevel": "nd",
-    "accuracy": "In",
-    "maxHit": "Qd",
-    "evasion": "Nn",
-    "hitChance": "Dd",
-    "magic": "ti",
-    "style": "kt",
-    "attackTicks": "qy",
-    "maxHp": "La",
     "equipmentSlots": "on",
     "masteries": "Rn",
     "rooms": "Te",
-    "foodBuff": "TO",
-    "preferredBankFood": "Wh",
-    "cropDuration": "lY",
-    "isCrop": "kK",
-    "damageReduction": "LT",
-    "brewScale": "ze",
     "combine": "pa",
-    "bosses": "Ak",
-    "bossStats": "Lj",
-    "bossWeakMultiplier": "Vj",
-    "bossOtherMultiplier": "Jj",
     "tickMs": "uo",
-    "strength": "iI",
-    "armour": "rI",
-    "magicDefenceScale": "Ty",
     "maxEnhancement": "St",
     "potions": "UO",
-    "potionDurationTicks": "df",
     "recipes": "xo",
     "translations": "bL",
     "worldTranslations": "zL",
     "uiTranslations": "gL",
     "homeTranslations": "pL",
-    "houseBonus": "qn",
-    "houseDamageCap": "rW",
     "masteryRankLimit": "aT",
-    "masteryRankCost": "Yd",
-    "masteryTotalCost": "tT",
-    "masteriesTotalCost": "Il",
-    "masteryEarnedPoints": "Pn",
     "collectionThresholds": "Mr",
     "collectionPoints": "EK",
     "collectionItems": "Ll",
-    "combatTick": "GI",
-    "killMonster": "pI",
-    "combatRarityMultiplier": "gI",
     "rarityThresholds": "yd",
-    "mountRarityThresholds": "Sd",
-    "mountChance": "cB",
-    "baseAttackTicks": "Fr",
-    "combatPetChance": "af",
-    "combatPetItem": "uK",
-    "isPet": "Na",
-    "voidShardChance": "fI",
-    "voidShardQuantity": "bI",
-    "voidShardItemId": "id",
-    "mountItemId": "xd",
-    "abyssalGoldBonus": "Lk",
     "baseItemId": "fo",
     "itemTier": "jo",
     "coinItemId": "va",
     "hotSkill": "Zf",
-    "masteryOfflineBaseHours": "lh",
     "predict": "Jr",
     "offline": "f7",
     "tick": "KP",
     "world": "j",
-    "startFight": "xi",
-    "resetActivity": "Da",
-    "depositPack": "QW",
     "homeBank": "nG",
-    "combatTargetTile": "dN",
-    "nearbyTile": "vt",
     "predictionStartTick": "_b",
     "predictionChunkTicks": "nA",
     "allSkills": "Jc",
     "createContext": "_H",
-    "fullFoodLoad": "$n",
     "perks": "uv",
-    "hotXp": "Ix",
-    "hotRare": "Nx",
     "tools": "PH",
     "tool": "Os",
     "toolLuck": "ry",
@@ -109,41 +54,20 @@
     "brewRarityMultiplier": "hS",
     "houseRarityMultiplier": "vf",
     "masteryMultiplier": "ba",
-    "mountSpeed": "rS",
-    "randomFloat": "ly",
     "canEnhance": "os",
-    "enhanceChance": "r2",
-    "enhanceCost": "Fh",
-    "enhanceXp": "CI",
-    "enhanceTicks": "od",
-    "protectionMin": "Yt",
     "startWork": "Gs",
     "workChance": "uP",
-    "workModifiers": "hP",
     "recipeInputs": "Ye",
     "burnChance": "fB",
-    "workXpMultiplier": "lG",
     "caughtChance": "rP",
-    "packCapacity": "fa",
     "lootBoxItemId": "pi",
     "nearestWorkSite": "DW",
-    "armourMultiplier": "s2",
-    "restock": "rN",
     "upgradeRecipes": "hd",
     "upgradeResult": "xh",
     "upgradeMaterials": "eG",
-    "applyUpgrade": "LI",
     "recipeLevel": "PI",
-    "windowModifiers": "Vn",
     "hotRarityMultiplier": "Np",
-    "skillPet": "fK",
-    "skillPetChance": "yy",
     "itemSupportsRarity": "_f",
-    "bonusMinimumUncommon": "Yf",
-    "addPack": "ja",
-    "enhancementTargetLimit": "HO",
-    "enhanceMasteryMultiplier": "Vy",
-    "enhanceMasteryBonusCap": "MW",
     "recipeRarity": "AO",
     "recipeOutput": "mi",
     "collectionExcluded": "XK"
@@ -882,12 +806,6 @@
       "sha256": "a9572f475c9288c834e5f92cd1ed5a2cc223391c4cf1ad1e3c07ad06899d6a06"
     },
     {
-      "name": "Dj",
-      "start": 83025,
-      "end": 83030,
-      "sha256": "6287e1f8484c6f92aaf83a7337e5978bf591a3788b13ef2b16061f9161ea05a7"
-    },
-    {
       "name": "va",
       "start": 83031,
       "end": 83037,
@@ -1032,18 +950,6 @@
       "sha256": "89fc5854389c6958357e71bed00997523596c6254f56bdca9f2770ab52e1bfdd"
     },
     {
-      "name": "Bj",
-      "start": 87702,
-      "end": 87708,
-      "sha256": "0173516f5b7e47f6b8801348f24e0dc4d5b73757b1b4c6cb8386550a578de60c"
-    },
-    {
-      "name": "Lj",
-      "start": 87709,
-      "end": 88049,
-      "sha256": "41d1a66e68a12551afa0f48cd31227f8bb121760ab9428ad512b558bf3f751b6"
-    },
-    {
       "name": "km",
       "start": 88085,
       "end": 88093,
@@ -1066,18 +972,6 @@
       "start": 88201,
       "end": 88884,
       "sha256": "17f22b74559ec400cd9d1ff8099f341eed313452a14809ec19931660bdcad377"
-    },
-    {
-      "name": "Vj",
-      "start": 88885,
-      "end": 88891,
-      "sha256": "f73830be71d4ba417a94c7dc212cb2a9a117ed6b629a2aba2fe3caf5b63d4364"
-    },
-    {
-      "name": "Jj",
-      "start": 88892,
-      "end": 88898,
-      "sha256": "e33d1804280e4e63c142f1f20fde4aa5193b1415a2e62bb843b1719a457b6d9c"
     },
     {
       "name": "Tx",
@@ -1284,34 +1178,10 @@
       "sha256": "c7e19d2b8056055f7c35ea964c9e3ff57f44f38f5d1cf23100a3dc39364ec31a"
     },
     {
-      "name": "Yd",
-      "start": 93713,
-      "end": 93766,
-      "sha256": "373d4e9193dfcf45f9c4233379668285e2980fb0834f697d73a96bc735a18553"
-    },
-    {
-      "name": "Bb",
-      "start": 93772,
-      "end": 93778,
-      "sha256": "5483012b274a142ad0a8615e21d84aa0a980815748766bb6c2ba9104a8ff1eb2"
-    },
-    {
       "name": "aT",
       "start": 93779,
       "end": 93785,
       "sha256": "801800fa7363e84dda4f3d92ee463b1509b6c4fbf72b015db79879b75054db41"
-    },
-    {
-      "name": "tT",
-      "start": 93786,
-      "end": 93940,
-      "sha256": "ce8b85817a10e7e8706f7c3cc86e2610da525464a600871ef6c6708b2867018c"
-    },
-    {
-      "name": "Il",
-      "start": 93940,
-      "end": 94023,
-      "sha256": "d0336810e060a3d757da2771307cb0486487da49a44bdd1bc7a745eb658d0656"
     },
     {
       "name": "Kl",
@@ -1848,12 +1718,6 @@
       "sha256": "758104211887e004a920e1edd988ef6c891a8c3950abf47113d53558b6745aad"
     },
     {
-      "name": "df",
-      "start": 180680,
-      "end": 180686,
-      "sha256": "934544a512df8a9b579f33ec590ff9a853fed7cd113eec44b6da0e2f428e2d5f"
-    },
-    {
       "name": "cb",
       "start": 180687,
       "end": 180692,
@@ -2122,12 +1986,6 @@
       "start": 185108,
       "end": 185169,
       "sha256": "526bfcf4072f3b9bd55422c4ab22dc163fffe41ac5b1b134490672971675d8e6"
-    },
-    {
-      "name": "lh",
-      "start": 241768,
-      "end": 241773,
-      "sha256": "53a8a70121bdab1363b0bd678a5c2910f7b2685ddaff643e2e4f61b4e62fea3f"
     },
     {
       "name": "uv",
@@ -2454,12 +2312,6 @@
       "sha256": "5bf9615a64d7c7c72f0b730987600ed886fc6169f0ffbd02e383e96847111108"
     },
     {
-      "name": "e9",
-      "start": 259664,
-      "end": 259770,
-      "sha256": "e96218886bd7765d23b8d6376c8491ab959a35e7fe1ce6e2e92c4a7d5e479f81"
-    },
-    {
       "name": "e2",
       "start": 259992,
       "end": 259996,
@@ -2470,12 +2322,6 @@
       "start": 259997,
       "end": 260001,
       "sha256": "233358521f6d21cf2a079ab3fca2dab595184f9286470a4af6b2c2817aa603c3"
-    },
-    {
-      "name": "Ym",
-      "start": 260002,
-      "end": 260010,
-      "sha256": "208e19a4de9b6d11a6ad358ff78d26286019245484cb3b0496ad16b748e34812"
     },
     {
       "name": "Zs",
@@ -2526,12 +2372,6 @@
       "sha256": "5aa289718264747d13f93ca2be60fc0d17b9e4552396e8c6a5280c798b1de7f5"
     },
     {
-      "name": "r9",
-      "start": 260254,
-      "end": 260313,
-      "sha256": "cc0aff448964b98f219c15e526666454b310b3ed94f278a77f146df5ebab4f28"
-    },
-    {
       "name": "Lr",
       "start": 260313,
       "end": 260461,
@@ -2544,58 +2384,10 @@
       "sha256": "1f88d189ac611a06bd6e2ce3ac2b4f1fea4bbdd3c12479fb7fc9a6de10616da7"
     },
     {
-      "name": "a2",
-      "start": 260588,
-      "end": 260697,
-      "sha256": "e64c7fa888df3a901ee4b33b59cf6f4bb77867eb16cd0583b25f2231775b1c0b"
-    },
-    {
-      "name": "xy",
-      "start": 260697,
-      "end": 260808,
-      "sha256": "7667c37856e74440163e30e56a7ad0c08c869a5da761bb931538170420233cad"
-    },
-    {
       "name": "u9",
       "start": 260910,
       "end": 261069,
       "sha256": "0b8e2c81220dc4c0d5b117790940d655b039fbf9a7fd675aab9ae934024904c6"
-    },
-    {
-      "name": "Pn",
-      "start": 261069,
-      "end": 261124,
-      "sha256": "2ab51106240d3b9209d6e9a1462c2bd8e0b441f0d2023f6da13b9a4b99511d39"
-    },
-    {
-      "name": "m9",
-      "start": 261130,
-      "end": 261135,
-      "sha256": "7456a04e6e4656330612add1679a388685ec5dd318343dabe07c3d27c508ee57"
-    },
-    {
-      "name": "f9",
-      "start": 261136,
-      "end": 261165,
-      "sha256": "597d3342a6dd27671d32652b568ce0641349df9a82c4d1130d559c8fc528c6f5"
-    },
-    {
-      "name": "De",
-      "start": 261166,
-      "end": 261280,
-      "sha256": "726fec9e714af443f143f585dd5907a5ec71f2f3d48e5f30ee52eed8fca5bd59"
-    },
-    {
-      "name": "ee",
-      "start": 261280,
-      "end": 261378,
-      "sha256": "13d022877b464dd887085063b5bf99eeb13b522b3354d6dd9acdd45da1fcd469"
-    },
-    {
-      "name": "_K",
-      "start": 261378,
-      "end": 261429,
-      "sha256": "98f687f90e027040726f8c31fb00139b0e6d2a2892de1b4fa8c801e55958b085"
     },
     {
       "name": "QK",
@@ -3034,12 +2826,6 @@
       "start": 277359,
       "end": 277418,
       "sha256": "2a043730e219beaae7bee04b17d10de031922e7057bab193bdbba9b88d269ede"
-    },
-    {
-      "name": "qy",
-      "start": 277418,
-      "end": 277456,
-      "sha256": "6812b5fe42ba61176c70bdb4216c45da1d0265f51b89e23e2a0c88bb57299c70"
     },
     {
       "name": "lI",
@@ -3496,24 +3282,6 @@
       "start": 293790,
       "end": 293849,
       "sha256": "cb7f1695632107c610b235fdb15655c72a8dc43f2c00d51525b0e0a9edf7916b"
-    },
-    {
-      "name": "aG",
-      "start": 293849,
-      "end": 293994,
-      "sha256": "df24226fe2d2adbddade8a2f9fa48b512075c982b9a2add4ba91c3da789758c0"
-    },
-    {
-      "name": "LI",
-      "start": 293994,
-      "end": 294535,
-      "sha256": "b2c4d790e48340c8c27934c87535985c45422fed6ff3a0b57191e5ba75037385"
-    },
-    {
-      "name": "VI",
-      "start": 294535,
-      "end": 294665,
-      "sha256": "eff5d2bfc0cfef04fc62fcc16d523520035df1ccf7b9af68fc46f0670bc70578"
     },
     {
       "name": "WW",

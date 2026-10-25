@@ -1,0 +1,9 @@
+{
+  "sourceSha256": "f7fb9a6b608d353de6a107c68ed99c990642f99260d41676073385285c9489a6",
+  "sourceUnchanged": true,
+  "declarationsBefore": 778,
+  "declarationsAfter": 752,
+  "allRetainedDeclarationsUnmodified": true,
+  "generatedSha256": "6aa3ca95fc92fb6559b63d5a1202f8468d51389d07c8de34314284dcfbfb2ea4",
+  "idempotentReextract": true
+}

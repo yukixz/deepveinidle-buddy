@@ -1,4 +1,5 @@
 import {installCapture,copyCharacter} from './capture.js';
+import {readWorldBuffs} from './engine/world-buffs.js';
 const record=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);
 export function characterRole(value){return Number.isSafeInteger(value)&&value>0?String(value):typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value)?value:null;}
 export function readClient(page,now=Date.now()){
@@ -9,12 +10,13 @@ export function readClient(page,now=Date.now()){
  // Clone only approved data; never traverse the whole session or retain game objects.
  const player=copyCharacter(p);
  const windows=session.context?.windows;
- if(!Array.isArray(windows))throw Error('incompatibleCharacter');
- const worldBuffs=windows.map(w=>Object.fromEntries(['label','fromTick','toTick','xpMult','rarityMult'].filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]])));
- const guild=session.guildInfo==null?null:{name:session.guildInfo.name,tag:session.guildInfo.tag};
+ if(!Array.isArray(windows))throw Error('invalidWorldBuffs');
+ const worldBuffs=windows.map(w=>{if(!record(w))throw Error('invalidWorldBuffs');return Object.fromEntries(['fromTick','toTick','rarityMult'].filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]]));});
  const tick=session.tick;
- if(!Number.isSafeInteger(tick)||tick<0)throw Error('incompatibleCharacter');
- return {role,snapshot:{version:2,capturedAt:now,player,guild,worldBuffs,worldTick:tick,worldBuffsVersion:1}};
+ if(!Number.isSafeInteger(tick)||tick<0)throw Error('invalidWorldBuffs');
+ const snapshot={version:2,capturedAt:now,player,worldBuffs,worldTick:tick,worldBuffsVersion:1};
+ readWorldBuffs(snapshot);
+ return {role,snapshot};
 }
 export function createGameSync(page,emit,{now=Date.now}={}){
  let server=null,connection=0,sequence=0,identity='',previous='',lastSession=null,disposed=false;
@@ -38,6 +40,7 @@ export function createGameSync(page,emit,{now=Date.now}={}){
   const hint=characterRole(session?.state?.id);
   const mayFallback=server&&(!session||hint===server.role);
   if(mayFallback){deliver({...server,source:'server',realtimeError:error??'realtimeUnavailable'});return;}
+  if(error==='invalidWorldBuffs'&&hint){deliver({role:hint,source:'client',status:'error',error,snapshot:null,realtimeError:error});return;}
   deliver({role:null,source:'server',status:error?'error':'waiting',error,snapshot:null,realtimeError:error??'realtimeUnavailable'});
  }
  return {sample,receive(envelope){server=envelope;sample();},dispose(){disposed=true;server=null;lastSession=null;}};

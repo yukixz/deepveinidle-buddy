@@ -29,7 +29,7 @@ try{
  });
  await page.addScriptTag({url:baseUrl+'/.test-artifacts/market-storage/harness.js'});
  const initial=defaults(),job=craftingJobs.find(job=>job.output.itemId===40&&!job.upgrade);
- initial.character.initialized=true;initial.character.bank={};initial.character.pack={};
+ initial.character.initialized=true;initial.character.worldTick=1000000;initial.character.bank={};initial.character.pack={};
  for(const skill in initial.character.config.levels)initial.character.config.levels[skill]=70;
  initial.orders[0].lines=[{kind:'craft',jobId:job.id,tier:0,count:100}];
  // Residual data in an existing current-format GM bucket must not become live quotes.
@@ -42,8 +42,8 @@ try{
  await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('[data-material="1"] td:nth-child(5)')?.textContent==='112');
  assert.equal(await page.evaluate(()=>window.savedWrites.length),0);checks.push('market refresh updates rendered estimates without a GM write');
  await root.locator('#orders > summary').click();await root.locator('#auto-remove').check();await page.waitForFunction(()=>window.savedWrites.length>0);
- const saved=await page.evaluate(()=>window.savedValues['market-test']);assert.deepEqual(saved.prices.quotes,{});assert.deepEqual(saved.prices.prices,{});assert.equal(saved.autoRemove,true);assert.equal(Object.hasOwn(saved,'language'),false);assert.deepEqual(saved.orders,initial.orders);
- assert.equal(await unitPrice.textContent(),'112');checks.push('saving user settings keeps orders and preferences while excluding quotes and generated prices');
+ const saved=await page.evaluate(()=>window.savedValues['market-test']);assert.deepEqual(saved.prices.quotes,{});assert.deepEqual(Object.keys(saved.prices).sort(),['quotes','version']);assert.equal(saved.autoRemove,true);assert.equal(Object.hasOwn(saved,'language'),false);assert.deepEqual(saved.orders,initial.orders);
+ assert.equal(await unitPrice.textContent(),'112');checks.push('saving user settings keeps orders and pricing directions while excluding market observations');
  await page.evaluate(()=>{window.savedValues['market-test'].revision++;});
  await root.locator('#auto-remove').uncheck();await root.evaluate(el=>el.shadowRoot.activeElement?.blur());await root.locator('[data-action="reload"]').waitFor();await root.locator('[data-action="reload"]').click();
  await page.waitForFunction(()=>!document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('[data-action="reload"]'));

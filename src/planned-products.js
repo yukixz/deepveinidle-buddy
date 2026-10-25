@@ -1,8 +1,6 @@
 import * as game from './engine/upstream.js';
 import {gatheringSkills} from './engine/gathering-model.js';
 import {addExpected,expectedCraftProduct,workQualities} from './engine/work-expectation.js';
-import {manualWindows} from './engine/manual-settings.js';
-import {epoch} from './engine/hot-forecast.js';
 
 export function plannedProducts(job,tier,count,players){
  if(!Number.isSafeInteger(count)||count<=0)throw Error('invalidQuantity');
@@ -19,11 +17,7 @@ export function plannedProducts(job,tier,count,players){
   else{
    let qualities=[1];
    if(game.itemSupportsRarity(job.output.itemId)){
-    // Use the same instant and modifiers as estimateCollection.
-    const config=players.configs.gather;
-    const at=config.hotSetting==='current'?Math.floor((players.now-epoch)/game.tickMs):game.predictionStartTick;
-    const context={hypothetical:true,windows:manualWindows(at,at,config.weeklyXp,config.hotSetting==='off',job.skill,config.worldRarity??0)};
-    qualities=workQualities(player,context,job,at);
+    qualities=workQualities(player,job,players.tick,players.worldRarity);
    }
    qualities.forEach((quality,rarity)=>addExpected(perAction,game.withRarity(job.output.itemId,rarity),(1-burn)*(1-caught)*quality*job.output.qty));
    if(job.burn)addExpected(perAction,job.burn.itemId,burn);

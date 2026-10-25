@@ -1,0 +1,141 @@
+{
+  "sourceCommit": "68bc37825eae8eb107301a198f2591cfa9a8d867",
+  "checkedModules": 27,
+  "records": [
+    {
+      "module": "character-inventory.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "collection-model.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "collection-plan.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "collection-simulation.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "combat-expectation.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "combat-hot.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "combat-options.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "crafting-model.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "crafting-simulation.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "enemy-selection.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "forecast-filters.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "gathering-model.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "gathering-simulation.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "guild.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "hot-forecast.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "i18n.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "item-prices.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "manual-settings.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "market-import.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "model.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "price-protocol.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "simulation-seed.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "simulation.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "upstream.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "work-expectation.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "work-import.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    },
+    {
+      "module": "world-buffs.js",
+      "sourceExists": true,
+      "recordedOriginalHashMatches": true
+    }
+  ]
+}

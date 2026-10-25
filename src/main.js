@@ -11,7 +11,7 @@ export async function startDemo(){
  let panel=null;
  const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());
  const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
- const initial=defaults();initial.character.initialized=true;initial.character.bank={1:150,2:150};initial.character.pack={};initial.character.counts={40:9};
+ const initial=defaults();initial.character.initialized=true;initial.character.worldTick=1000000;initial.character.bank={1:150,2:150};initial.character.pack={};initial.character.counts={40:9};
  for(const k of Object.keys(initial.character.config.levels))initial.character.config.levels[k]=70;
  const bronze=craftingJobs.find(j=>j.output.itemId===40&&!j.upgrade);
  putLine(initial.orders[0],{kind:'craft',jobId:bronze.id,tier:0,count:10});
