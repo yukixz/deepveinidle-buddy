@@ -1,0 +1,12 @@
+{
+  "passed": 6,
+  "checks": [
+    "desktop queued ready: frozen cell top/bottom borders, left marker and material fill survive horizontal scrolling and hover without moving cells or changing row height",
+    "desktop running materials-shared: frozen cell top/bottom borders, left marker and material fill survive horizontal scrolling and hover without moving cells or changing row height",
+    "desktop running queued ready: frozen cell top/bottom borders, left marker and material fill survive horizontal scrolling and hover without moving cells or changing row height",
+    "mobile queued ready: frozen cell top/bottom borders, left marker and material fill survive horizontal scrolling and hover without moving cells or changing row height",
+    "mobile running materials-shared: frozen cell top/bottom borders, left marker and material fill survive horizontal scrolling and hover without moving cells or changing row height",
+    "mobile running queued ready: frozen cell top/bottom borders, left marker and material fill survive horizontal scrolling and hover without moving cells or changing row height"
+  ],
+  "errors": []
+}

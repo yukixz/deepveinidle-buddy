@@ -1,0 +1,56 @@
+{
+  "scenarios": [
+    {
+      "name": "mobile-tables",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "execution-borders",
+      "passed": 6,
+      "code": 0
+    },
+    {
+      "name": "mobile",
+      "passed": 22,
+      "code": 0
+    },
+    {
+      "name": "ui-layout",
+      "passed": 4,
+      "code": 0
+    },
+    {
+      "name": "table-scroll",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "order-row-toggle",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "orders-tables-ime",
+      "passed": 18,
+      "code": 0
+    },
+    {
+      "name": "stable-view",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "action-materials",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "game-integration",
+      "passed": 30,
+      "code": 0
+    }
+  ],
+  "totalChecks": 119,
+  "complete": true
+}

@@ -1,0 +1,13 @@
+{
+  "passed": 7,
+  "checks": [
+    "unchanged state produces no DOM mutations",
+    "focused input remains connected with draft and selection while independent numbers update",
+    "focused native select keeps its node and options while live data updates; options sync on blur",
+    "scrolling defers structural changes, coalesces latest state and preserves the original scroll container and offset",
+    "pointer hold defers row moves and release reorders existing keyed nodes",
+    "text selection survives updates; affected text and structure apply after selection clears",
+    "persistent containers and controls are never removed; no browser errors"
+  ],
+  "errors": []
+}

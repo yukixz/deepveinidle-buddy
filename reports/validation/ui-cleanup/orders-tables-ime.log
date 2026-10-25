@@ -1,0 +1,24 @@
+{
+  "passed": 18,
+  "checks": [
+    "all-rarity default, game-version label and no visible corner grips",
+    "order names expand independent details; clipboard controls and exact automatic-removal caption replace file inputs",
+    "calculated fee includes fixed and time components even for an unselected order",
+    "order columns show time, full cost, fees and suggested price with matching expanded colspan",
+    "clipboard export contains exactly one order without game or price data",
+    "editing expanded non-current order changes only that order",
+    "clipboard import replaces only target contents and preserves IDs, execution and character data",
+    "clipboard failures and malformed data are explicit and preserve all orders",
+    "priced order metrics match independent estimates and remain visible when excluded",
+    "craft and both collection item/rarity columns sort in both directions before pagination",
+    "order lines, procurement and execution actions have separate sortable item/rarity columns",
+    "sorted line removal uses a stable line key and leaves the other lines intact",
+    "short procurement note is to the right of its heading; old footer is removed",
+    "real Chromium IME preserves its input while the shared renderer updates language and commits confirmed search",
+    "real IME order name commits Chinese text to the correct order",
+    "numeric-input composition keys are isolated from underlying game shortcuts",
+    "when filters wrap all three thresholds move together to the second row",
+    "narrow filters and expanded orders remain within the panel with internal table scrolling"
+  ],
+  "errors": []
+}
