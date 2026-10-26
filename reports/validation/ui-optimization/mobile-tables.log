@@ -1,0 +1,15 @@
+{
+  "passed": 9,
+  "checks": [
+    "zh: 320/360/390/430 portrait and touch landscape keep all order content in one bounded horizontal scroller and retain 72px frozen item columns",
+    "en: 320/360/390/430 portrait and touch landscape keep all order content in one bounded horizontal scroller and retain 72px frozen item columns",
+    "native horizontal touch swipe scrolls orders without toggling an order",
+    "language redraw and close/reopen retain order scroll nodes, position and expanded details",
+    "native vertical touch swipe over orders continues scrolling panel content",
+    "single-line display rows fit 30px, inline inputs/checkboxes use 32px, input text stays 16px and execution rows need no status control",
+    "long frozen names clamp to two lines and reveal complete text on focus without widening the column",
+    "all visible mobile window buttons, inputs and selects including title close and hidden menu share a 32px height",
+    "desktop leaves mobile density overrides and keeps shared order scrolling"
+  ],
+  "errors": []
+}

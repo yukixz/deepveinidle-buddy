@@ -1,0 +1,26 @@
+{
+  "scenarios": [
+    {
+      "name": "browser",
+      "passed": 46,
+      "code": 0
+    },
+    {
+      "name": "extra-sorting",
+      "passed": 8,
+      "code": 0
+    },
+    {
+      "name": "execution-summary",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "mobile-tables",
+      "passed": 9,
+      "code": 0
+    }
+  ],
+  "totalChecks": 72,
+  "complete": true
+}
