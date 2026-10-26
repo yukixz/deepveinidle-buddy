@@ -1,5 +1,13 @@
 # 当前验证
 
+日期：2026-10-26，Buddy开发版本0.2.0。当前轮覆盖游戏市场返回入口更新，未安装、发布或部署。
+
+- 当前公开程序已删除`data-sheet-back`，改用桌面／移动共用的`data-market-allitems`属性。助手选择唯一可见入口，等待详情关闭后继续筛选和预填；控件缺失、重复可见或返回失败明确中止。来源地址、摘要和实页观测见[来源记录](validation/market-update/source.json)、[市场截图](validation/market-update/live-market.png)。
+- `npm run build`通过，见[构建清单](validation/market-update/build-manifest.json)。`npm run test:ui -- game-integration mobile`共2个场景、55项检查通过，见[汇总与同目录日志](validation/market-update/summary.json)。回归覆盖已有详情和交易草稿、桌面／移动返回按钮、返回无效／控件缺失／重复可见、角色与计划异步保护、价格读回、零交易／动作提交。
+- 修改的JS／MJS语法及`git diff --check`通过。实页仅核对市场导航、搜索及铜矿详情ID，未运行新适配器、填写／提交交易、读取登录信息或聊天；移动为本地夹具，仍待真实设备验收。计算基线保持1.0.1199，未将菜单适配视为新版本计算一致性验证。
+
+## 前轮UI优化验证
+
 日期：2026-10-26，Buddy开发版本0.2.0。本轮仅调整采购材料列及收藏候选加入／移出订单交互，未发布、未部署。
 
 - `npm run build`通过。

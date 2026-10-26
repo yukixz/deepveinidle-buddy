@@ -64,6 +64,21 @@ let page;try{
   await window.buddyTest.createGamePrefill(window).purchase({role:'42',itemId:1,baseId:1,tier:0,quantity:3,price:112,search:'铜矿'});
   return {closed:window.__draftCloses-closes,item:draft.dataset.item,side:draft.dataset.side,quantity:document.querySelector('[data-trade-qty-in]').value,price:document.querySelector('[data-trade-price-in]').value};
  });assert.deepEqual(replacedPurchase,{closed:1,item:'1',side:'buy',quantity:'3',price:'112'});assert.deepEqual(await page.evaluate(()=>window.__commands),[]);checks.push('existing sell draft for another item is closed and replaced with the requested buy draft without submitting');
+ const marketReturns=await page.evaluate(async()=>{
+  const request={role:'42',itemId:1,baseId:1,tier:0,quantity:3,price:112,search:'Copper'},results=[];
+  const find=selector=>document.querySelector(selector);
+  const prepare=mobile=>{document.documentElement.classList.toggle('m-on',mobile);find('[data-market-trade]').hidden=true;find('[data-market-window]').hidden=false;find('[data-market-list] button[data-item="1001"]').click();};
+  for(const mobile of [false,true]){
+   prepare(mobile);const clicks=window.__allItemsClicks??0,adapter=window.buddyTest.createGamePrefill(window);
+   try{await adapter.purchase(request);results.push({mobile,returns:window.__allItemsClicks-clicks,item:find('[data-sheet-icon]').dataset.item,quantity:find('[data-trade-qty-in]').value});}finally{adapter.dispose();}
+  }
+  const reject=async(name,mutate)=>{prepare(false);mutate();const before=find('[data-trade-qty-in]').value,adapter=window.buddyTest.createGamePrefill(window,{wait:async()=>{}});try{await adapter.purchase({...request,quantity:7});results.push({name,error:'unexpected success'});}catch(error){results.push({name,error:error.message,unchanged:find('[data-trade-qty-in]').value===before});}finally{adapter.dispose();window.__blockAllItems=false;}};
+  await reject('return did not close detail',()=>window.__blockAllItems=true);
+  await reject('ambiguous return buttons',()=>{for(const button of document.querySelectorAll('[data-market-allitems]'))button.hidden=false;});
+  await reject('missing return button',()=>{for(const button of document.querySelectorAll('[data-market-allitems]'))button.hidden=true;});
+  prepare(false);find('[data-market-allitems]').click();return results;
+ });
+ assert.deepEqual(marketReturns,[{mobile:false,returns:1,item:'1',quantity:'3'},{mobile:true,returns:1,item:'1',quantity:'3'},{name:'return did not close detail',error:'gameControlMissing',unchanged:true},{name:'ambiguous return buttons',error:'gameControlAmbiguous',unchanged:true},{name:'missing return button',error:'gameControlMissing',unchanged:true}]);assert.deepEqual(await page.evaluate(()=>window.__commands),[]);checks.push('current All items controls return from existing detail on desktop and mobile; stuck, ambiguous and missing controls fail before input');
  // Exercise failure boundaries using the same production adapter and real browser input handlers.
  const failures=await page.evaluate(async()=>{
   const make=()=>window.buddyTest.createGamePrefill(window);const base={role:'42',itemId:1,baseId:1,tier:0,quantity:3,price:112,search:'Copper'};const results=[];

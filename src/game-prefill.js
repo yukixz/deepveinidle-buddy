@@ -32,7 +32,10 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
     if(!find('[data-market-window]'))click(mobileMode(doc)?'[data-m-tabs] [data-m-tab="market"]':'[data-open="market"]');
     await until(()=>find('[data-market-window]'),check);
     click('[data-market-mode="buy"]');
-    if(find('[data-market-sheet]'))click('[data-sheet-back]');
+    if(find('[data-market-sheet]')){
+     click('[data-market-allitems]');
+     await until(()=>!find('[data-market-sheet]'),check);
+    }
     const all=required('[data-market-chips] [data-family="all"]');if(all.getAttribute('aria-pressed')!=='true')all.click();
     const saleControls=[...doc.querySelectorAll('[data-market-window] [data-market-forsale]')];if(saleControls.length!==1||saleControls[0].disabled)failure('gameControlMissing');
     const onSale=saleControls[0];if(onSale.checked){onSale.checked=false;onSale.dispatchEvent(new page.Event('change',{bubbles:true}));}
