@@ -36,11 +36,18 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: node scripts/release.mjs validate "$RELEASE_TAG"
-      - name: Install browser and Chinese fonts
+      - name: Configure Chrome and Chinese fonts
         run: |
-          node node_modules/playwright-core/cli.js install --with-deps chromium
-          sudo apt-get install -y fonts-noto-cjk
-          echo "CHROME_PATH=$(node --input-type=module -e "import {chromium} from 'playwright-core';process.stdout.write(chromium.executablePath())")" >> "$GITHUB_ENV"
+          CHROME_BINARY=$(command -v google-chrome)
+          "$CHROME_BINARY" --version
+          echo "CHROME_PATH=$CHROME_BINARY" >> "$GITHUB_ENV"
+          FONT_PATH="$HOME/.local/share/fonts/NotoSansCJKsc-Regular.otf"
+          mkdir -p "$(dirname "$FONT_PATH")"
+          curl --fail --silent --show-error --location --max-time 60 --retry 2 --retry-delay 2 \
+            https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf \
+            --output "$FONT_PATH"
+          echo "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b  $FONT_PATH" | sha256sum --check
+          fc-cache -f "$(dirname "$FONT_PATH")"
       - name: Run browser scenarios
         shell: bash
         run: |

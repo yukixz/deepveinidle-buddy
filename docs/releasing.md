@@ -8,7 +8,7 @@
 
 main提交和PR只执行验证；推送vX.Y.Z正式版本tag或手动选定已有tag才执行发布。版本必须为三个非负整数段，tag、package.json、脚本@version一致；tag提交须位于main历史中。发布不自动修改版本、创建tag或覆盖已发布附件，不将dist加入git。
 
-完整验证包括npm ci、单元、构建和本地浏览器场景。CI用Playwright安装Chromium，配置CHROME_PATH并管理本地服务器；验证失败保留日志。构建记录来源提交，生成的userscript包含构建提交标记。浏览器夹具不能代替真实脚本管理器和账号验收。
+完整验证包括npm ci、单元、构建和本地浏览器场景。CI使用Ubuntu runner预装的Chrome，配置CHROME_PATH并管理本地服务器；中文字体从Noto官方仓库的固定提交下载，校验SHA-256后载入，不依赖apt字体镜像。验证失败保留日志。构建记录来源提交，生成的userscript包含构建提交标记。浏览器夹具不能代替真实脚本管理器和账号验收。
 
 发布流程为：检查本地构建与来源提交 → 检查线上版本及已有Release → 创建草稿Release → 上传脚本及manifest.json → 校验上传内容 → 发布正式Release → 有限次数核对Greasy Fork代码。只有发布作业获得contents:write；验证作业只读。发布串行执行，并拒绝较旧版本。
 
