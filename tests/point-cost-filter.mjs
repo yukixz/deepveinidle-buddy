@@ -26,13 +26,18 @@ try{
  await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
  const saved=await stored();
 
- saved.filters.collection={...saved.filters.collection,maxCost:'100',query:'青铜锭',tier:'0'};
+ saved.filters.collection={...saved.filters.collection,maxCost:'100',maxSecondsPerPoint:'54',query:'青铜锭',tier:'0'};
  saved.prices.quotes={
   1:{ask:{value:2,capturedAt:Date.now()},bid:{value:1,capturedAt:Date.now()}},
   2:{ask:{value:3,capturedAt:Date.now()},bid:{value:2,capturedAt:Date.now()}},
  };
  await load(saved);
  assert.equal(await root.locator('#max-cost').inputValue(),'0.01');
+ assert.equal(await root.locator('#max-hours-per-100-points').inputValue(),'1.5');
+ assert.equal((await stored()).filters.collection.maxSecondsPerPoint,'54');
+ await root.locator('#max-hours-per-100-points').fill('');
+ await root.locator('#max-hours-per-100-points').press('Tab');
+ checks.push('existing seconds/point threshold loads as hours per 100 points without changing stored units');
  assert.equal(await caption(),'金币/点');
  assert.ok((await root.locator('#max-cost').evaluate(el=>el.parentElement.textContent)).includes('金币/点(M/100) ≤'));
  assert.equal(await row.count(),0);

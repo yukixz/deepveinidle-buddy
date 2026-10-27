@@ -1,6 +1,6 @@
 # 当前状态
 
-版本：**0.3.0**，首个正式版本。计算基线：**1.0.1199**。发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准。
+版本：**0.3.1**。计算基线：**1.0.1199**。发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准。
 
 ## 功能范围
 
@@ -10,9 +10,9 @@
 - 用户工作区version=2，仅保存订单和界面输入；角色与行情只存内存。串行保存、写前校验、revision冲突保护、显式重新载入和重置。
 - GitHub Actions验证与tag发布，仓库Webhook同步Greasy Fork。源代码、元数据和构建产物绑定同一版本及来源提交。
 
-## 0.3.0整理
+## 0.3.1变更
 
-文档仅保留当前规则、架构和操作说明；移除过期报告、重复日志、测试专用模拟器及相应的引擎提取入口。来源记录直接指向公开游戏资源，保留原安装命名空间与作者，订单文本标识采用本项目名称。
+配方选择的收藏时间筛选改用小时／100点，内部与存档仍为秒／点，兼容已有version=2存档。成本筛选输入仍为百万金币／100点，存档为金币／点；表格效率列仍显示秒／点和金币／点。
 
 ## 验证边界
 
