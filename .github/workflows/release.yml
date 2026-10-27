@@ -40,7 +40,7 @@ jobs:
           node-version: '24'
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
-          name: userscript-${{ github.run_id }}-${{ github.run_attempt }}
+          name: userscript-${{ github.run_id }}
           path: dist
       - name: Publish validated release and confirm Greasy Fork sync
         env:

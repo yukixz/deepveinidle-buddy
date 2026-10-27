@@ -68,12 +68,13 @@ jobs:
       - name: Save validated release files
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: userscript-${{ github.run_id }}-${{ github.run_attempt }}
+          name: userscript-${{ github.run_id }}
           path: |
             dist/deepveinidle-buddy.user.js
             dist/manifest.json
           if-no-files-found: error
           retention-days: 14
+          overwrite: true
       - name: Save browser diagnostics
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7

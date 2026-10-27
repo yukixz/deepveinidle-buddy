@@ -28,6 +28,8 @@ https://github.com/yukixz/deepveinidle-buddy/releases/latest/download/deepveinid
 
 手动运行Release工作流时，输入已有tag，仅允许相同规则的正式版本。重跑时，草稿可补齐缺少的附件；已有附件内容不同则失败。已发布版本只核对，不替换附件或重复发布事件。若GitHub已发布但Greasy Fork未更新，先在Settings → Webhooks的Recent deliveries检查并重送对应release事件，再重跑工作流核对；不能靠重跑工作流伪造已完成同步。
 
+验收产物按workflow run ID命名，重跑失败的发布作业可复用原产物；重跑全部作业会重新验收并替换同一次run的临时产物，不影响正式Release附件。临时产物保留14天，过期后需重跑全部作业。
+
 本方案没有需要用户填写的Actions Secret。GitHub自动提供发布用GITHUB_TOKEN。Webhook自身的URL和Secret仅配置在仓库Webhook中。
 
 ## 失败与验证
