@@ -38,13 +38,21 @@ export function validateOrders(raw){
  });
 }
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
-export function defaults(){const order=createOrder();return {version:1,revision:0,orders:[order],currentOrderId:order.id,character:{...collectionDefaults(),buyMode:'ask'},prices:priceDefaults(),productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
+export function userDefaults(){const order=createOrder();return {version:2,revision:0,orders:[order],currentOrderId:order.id,materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
+export function defaults(){return applyUserWorkspace({character:collectionDefaults(),prices:priceDefaults()},userDefaults());}
+// Runtime composition for the calculation engine; never persist this object.
 export function validateWorkspace(raw){
  requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
+ if(raw.version!==1)throw Error('invalidWorkspace');
+ workspaceForStorage(raw);
+ return {...raw,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)};
+}
+export function validateUserWorkspace(raw){
+ if(!record(raw)||raw.version!==2)throw Error('unsupportedWorkspaceVersion');
+ requireKeys(raw,['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
  requireKeys(raw.filters,['craft','collection'],'invalidFilters');
- if(!record(raw)||raw.version!==1||!quantity(raw.revision)||typeof raw.autoRemove!=='boolean'||!record(raw.filters)||raw.prices?.version!==1)throw Error('invalidWorkspace');
- if(typeof raw.excludeInsufficientAsks!=='boolean')throw Error('invalidPriceMode');
- if(!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.character?.buyMode))throw Error('invalidPriceMode');
+ if(!quantity(raw.revision)||typeof raw.autoRemove!=='boolean')throw Error('invalidWorkspace');
+ if(typeof raw.excludeInsufficientAsks!=='boolean'||!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.materialPriceMode))throw Error('invalidPriceMode');
  const orders=validateOrders(raw.orders),filters={};
  for(const mode of ['craft','collection']){
   const f=raw.filters[mode],columns=mode==='craft'?['item','rarity']:['item','rarity','points','duration','time','cost','coins'];
@@ -54,10 +62,15 @@ export function validateWorkspace(raw){
   filters[mode]={...f};
  }
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
- return {version:1,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices),productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
+ return {version:2,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,materialPriceMode:raw.materialPriceMode,productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
 }
-// Market observations are memory-only in the installed script.
-export function workspaceForStorage(workspace){return validateWorkspace({...workspace,prices:priceDefaults()});}
+export function workspaceForStorage(workspace){
+ return validateUserWorkspace({version:2,revision:workspace.revision,orders:workspace.orders,currentOrderId:workspace.currentOrderId,materialPriceMode:workspace.character.buyMode,productPriceMode:workspace.productPriceMode,excludeInsufficientAsks:workspace.excludeInsufficientAsks,autoRemove:workspace.autoRemove,filters:workspace.filters});
+}
+export function applyUserWorkspace(workspace,raw){
+ const {materialPriceMode,...user}=validateUserWorkspace(raw);
+ return {...workspace,...user,version:1,character:{...workspace.character,buyMode:materialPriceMode}};
+}
 export function putLine(order,raw){
  if(raw.kind==='craft'&&raw.count===0){order.lines=order.lines.filter(l=>lineKey(l)!==lineKey(raw));return;}
  const line=validateLine(raw),key=lineKey(line),previous=order.lines.find(l=>lineKey(l)===key);
@@ -65,8 +78,10 @@ export function putLine(order,raw){
  order.lines=order.lines.filter(l=>lineKey(l)!==key);order.lines.push(line);
 }
 export function removeCompleted(workspace){
- if(!workspace.autoRemove||!workspace.character.initialized)return;
- for(const order of workspace.orders)order.lines=order.lines.filter(l=>l.kind!=='collection'||!collectionTarget(workspace.character,l.itemId,l.target).complete);
+ if(!workspace.autoRemove||!workspace.character.initialized)return false;
+ let changed=false;
+ for(const order of workspace.orders){const lines=order.lines.filter(l=>l.kind!=='collection'||!collectionTarget(workspace.character,l.itemId,l.target).complete);if(lines.length!==order.lines.length){order.lines=lines;changed=true;}}
+ return changed;
 }
 function summarizeExecutionActions(entries,rows,canAssess){
  const groups=new Map(),stockById=new Map(rows.map(row=>[row.id,row]));

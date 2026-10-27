@@ -1,15 +1,16 @@
+import {prepareDemo,readDemoWorkspace,seedDemoWorkspace} from './demo-helper.mjs';
 import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{
- const page=await browser.newPage({viewport:{width:1440,height:1080}});
+ const page=await browser.newPage({viewport:{width:1440,height:1080}});await prepareDemo(page);
  page.on('pageerror',error=>errors.push(error.message));
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();
  const root=page.locator('#deepveinidle-buddy'),material=root.locator('#recipes-material-price-mode');
  const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64,64,64]);};
  const row=target=>root.locator(`[data-key="40:41:${target}"]`);
- const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));
+ const saved=()=>readDemoWorkspace(page);
  await root.locator('[data-action="mode-collection-craft"]').click();
  await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
  const state=await saved();state.character.bank={1:1000000,2:1000000};
@@ -17,7 +18,7 @@ try{
  state.filters.craft={...state.filters.craft,query:'青铜锭',tier:'0'};
  const quote=quantity=>({ask:{value:2,quantity,capturedAt:Date.now()},bid:{value:1,quantity:9999,capturedAt:Date.now()}});
  state.prices.quotes={1:quote(90),2:quote(90)};
- async function load(value){await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),value);await page.reload();await page.locator("[data-buddy-launcher]").click();await material.waitFor();}
+ async function load(value){await seedDemoWorkspace(page,value);await page.reload();await page.locator("[data-buddy-launcher]").click();await material.waitFor();}
  async function select(value){await material.selectOption(value);await page.waitForTimeout(200);}
  await load(state);
  assert.equal(await material.locator('option[value="ask-stock"]').textContent(),'卖单（排除在售数量不足）');

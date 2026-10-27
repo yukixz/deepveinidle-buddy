@@ -8,7 +8,7 @@ import {encodePlanPayload} from '../src/plan-transfer.js';
 import {normalizePriceState,priceDefaults} from '../src/engine/item-prices.js';
 import {createStore} from '../src/storage.js';
 
-test('persisted current shapes reject missing and obsolete fields at every workspace boundary',async()=>{
+test('runtime calculation shapes reject missing and obsolete fields at every workspace boundary',async()=>{
  const mutations=[w=>delete w.character.inventoryCapturedAt,w=>delete w.excludeInsufficientAsks,w=>delete w.character.bank,w=>delete w.character.pack,
   w=>w.language='en',w=>w.character.sellMode='vendor',w=>w.character.config.plans={'343:0':7},w=>w.character.config.upgradeMigration=true,
   w=>w.character.config.hotForecast=true,w=>w.character.edited=false,w=>w.character.config.guildXp=0,w=>w.character.config.hotSetting='game',w=>w.character.config.homeBank=0,w=>w.character.config.ironman=false,w=>w.character.config.weeklyXp=0,w=>w.character.config.simulationHours=24,w=>w.filters.collection.recovery=true,

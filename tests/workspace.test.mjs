@@ -208,7 +208,7 @@ test('unknown or conflicting outputs remain unknown instead of reducing procurem
  plan=evaluate(w);assert.equal(plan.total,null);assert.equal(plan.rows.find(r=>r.id===40).produced,null);
 });
 
-test('GM projection strips observations while retaining orders and pricing direction',()=>{
+test('user storage excludes game observations while retaining orders and pricing direction',()=>{
  const w=setup(),now=Date.now();w.prices.quotes={1:{ask:{value:112,quantity:500,capturedAt:now}}};w.productPriceMode='ask';w.excludeInsufficientAsks=true;
- const stored=workspaceForStorage(w);assert.deepEqual(stored.prices,{version:1,quotes:{}});assert.deepEqual(stored.orders,w.orders);assert.deepEqual(stored.character,w.character);assert.equal(stored.productPriceMode,'ask');assert.equal(stored.excludeInsufficientAsks,true);assert.equal(w.prices.quotes[1].ask.quantity,500);
+ const stored=workspaceForStorage(w);assert.equal(Object.hasOwn(stored,'prices'),false);assert.equal(Object.hasOwn(stored,'character'),false);assert.equal(stored.version,2);assert.equal(stored.materialPriceMode,w.character.buyMode);assert.deepEqual(stored.orders,w.orders);assert.equal(stored.productPriceMode,'ask');assert.equal(stored.excludeInsufficientAsks,true);assert.equal(w.prices.quotes[1].ask.quantity,500);
 });

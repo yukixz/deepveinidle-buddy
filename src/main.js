@@ -7,15 +7,18 @@ import {defaults,putLine} from './workspace.js';
 import {craftingJobs} from './engine/crafting-model.js';
 import {collectionRoutes} from './engine/collection-model.js';
 import css from './theme.css';
-export async function startDemo(){
- let panel=null;
- const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());
- const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
+function demoWorkspace(){
  const initial=defaults();initial.character.initialized=true;initial.character.worldTick=1000000;initial.character.bank={1:150,2:150};initial.character.pack={};initial.character.counts={40:9};
  for(const k of Object.keys(initial.character.config.levels))initial.character.config.levels[k]=70;
  const bronze=craftingJobs.find(j=>j.output.itemId===40&&!j.upgrade);
  putLine(initial.orders[0],{kind:'craft',jobId:bronze.id,tier:0,count:10});
  putLine(initial.orders[0],{kind:'collection',itemId:40,jobId:collectionRoutes(40)[0].id,target:100});
+ return initial;
+}
+export async function startDemo(initial=demoWorkspace()){
+ let panel=null;
+ const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());
+ const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
  panel=await mountPanel(host.attachShadow({mode:'open'}),{platform:browserPlatform(),css,initial,demo:true,onPrefillFeedback:message=>navigation.showHint(message),onVisibilityChange:open=>navigation.update({open,ready:true})});
  return {...panel,dispose(){panel.dispose();navigation.dispose();host.remove();}};
 }

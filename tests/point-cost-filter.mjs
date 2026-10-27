@@ -1,17 +1,18 @@
+import {prepareDemo,readDemoWorkspace,seedDemoWorkspace} from './demo-helper.mjs';
 import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';
 
 const browser=await launchBrowser(),checks=[],errors=[];
 try{
- const page=await browser.newPage({viewport:{width:1440,height:1080}});
+ const page=await browser.newPage({viewport:{width:1440,height:1080}});await prepareDemo(page);
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();
  const root=page.locator('#deepveinidle-buddy');
  const row=root.locator('[data-key="40:41:100"]').locator('xpath=ancestor::tr');
  const caption=async()=>(await root.locator('[data-sort="cost"]').textContent()).replace(/[▲▼]/g,'').trim();
- const stored=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1')));
+ const stored=()=>readDemoWorkspace(page);
  async function load(saved){
-  await page.evaluate(value=>localStorage.setItem('dvi-buddy-demo-v1',JSON.stringify(value)),saved);
+  await seedDemoWorkspace(page,saved);
   await page.reload();await page.locator("[data-buddy-launcher]").click();
   await root.locator('[data-action="mode-collection-craft"]').click();
  }

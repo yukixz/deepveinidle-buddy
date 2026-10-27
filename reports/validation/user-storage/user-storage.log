@@ -1,0 +1,15 @@
+{
+  "passed": 10,
+  "checks": [
+    "initial and changed character snapshots stay in memory with zero writes",
+    "invalid game snapshot keeps valid character and does not block saving user input",
+    "reload preserves character, restores local filter controls, and does not write on load",
+    "failed reset keeps workspace; successful reset preserves character and fully resets user controls",
+    "explicit reload after external deletion unblocks persistence",
+    "automatic completion removal saves only an actual user order change",
+    "old mixed workspace remains untouched during live synchronization and user edits",
+    "initial read failure keeps root error and blocks later automatic writes",
+    "remount restores user orders while waiting for fresh game data",
+    "no browser errors"
+  ]
+}

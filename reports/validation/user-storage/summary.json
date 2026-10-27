@@ -1,0 +1,116 @@
+{
+  "scenarios": [
+    {
+      "name": "ui-layout",
+      "passed": 4,
+      "code": 0
+    },
+    {
+      "name": "mobile",
+      "passed": 22,
+      "code": 0
+    },
+    {
+      "name": "mobile-tables",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "market-storage",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "user-storage",
+      "passed": 10,
+      "code": 0
+    },
+    {
+      "name": "stable-view",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "recipe-availability",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "debug-menu",
+      "passed": 8,
+      "code": 0
+    },
+    {
+      "name": "game-integration",
+      "passed": 34,
+      "code": 0
+    },
+    {
+      "name": "browser",
+      "passed": 46,
+      "code": 0
+    },
+    {
+      "name": "orders-tables-ime",
+      "passed": 18,
+      "code": 0
+    },
+    {
+      "name": "fee-captions",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "point-cost-filter",
+      "passed": 5,
+      "code": 0
+    },
+    {
+      "name": "bulk-pagination",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "extra-sorting",
+      "passed": 8,
+      "code": 0
+    },
+    {
+      "name": "action-materials",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "execution-summary",
+      "passed": 9,
+      "code": 0
+    },
+    {
+      "name": "execution-borders",
+      "passed": 6,
+      "code": 0
+    },
+    {
+      "name": "order-row-toggle",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "panel-geometry",
+      "passed": 26,
+      "code": 0
+    },
+    {
+      "name": "table-scroll",
+      "passed": 7,
+      "code": 0
+    },
+    {
+      "name": "navigation",
+      "passed": 15,
+      "code": 0
+    }
+  ],
+  "totalChecks": 280,
+  "complete": true
+}
