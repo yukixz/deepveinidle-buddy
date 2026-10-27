@@ -40,4 +40,4 @@ userscript安装元数据使用 `@namespace https://dvi-lab.pages.dev` 、`@auth
 
 `npm test` 运行当前单元、计算对照、来源摘要及存储校验。启动演示服务后执行 `npm run test:ui`；统一入口为 `scripts/test-ui.mjs`，各场景共用浏览器启动配置，mobile场景使用触屏上下文与游戏移动DOM夹具，模拟可视视口及菜单切换；完整输出在 `.test-artifacts/verification/`。`market-storage`覆盖行情刷新不写GM、用户保存不夹带行情、显式重新载入保留内存报价、失败保留与重新挂载清空；`stable-view`覆盖节点持续连接、无变化不修改DOM、编辑草稿与选择范围、原生select选项保留、滚动／指针／文本选择期间延后结构变化及即时禁用状态；`debug-menu`覆盖安装名称、公开描述无调试介绍、默认面板无预填说明、隐藏操作列、调试开关及存储保护；`game-integration`覆盖真实打包入口、客户端切角及慢GM读取竞态、原生IME期间只读更新、预填拒绝和无动作提交；其游戏控件与GM为隔离夹具，真实Chrome验证另记。可单独传入场景名复验。`npm run build` 将应用直接打包进 userscript，不远程加载助手代码。
 
-项目处于开发阶段，仅接受当前数据结构，不维护历史兼容和迁移。发布授权与真实环境验证完成前不部署。
+项目处于开发阶段，仅接受当前数据结构，不维护历史兼容和迁移。发布授权与真实环境验证完成前不部署。GitHub Actions构建、tag发布、仓库Webhook与Greasy Fork同步的约束见[构建与发布](releasing.md)；配置工作流不代表创建或发布版本。

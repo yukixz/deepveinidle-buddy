@@ -1,6 +1,9 @@
 import {build} from 'esbuild';
 import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
+const sourceCommit=process.env.BUILD_COMMIT??null;
+if(sourceCommit!==null&&!/^[a-f0-9]{40}$/.test(sourceCommit))throw Error('BUILD_COMMIT must be a full commit hash');
+const buildMarker=sourceCommit?`/* Buddy build commit: ${sourceCommit} */\n`:'';
 const version=JSON.parse(await fs.readFile('package.json','utf8')).version;
 const upstream=JSON.parse(await fs.readFile('vendor/manifest.json','utf8'));
 const upstreamProvenance={name:'upstream-provenance',setup(builder){
@@ -39,8 +42,8 @@ const header=`// ==UserScript==
 // @connect      deepveinidle.com
 // ==/UserScript==\n`;
 for(const [entry,outfile] of [['src/userscript.js','dist/deepveinidle-buddy.user.js'],['src/demo.js','dist/demo.js']]){
- await build({entryPoints:[entry],outfile,bundle:true,format:'iife',target:'es2022',minify:false,legalComments:'inline',plugins:[upstreamProvenance],loader:{'.css':'text'},banner:{js:entry.includes('userscript')?header:''}});
+ await build({entryPoints:[entry],outfile,bundle:true,format:'iife',target:'es2022',minify:false,legalComments:'inline',plugins:[upstreamProvenance],loader:{'.css':'text'},banner:{js:(entry.includes('userscript')?header:'')+buildMarker}});
 }
 const files=await Promise.all(['deepveinidle-buddy.user.js','demo.js'].map(async name=>{const bytes=await fs.readFile('dist/'+name);return {name,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')};}));
-await fs.writeFile('dist/manifest.json',JSON.stringify({version,engine:upstream.changelogVersion,files},null,2)+'\n');
+await fs.writeFile('dist/manifest.json',JSON.stringify({version,engine:upstream.changelogVersion,...(sourceCommit?{sourceCommit}:{}),files},null,2)+'\n');
 console.log(JSON.stringify({version,files}));

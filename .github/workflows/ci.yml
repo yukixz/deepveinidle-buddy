@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+    inputs:
+      release_tag:
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.release_tag || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Record checked out source
+        run: echo "BUILD_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Check build metadata and digest
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: node scripts/release.mjs validate "$RELEASE_TAG"
+      - name: Install browser and Chinese fonts
+        run: |
+          node node_modules/playwright-core/cli.js install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+          echo "CHROME_PATH=$(node --input-type=module -e "import {chromium} from 'playwright-core';process.stdout.write(chromium.executablePath())")" >> "$GITHUB_ENV"
+      - name: Run browser scenarios
+        shell: bash
+        run: |
+          mkdir -p .test-artifacts
+          node scripts/serve.mjs > .test-artifacts/server.log 2>&1 &
+          BUDDY_SERVER_PID=$!
+          trap 'kill "$BUDDY_SERVER_PID" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in {1..30}; do
+            if ! kill -0 "$BUDDY_SERVER_PID" 2>/dev/null; then
+              cat .test-artifacts/server.log
+              exit 1
+            fi
+            if curl --fail --silent --max-time 1 http://127.0.0.1:4178/ > /dev/null; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != true ]; then
+            cat .test-artifacts/server.log
+            exit 1
+          fi
+          npm run test:ui
+      - name: Save validated release files
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: userscript-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            dist/deepveinidle-buddy.user.js
+            dist/manifest.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Save browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .test-artifacts/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 7

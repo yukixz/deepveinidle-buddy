@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "engine": "1.0.1199",
+  "sourceCommit": "39c0cc703e9012d901a869b202cd0b88902679eb",
+  "files": [
+    {
+      "name": "deepveinidle-buddy.user.js",
+      "bytes": 825910,
+      "sha256": "1eef986b1dd7d5c560cd99578efc66590337273d0beac65963937d7e72b5dc53"
+    },
+    {
+      "name": "demo.js",
+      "bytes": 803958,
+      "sha256": "1c5b0d73f6d360e954b0214e1bd88dd14c566c11984369ca14e097b2e505fabe"
+    }
+  ]
+}

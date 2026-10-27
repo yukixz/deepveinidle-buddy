@@ -43,6 +43,6 @@ UI 验证需要演示服务和 Chrome；可通过 `BUDDY_URL`、`CHROME_PATH` �
 
 真实脚本管理器和游戏账号环境的验证状态见[当前状态](docs/status.md)。
 
-[设计索引](DESIGN.md) · [面板规则](docs/panel.md) · [技术方案](docs/technical.md) · [验证记录](reports/validation.md)
+[设计索引](DESIGN.md) · [面板规则](docs/panel.md) · [技术方案](docs/technical.md) · [构建与发布](docs/releasing.md) · [验证记录](reports/validation.md)
 
 移动适配已提供本地夹具验证；Android Firefox＋Tampermonkey和iOS Safari＋Tampermonkey仍待真机与管理器权限验收，不能将窄屏演示当作手机可用性结论。

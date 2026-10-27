@@ -9,6 +9,7 @@
 - [面板与计算规则](docs/panel.md)
 - [技术方案与原始资源](docs/technical.md)
 - [当前状态与验证](docs/status.md)
+- [构建与发布](docs/releasing.md)
 - [架构调研](reports/research.md)
 - [当前验证](reports/validation.md)
 

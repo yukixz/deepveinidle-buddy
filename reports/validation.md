@@ -1,5 +1,17 @@
 # 当前验证
 
+## 发布配置验证
+
+日期：2026-10-27。新增可复用CI、正式tag发布、草稿附件与摘要校验、Greasy Fork代码核对，构建记录来源提交。仓库原生Webhook处理通知，Actions不接触其Secret。
+
+- 本地`npm test`：168项通过，见[日志](validation/release-config/unit.log)，包括14项发布逻辑／传输检查。覆盖版本、摘要、元数据权限、草稿恢复、已发布重跑、上传失败及同步超时；隔离客户端和HTTP响应，无真实远端写入。
+- 带`BUILD_COMMIT`构建及`release.mjs validate`通过，见[本地构建清单](validation/release-config/local-build-manifest.json)。本地清单的来源提交是实施前HEAD，只作为工作区校验记录；真正发布以Actions检出的提交及验收产物为准。
+- 官方actionlint 1.7.12校验工作流通过，YAML解析、JS语法与差异检查通过。Actions固定到已核对的官方提交摘要，验证只读，发布作业单独获得contents:write。
+- 只读确认仓库公开、Actions启用、原生release Webhook活跃且ping HTTP 200；Greasy Fork管理页的同步URL已是目标Release附件。线上0.2.1，本地0.2.0，本次不改变版本或发布。
+- Linux端完整CI与产物日志由GitHub Actions保留；首次正式Release及Greasy Fork端到端更新不能由本地模拟代替。本轮未创建tag、Release或更新站点代码。
+
+## 用户存储拆分验证
+
 日期：2026-10-27，Buddy开发版本0.2.0。本轮将用户数据持久化与游戏数据内存分离，未安装、发布或部署。
 
 - 用户存档version=2仅保存订单、当前订单、定价方向、供应筛选、自动移除设置和筛选；角色、库存、收藏进度、时间／tick、实时任务及行情均不进入持久化结构。材料方向保存为materialPriceMode，运行时适配现有计算接口。演示使用相同用户存档格式，角色与行情测试夹具改为启动时内存注入。
