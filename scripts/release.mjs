@@ -30,7 +30,7 @@ export function validateArtifact({manifest,code,packageVersion,commit,tag}){
  const bytes=Buffer.from(code),entry=entries[0];assert(bytes.length>0&&bytes.length<2_000_000,'Userscript exceeds size limit');
  assert(entry.bytes===bytes.length&&entry.sha256===hash(bytes),'Userscript digest/size mismatch');
  const {fields,body}=metadata(code);
- for(const [key,value]of Object.entries({name:'DeepVeinIdle-Buddy',namespace:'https://github.com/yukixz/deepveinidle-buddy',version:packageVersion,license:'MIT','run-at':'document-start',noframes:''}))assert(field(fields,key)===value,`Unexpected @${key}`);
+ for(const [key,value]of Object.entries({name:'DeepVeinIdle-Buddy',namespace:'https://dvi-lab.pages.dev',version:packageVersion,license:'MIT','run-at':'document-start',noframes:''}))assert(field(fields,key)===value,`Unexpected @${key}`);
  assert(field(fields,'description').length>0,'Description is missing');
  for(const [key,expected]of Object.entries({match:['https://deepveinidle.com/*','https://cn.deepveinidle.com/*'],grant:['unsafeWindow','GM_getValue','GM_setValue','GM_xmlhttpRequest','GM_setClipboard'],connect:['deepveinidle.com']}))assert(JSON.stringify([...(fields.get(key)??[])].sort())===JSON.stringify([...expected].sort()),`Unexpected @${key} permissions`);
  assert(!fields.has('require')&&!fields.has('resource')&&!fields.has('include'),'Unexpected external code/resources');

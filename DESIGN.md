@@ -11,4 +11,4 @@
 
 角色接入只读；用户点击后可导航并预填草稿，不提交交易或角色动作。发布为Greasy Fork脚本和GitHub Release附件，不部署独立在线应用。
 
-0.3.0使用本仓库URL作为安装命名空间，订单传输标识为DVI-BUDDY-PLAN。用户存档结构保持version=2；数据格式变更与安装身份变更分别评估，不通过重置消除错误。
+0.3.0保留原安装命名空间https://dvi-lab.pages.dev和作者Alice，订单传输标识为DVI-BUDDY-PLAN。用户存档结构保持version=2；数据格式变更需要明确评估，不通过重置消除错误。

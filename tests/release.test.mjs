@@ -5,7 +5,7 @@ import {compareVersions,versionParts,scriptName,validateArtifact,publishRelease,
 const commit='a'.repeat(40),digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 function code(version='0.2.2',body=`/* Buddy build commit: ${commit} */\nconsole.log('buddy');`){return `// ==UserScript==
 // @name DeepVeinIdle-Buddy
-// @namespace https://github.com/yukixz/deepveinidle-buddy
+// @namespace https://dvi-lab.pages.dev
 // @version ${version}
 // @license MIT
 // @description Buddy
@@ -43,7 +43,7 @@ test('release versions are strict stable triples and compare numerically',()=>{
 test('build validation binds tag, source commit, metadata, permissions and digest',()=>{
  assert.equal(artifact().version,'0.2.2');
  for(const mutate of [v=>v.tag='v0.2.3',v=>v.commit='b'.repeat(40),v=>v.manifest.files[0].sha256='bad',v=>v.code+='modified']){const v=input();mutate(v);assert.throws(()=>validateArtifact(v));}
- for(const replacement of [['@grant GM_setValue','@grant unsafeExtra'],['@namespace https://github.com/yukixz/deepveinidle-buddy','@namespace changed'],[`Buddy build commit: ${commit}`,'missing marker']]){
+ for(const replacement of [['@grant GM_setValue','@grant unsafeExtra'],['@namespace https://dvi-lab.pages.dev','@namespace changed'],[`Buddy build commit: ${commit}`,'missing marker']]){
   const v=input();v.code=v.code.replace(...replacement);v.manifest.files[0]={name:scriptName,bytes:Buffer.byteLength(v.code),sha256:digest(v.code)};assert.throws(()=>validateArtifact(v));
  }
 });

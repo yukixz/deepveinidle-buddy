@@ -24,7 +24,7 @@
 
 来源角色身份未知时不读取或写入角色分桶。白名单采样每250ms进行，正常前台变化在1秒内更新；不读取登录凭据、聊天，不增加游戏连接。助手仅主动请求固定公开市场API，禁用凭据。
 
-安装名为DeepVeinIdle-Buddy，namespace为https://github.com/yukixz/deepveinidle-buddy，author为yukixz。授权仅含unsafeWindow、GM_getValue、GM_setValue、GM_xmlhttpRequest、GM_setClipboard，匹配两个游戏站点。调试功能的公开说明边界见[面板设计](panel.md)。
+安装名为DeepVeinIdle-Buddy，namespace为https://dvi-lab.pages.dev，author为Alice。授权仅含unsafeWindow、GM_getValue、GM_setValue、GM_xmlhttpRequest、GM_setClipboard，匹配两个游戏站点。调试功能的公开说明边界见[面板设计](panel.md)。
 
 ## 开发与验证
 
