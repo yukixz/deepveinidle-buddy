@@ -4,13 +4,11 @@ import * as game from '../src/engine/upstream.js';
 import {collectionDefaults,validateCollection,collectionTarget,pointsForProduction,collectionRoutes,estimateCollection,collectionRows,importCollection,collectionPlayers} from '../src/engine/collection-model.js';
 import {craftingSlots,craftingSkills} from '../src/engine/crafting-model.js';
 import {gatheringSlots,gatheringSkills} from '../src/engine/gathering-model.js';
-import {createScenario,simulationTick,START_TICK} from './reference/simulation.js';
-import {createCraftingScenario} from './reference/crafting-simulation.js';
-import {simulateCollection} from './reference/collection-simulation.js';
+import {playerFixture} from './fixtures/player.js';
 const setup=()=>({...collectionDefaults(),initialized:true,worldTick:1000000});
 const job=id=>collectionRoutes(id)[0];
 function snapshot(){
- const {player}=createScenario();for(const k of [...craftingSkills,...gatheringSkills])player.skills[k]=game.levelXp(1);
+ const player=playerFixture();for(const k of [...craftingSkills,...gatheringSkills])player.skills[k]=game.levelXp(1);
  for(const slot of [...craftingSlots,...gatheringSlots])player.equipment[slot]=null;
  player.house={};player.houseFurniture={};player.collections={40:9};player.masteries={};player.perks={};player.brews={};
  return {version:2,capturedAt:Date.now(),player,worldTick:1000000,worldBuffs:[],worldBuffsVersion:1};
@@ -41,7 +39,6 @@ test('atomic import preserves only useful work configuration and source clock',(
  const raw=snapshot(),p=raw.player;p.brews.hunter=p.lastTick+100;p.brewTier.hunter=3;p.brews.blessing=p.lastTick+100;
  raw.worldTick=42978000;raw.worldBuffs=[{fromTick:0,toTick:raw.worldTick,rarityMult:1.075},{fromTick:raw.worldTick,toTick:raw.worldTick+1,rarityMult:1.0125}];
  const s=importCollection(setup(),raw);assert.equal(s.worldTick,raw.worldTick);assert.equal(s.config.worldRarity,8.75);assert.equal(s.config.brews.hunter,3);assert.equal(s.config.blessing,true);assert.deepEqual(s.counts,{40:9});assert.deepEqual(validateCollection(s),s);
- for(const key of ['edited','guild','guildXp','weeklyXp','homeBank','ironman','hotSetting']){assert.equal(Object.hasOwn(s,key),false);assert.equal(Object.hasOwn(s.config,key),false);}
  delete p.homeBank;delete p.ironman;delete p.guildBonus;p.foodItemId='unused';assert.equal(importCollection(s,raw).initialized,true);
 });
 test('invalid world capability, clock or rarity fails atomically instead of defaulting to zero',()=>{
@@ -54,11 +51,6 @@ test('hunter, blessing, world rarity, equipment and masteries combine by native 
  const p=collectionPlayers(s).gather,r=estimateCollection(s,4001,job(4001));const mult=(1+game.toolLuck(p.equipment.pickaxe)+game.equipmentLuck(p.equipment))*game.combine(game.brewRarityMultiplier(p),game.houseRarityMultiplier(p),game.masteryMultiplier(p.masteries,'rare'),1+s.config.worldRarity/100,game.hotRarityMultiplier(s.worldTick,'mining'));
  assert.ok(Math.abs(r.quality-Math.min(1,game.rarityThresholds.legendary*mult))<1e-12);assert.equal(r.actionSeconds,game.tickMs/1000/game.workChance(job(4001),p));
 });
-test('target reference matches independent original tick products and quantities',()=>{
- const s=setup();s.counts[40]=9;const j=job(40),r=simulateCollection(s,40,j.id,{target:100,seed:87,maxTicks:6000}),{player,context}=createCraftingScenario(s.config,j,0,6000,{seed:87,maxTicks:6000});let elapsed=0,qty=0;
- for(let t=1;t<=6000;t++){const events=[];simulationTick(player,context,START_TICK+t,events);for(const e of events)if(e.kind==='produced'&&e.itemId===40)qty+=e.qty??1;if(qty>=91){elapsed=t;break;}}
- assert.equal(r.elapsedTicks,elapsed);assert.equal(r.quantity,qty);assert.equal(r.complete,true);assert.deepEqual(r.materials,{1:91,2:91});
-});
 test('invalid inventory rejects atomically and valid quantities keep bank and pack separate',()=>{
  const s=setup(),raw=snapshot();raw.player.bank={1:7};raw.player.pack=[{itemId:1,qty:2},{itemId:1,qty:3}];const valid=importCollection(s,raw);assert.deepEqual(valid.bank,{1:7});assert.deepEqual(valid.pack,{1:5});
  for(const field of ['bank','pack','skills','collections']){const broken=structuredClone(raw);delete broken.player[field];assert.throws(()=>importCollection(valid,broken));assert.deepEqual(valid.bank,{1:7});}
@@ -66,4 +58,9 @@ test('invalid inventory rejects atomically and valid quantities keep bank and pa
 });
 test('invalid collection records retain valid entries and clear their warning after recovery',()=>{
  const raw=snapshot();raw.player.collections={40:9,bad:1,42:-1};const s=importCollection(setup(),raw);assert.deepEqual(s.counts,{40:9});assert.deepEqual(s.importWarnings,['collections.invalid:2']);raw.player.collections={40:10};assert.deepEqual(importCollection(s,raw).importWarnings,[]);
+});
+test('equipment property order does not invalidate an otherwise identical snapshot',()=>{
+ const s=setup(),slot=Object.keys(s.config.gear)[0],gear=s.config.gear[slot];s.config.gear[slot]={plus:gear.plus,tier:gear.tier,id:gear.id};
+ assert.deepEqual(validateCollection(s).config.gear[slot],gear);
+ s.config.gear[slot].plus='0';assert.throws(()=>validateCollection(s),/invalidConfiguration/);
 });

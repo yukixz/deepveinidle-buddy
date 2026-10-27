@@ -1,7 +1,7 @@
 import {prepareDemo,readDemoWorkspace,seedDemoWorkspace} from './demo-helper.mjs';
 import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import assert from 'node:assert/strict';import fs from 'node:fs/promises';
-import * as game from '../src/engine/upstream.js';import {craftingJobs,craftingTiers} from '../src/engine/crafting-model.js';import {collectionRows} from '../src/engine/collection-model.js';import {translatedItemName} from '../src/engine/i18n.js';
+import * as game from '../src/engine/upstream.js';import {craftingJobs,craftingTiers} from '../src/engine/crafting-model.js';import {collectionRows} from '../src/engine/collection-model.js';
 const browser=await launchBrowser(),checks=[],errors=[];
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});await prepareDemo(page);page.on('pageerror',e=>errors.push(e.message));let accept=true,dialogs=0;page.on('dialog',d=>{dialogs++;return accept?d.accept():d.dismiss();});await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();const root=page.locator('#deepveinidle-buddy');await root.locator('[data-action="mode-collection-craft"]').click();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);const base=await readDemoWorkspace(page);base.orders[0].lines=[];base.orders[0].fees={fixed:0,percent:0,minute:0};

@@ -50,7 +50,7 @@ export function validateCollection(raw){
  for(const group of configGroups){requireKeys(raw.config[group],Object.keys(state.config[group]),'invalidConfiguration');}
  for(const gear of Object.values(raw.config.gear))requireKeys(gear,['id','tier','plus'],'invalidConfiguration');
  for(const group of configGroups)for(const [key,value]of Object.entries(state.config[group])){
-  if(JSON.stringify(raw.config[group]?.[key])!==JSON.stringify(value))throw Error('invalidConfiguration');
+  if(group==='gear'?!['id','tier','plus'].every(field=>raw.config[group][key][field]===value[field]):raw.config[group][key]!==value)throw Error('invalidConfiguration');
  }
  if(typeof raw.config.worldRarity!=='number'||!Number.isFinite(raw.config.worldRarity)||raw.config.worldRarity<0||raw.config.worldRarity>1e7||typeof raw.config.blessing!=='boolean')throw Error('invalidConfiguration');
  state.config.worldRarity=raw.config.worldRarity;state.config.blessing=raw.config.blessing;
@@ -113,8 +113,8 @@ export function estimateCollection(state,id,job,players=collectionPlayers(state)
  if(!Number.isFinite(seconds)||!Number.isFinite(attempts)||Object.values(materials).some(n=>!Number.isFinite(n)||n>Number.MAX_SAFE_INTEGER))throw Error('quantityOverflow');
  return {...base,status:'ok',seconds,secondsPerPoint:seconds/points,points,quantity,attempts,materials,burn,caught,quality,actionSeconds:game.tickMs/1000/chance};
 }
-export function collectionRows(state,{now=Date.now()}={}){
- const players=collectionPlayers(state,now);
+export function collectionRows(state){
+ const players=collectionPlayers(state);
  return collectionIds.flatMap(id=>{
   const routes=collectionRoutes(id),future=game.collectionThresholds(game.baseItemId(id)).filter(n=>n>(state.counts[id]??0));
   return routes.flatMap(job=>(future.length?future:[undefined]).map(goal=>estimateCollection(state,id,job,players,goal)));

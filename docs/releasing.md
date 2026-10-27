@@ -2,7 +2,6 @@
 
 代码仓库：https://github.com/yukixz/deepveinidle-buddy 。Greasy Fork脚本ID为601896。
 
-2026-10-27配置时，Greasy Fork已发布版本为0.2.1，本地开发版本仍为0.2.0；本次不修改版本或发布。下一次正式发布至少使用0.2.2，并同步修改package.json及package-lock.json。
 
 ## 发布边界
 
@@ -22,7 +21,7 @@ https://github.com/yukixz/deepveinidle-buddy/releases/latest/download/deepveinid
 
 ## 使用
 
-1. 在main提交中更新package.json和package-lock.json的版本，完成项目要求的真实环境验收。
+1. 在main提交中更新package.json和package-lock.json的版本，完成适用范围的功能与数据验收，如实记录真实环境验证边界。
 2. 推送main，再为该提交创建vX.Y.Z tag并推送该tag。明确推送发布tag就是启动该版本的自动发布，不需要再创建空Release。
 3. 在Actions查看CI、Release及Greasy Fork核对结果。仓库Webhook必须启用且目标正确；Greasy Fork同步地址由条目所有者配置。
 

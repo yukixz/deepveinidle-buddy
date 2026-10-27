@@ -1,11 +1,11 @@
 import {toggleGameLanguage,launchBrowser,baseUrl} from './browser-helper.mjs';
 import {build} from 'esbuild';import assert from 'node:assert/strict';import fs from 'node:fs/promises';
-import * as game from '../src/engine/upstream.js';import {createScenario} from './reference/simulation.js';import {userDefaults} from '../src/workspace.js';import {craftingSkills,craftingSlots} from '../src/engine/crafting-model.js';import {gatheringSkills,gatheringSlots} from '../src/engine/gathering-model.js';
+import * as game from '../src/engine/upstream.js';import {playerFixture} from './fixtures/player.js';import {userDefaults} from '../src/workspace.js';import {craftingSkills,craftingSlots} from '../src/engine/crafting-model.js';import {gatheringSkills,gatheringSlots} from '../src/engine/gathering-model.js';
 await fs.mkdir('.test-artifacts/game-integration',{recursive:true});await build({entryPoints:['tests/integration-entry.js'],outfile:'.test-artifacts/game-integration/harness.js',bundle:true,format:'esm',target:'es2022',loader:{'.css':'text'}});
 const browser=await launchBrowser(),checks=[],errors=[],latencies=[];
 let page;try{
  page=await browser.newPage({viewport:{width:1600,height:1080}});page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));await page.goto(baseUrl+'/tests/game-integration-fixture.html');
- const {player}=createScenario({});for(const skill of [...craftingSkills,...gatheringSkills])player.skills[skill]=game.levelXp(70);for(const slot of [...craftingSlots,...gatheringSlots])player.equipment[slot]=null;Object.assign(player,{id:42,lastTick:1000,house:{},houseFurniture:{},collections:{40:9},masteries:{},perks:{},ironman:false,homeBank:null,bank:{},pack:[],route:null,queue:[],queueSlots:3,workJobId:null,workRarity:0,held:false,raidHeld:false});
+ const player=playerFixture();for(const skill of [...craftingSkills,...gatheringSkills])player.skills[skill]=game.levelXp(70);for(const slot of [...craftingSlots,...gatheringSlots])player.equipment[slot]=null;Object.assign(player,{id:42,lastTick:1000,house:{},houseFurniture:{},collections:{40:9},masteries:{},perks:{},ironman:false,homeBank:null,bank:{},pack:[],route:null,queue:[],queueSlots:3,workJobId:null,workRarity:0,held:false,raidHeld:false});
  const {priceDefaults}=await import('../src/engine/item-prices.js');const prices=priceDefaults();prices.quotes={1:{ask:{value:112,capturedAt:Date.now()}},2:{ask:{value:80,capturedAt:Date.now()}}};
  // Keep manufacturing demand above gathered outputs so purchase prefill remains testable.
  const bronze=game.recipes.find(j=>j.output.itemId===40),gather=game.recipes.find(j=>j.output.itemId===1&&j.skill==='mining');

@@ -30,12 +30,18 @@ export function validateArtifact({manifest,code,packageVersion,commit,tag}){
  const bytes=Buffer.from(code),entry=entries[0];assert(bytes.length>0&&bytes.length<2_000_000,'Userscript exceeds size limit');
  assert(entry.bytes===bytes.length&&entry.sha256===hash(bytes),'Userscript digest/size mismatch');
  const {fields,body}=metadata(code);
- for(const [key,value]of Object.entries({name:'DeepVeinIdle-Buddy',namespace:'https://dvi-lab.pages.dev',version:packageVersion,license:'MIT','run-at':'document-start',noframes:''}))assert(field(fields,key)===value,`Unexpected @${key}`);
+ for(const [key,value]of Object.entries({name:'DeepVeinIdle-Buddy',namespace:'https://github.com/yukixz/deepveinidle-buddy',version:packageVersion,license:'MIT','run-at':'document-start',noframes:''}))assert(field(fields,key)===value,`Unexpected @${key}`);
  assert(field(fields,'description').length>0,'Description is missing');
  for(const [key,expected]of Object.entries({match:['https://deepveinidle.com/*','https://cn.deepveinidle.com/*'],grant:['unsafeWindow','GM_getValue','GM_setValue','GM_xmlhttpRequest','GM_setClipboard'],connect:['deepveinidle.com']}))assert(JSON.stringify([...(fields.get(key)??[])].sort())===JSON.stringify([...expected].sort()),`Unexpected @${key} permissions`);
  assert(!fields.has('require')&&!fields.has('resource')&&!fields.has('include'),'Unexpected external code/resources');
  assert(body.includes(`/* Buddy build commit: ${commit} */`),'Build commit marker is missing');
  return {version:packageVersion,commit,identity:codeIdentity(code),assets:[{name:scriptName,bytes},{name:'manifest.json',bytes:Buffer.from(JSON.stringify(manifest,null,2)+'\n')}]};
+}
+export function releaseNotes(changelog,version){
+ versionParts(version);const lines=changelog.replace(/\r\n/g,'\n').split('\n'),start=lines.indexOf(`## ${version}`);
+ assert(start>=0,'Changelog entry is missing for release version');
+ let end=lines.findIndex((line,index)=>index>start&&line.startsWith('## '));if(end<0)end=lines.length;
+ const notes=lines.slice(start+1,end).join('\n').trim();assert(notes,'Release notes are empty');return notes;
 }
 function checkOnline(code,artifact){
  const identity=codeIdentity(code),order=compareVersions(identity.version,artifact.version);
@@ -63,7 +69,7 @@ export async function publishRelease({artifact,client,readOnline,sleep=ms=>new P
  if(release){
   assert(!release.prerelease,'Tag belongs to a prerelease');
   if(!release.draft)await verifyAssets(client,release,artifact);
- }else release=await client.create({tag_name:tag,target_commitish:artifact.commit,name:tag,draft:true,prerelease:false,body:`Source commit: ${artifact.commit}\n\nValidated userscript build. Greasy Fork script: 601896.`});
+ }else release=await client.create({tag_name:tag,target_commitish:artifact.commit,name:tag,draft:true,prerelease:false,body:`Source commit: ${artifact.commit}\n\n${artifact.notes??'Validated userscript build. Greasy Fork script: 601896.'}`});
  if(release.draft){
   const existing=await client.assets(release.id);
   for(const expected of artifact.assets){
@@ -119,6 +125,7 @@ async function main(){
  const manifest=JSON.parse(await fs.readFile('dist/manifest.json','utf8')),code=await fs.readFile(`dist/${scriptName}`,'utf8'),pkg=JSON.parse(await fs.readFile('package.json','utf8'));
  const artifact=validateArtifact({manifest,code,packageVersion:pkg.version,commit,tag});
  if(mode==='validate'){console.log(`Validated ${artifact.version} from ${commit}`);return;}
+ artifact.notes=releaseNotes(await fs.readFile('CHANGELOG.md','utf8'),artifact.version);
  const result=await publishRelease({artifact,client:githubClient(process.env.GITHUB_TOKEN),readOnline:async()=>{
   const response=await readResponse(await fetch(greasyForkCode,{cache:'no-store',signal:AbortSignal.timeout(20000)}),'Greasy Fork code');return response.text();
  }});

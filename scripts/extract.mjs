@@ -20,10 +20,8 @@ for (const node of ast.body) {
   }
 }
 // Reviewed public build mappings; the source hash guards every symbol.
-// Reviewed roots: current work calculations and the exercised native tick/offline references.
+// Reviewed roots: current work calculations and character/market data.
 const exportsMap={
-  "questDay": "an",
-  "questWeek": "v2",
   "equipment": "DH",
   "items": "cs",
   "marketFamily": "JO",
@@ -55,15 +53,8 @@ const exportsMap={
   "itemTier": "jo",
   "coinItemId": "va",
   "hotSkill": "Zf",
-  "predict": "Jr",
-  "offline": "f7",
-  "tick": "KP",
   "world": "j",
-  "homeBank": "nG",
-  "predictionStartTick": "_b",
-  "predictionChunkTicks": "nA",
   "allSkills": "Jc",
-  "createContext": "_H",
   "perks": "uv",
   "tools": "PH",
   "tool": "Os",
@@ -73,13 +64,10 @@ const exportsMap={
   "houseRarityMultiplier": "vf",
   "masteryMultiplier": "ba",
   "canEnhance": "os",
-  "startWork": "Gs",
   "workChance": "uP",
   "recipeInputs": "Ye",
   "burnChance": "fB",
   "caughtChance": "rP",
-  "lootBoxItemId": "pi",
-  "nearestWorkSite": "DW",
   "upgradeRecipes": "hd",
   "upgradeResult": "xh",
   "upgradeMaterials": "eG",

@@ -114,8 +114,8 @@ function summarizeExecutionActions(entries,rows,canAssess){
   return {key:row.key,jobId:row.jobId,tier:row.tier,craftCount:row.craftCount,collectionAttempts:row.collectionAttempts,count,seconds:row.timeUnknown?null:row.seconds,materialStatus,issues:[...row.issues]};
  }).sort((a,b)=>String(a.jobId).localeCompare(String(b.jobId),undefined,{numeric:true})||a.tier-b.tier);
 }
-export function estimateOrders(workspace,prices,now=Date.now()){
- const state=workspace.character,players=collectionPlayers(state,now),selected=workspace.orders.filter(o=>o.enabled),materials=new Map(),products=new Map(),seen=new Set(),conflicts=new Set();
+export function estimateOrders(workspace,prices){
+ const state=workspace.character,players=collectionPlayers(state),selected=workspace.orders.filter(o=>o.enabled),materials=new Map(),products=new Map(),seen=new Set(),conflicts=new Set();
  for(const order of selected)for(const line of order.lines)if(line.kind==='collection'){
   if(seen.has(line.itemId))conflicts.add(line.itemId);seen.add(line.itemId);
  }

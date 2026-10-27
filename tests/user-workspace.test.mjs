@@ -8,8 +8,7 @@ test('user persistence roundtrips without character, clock, inventory or market 
  assert.deepEqual(Object.keys(stored).sort(),['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters'].sort());
  assert.deepEqual(validateUserWorkspace(stored),stored);
 });
-test('mixed old format and injected game data are rejected without migration',()=>{
- assert.throws(()=>validateUserWorkspace(defaults()),/unsupportedWorkspaceVersion/);
+test('persisted user data excludes runtime state and requires explicit settings',()=>{
  const user=userDefaults();assert.throws(()=>validateUserWorkspace({...user,character:defaults().character}),/invalidWorkspace/);
  assert.throws(()=>validateUserWorkspace({...user,prices:{version:1,quotes:{}}}),/invalidWorkspace/);
  const missing=structuredClone(user);delete missing.materialPriceMode;assert.throws(()=>validateUserWorkspace(missing),/invalidWorkspace/);

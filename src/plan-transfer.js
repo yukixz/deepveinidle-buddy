@@ -1,5 +1,4 @@
-// Same gzip/Base64 envelope as the lab's collection-plan-transfer.js.
-const prefix='DVILAB-PLAN:';
+const prefix='DVI-BUDDY-PLAN:';
 export async function encodePlanPayload(value){
  if(typeof CompressionStream==='undefined')throw Error('compressionUnavailable');
  const stream=new Blob([JSON.stringify(value)]).stream().pipeThrough(new CompressionStream('gzip'));

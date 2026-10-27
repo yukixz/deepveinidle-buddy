@@ -2,7 +2,7 @@ import {build} from 'esbuild';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {launchBrowser,baseUrl} from './browser-helper.mjs';
-import {defaults,userDefaults} from '../src/workspace.js';
+import {userDefaults} from '../src/workspace.js';
 import {gameSnapshot} from './game-snapshot.mjs';
 await fs.mkdir('.test-artifacts/user-storage',{recursive:true});
 await build({stdin:{contents:`
@@ -49,7 +49,7 @@ try{
  await root.locator('#search').fill('after deletion');await page.waitForFunction(()=>window.raw?.filters.collection.query==='after deletion');checks.push('explicit reload after external deletion unblocks persistence');
  await mount({...base,autoRemove:true});await send(gameSnapshot());assert.equal(await writes(),0);await send(gameSnapshot({collections:{40:10}}));await page.waitForFunction(()=>window.raw.orders[0].lines.length===0);
  const removedWrites=await writes();await send(gameSnapshot({collections:{40:10}}));assert.equal(await writes(),removedWrites);checks.push('automatic completion removal saves only an actual user order change');
- await mount(defaults());const original=await page.evaluate(()=>structuredClone(window.raw));await send(gameSnapshot());await root.locator('#orders > summary').click();await root.locator('[data-action="new-order"]').click();assert.deepEqual(await page.evaluate(()=>window.raw),original);assert.equal(await writes(),0);assert.ok((await root.locator('.storage-alert').textContent()).includes('格式不支持'));checks.push('old mixed workspace remains untouched during live synchronization and user edits');
+ await mount({...base,version:99});const original=await page.evaluate(()=>structuredClone(window.raw));await send(gameSnapshot());await root.locator('#orders > summary').click();await root.locator('[data-action="new-order"]').click();assert.deepEqual(await page.evaluate(()=>window.raw),original);assert.equal(await writes(),0);assert.ok((await root.locator('.storage-alert').textContent()).includes('格式不支持'));checks.push('unsupported storage version remains untouched during synchronization and edits');
  await mount(base,true);await page.evaluate(()=>window.failRead=false);await send(gameSnapshot());await root.locator('#orders > summary').click();await root.locator('[data-action="new-order"]').click();assert.equal(await writes(),0);assert.ok((await root.locator('.storage-alert').textContent()).includes('readFailed'));checks.push('initial read failure keeps root error and blocks later automatic writes');
  await mount(base);assert.equal((await character()).initialized,false);assert.equal((await character()).bank,null);checks.push('remount restores user orders while waiting for fresh game data');
  assert.deepEqual(errors,[]);checks.push('no browser errors');console.log(JSON.stringify({passed:checks.length,checks},null,2));
