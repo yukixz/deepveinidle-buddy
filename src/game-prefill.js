@@ -65,13 +65,15 @@ export function createGamePrefill(page,{doc=document,wait=ms=>new Promise(resolv
    return run(request,guard,async check=>{
     const routes=page.deepvein?.routes?.();
     if(!routes||typeof routes.show!=='function'||typeof routes.preselect!=='function')failure('gameControlMissing');
-    const panels=page.deepvein.panels;if(!panels||typeof panels.show!=='function')failure('gameControlMissing');
     if(mobileMode(doc)){
      const play=()=>mobilePageIs(doc,'play');
      if(!play())click('[data-m-tabs] [data-m-tab="play"]');
      await until(()=>play(),check);
+    }else{
+     const panels=page.deepvein.panels;if(!panels||typeof panels.show!=='function')failure('gameControlMissing');
+     panels.show('skills');
     }
-    panels.show('skills');routes.show(request.skill);routes.preselect({jobId:request.jobId});check();
+    routes.show(request.skill);routes.preselect({jobId:request.jobId});check();
     if(routes.pending?.jobId!==request.jobId)failure('gameControlUnavailable');
     const rarityChoice=()=>{
      required('.routes [data-rarity-choices]');
