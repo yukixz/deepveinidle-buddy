@@ -38,29 +38,32 @@ export function validateOrders(raw){
  });
 }
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
-export function userDefaults(){const order=createOrder();return {version:2,revision:0,orders:[order],currentOrderId:order.id,materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection')}};}
+export function userDefaults(){const order=createOrder();return {version:2,revision:0,orders:[order],currentOrderId:order.id,materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection'),collectionGather:filterDefaults('collection')}};}
 export function defaults(){return applyUserWorkspace({character:collectionDefaults(),prices:priceDefaults()},userDefaults());}
 // Runtime composition for the calculation engine; never persist this object.
 export function validateWorkspace(raw){
  requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
  if(raw.version!==1)throw Error('invalidWorkspace');
- workspaceForStorage(raw);
- return {...raw,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)};
+ const {filters}=workspaceForStorage(raw);
+ return {...raw,filters,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)};
 }
 export function validateUserWorkspace(raw){
  if(!record(raw)||raw.version!==2)throw Error('unsupportedWorkspaceVersion');
  requireKeys(raw,['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
- requireKeys(raw.filters,['craft','collection'],'invalidFilters');
+ const hasGather=record(raw.filters)&&Object.hasOwn(raw.filters,'collectionGather');
+ requireKeys(raw.filters,hasGather?['craft','collection','collectionGather']:['craft','collection'],'invalidFilters');
  if(!quantity(raw.revision)||typeof raw.autoRemove!=='boolean')throw Error('invalidWorkspace');
  if(typeof raw.excludeInsufficientAsks!=='boolean'||!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.materialPriceMode))throw Error('invalidPriceMode');
  const orders=validateOrders(raw.orders),filters={};
- for(const mode of ['craft','collection']){
+ for(const mode of hasGather?['craft','collection','collectionGather']:['craft','collection']){
   const f=raw.filters[mode],columns=mode==='craft'?['item','rarity']:['item','rarity','points','duration','time','cost','coins'];
   const keys=['skill','tier','query','route','sort','sortDirection','page','minPoints','maxSecondsPerPoint','maxCost'];
   requireKeys(f,keys,'invalidFilters');
   if(!record(f)||Object.keys(f).some(key=>!keys.includes(key))||!['all',...game.allSkills].includes(f.skill)||!['all','0','1','2','3','4'].includes(f.tier)||typeof f.query!=='string'||!['all','craft','gather'].includes(f.route)||!columns.includes(f.sort)||!['asc','desc'].includes(f.sortDirection)||!Number.isSafeInteger(f.page)||f.page<1||!['minPoints','maxSecondsPerPoint','maxCost'].every(key=>typeof f[key]==='string'&&(f[key]===''||safe(Number(f[key])))))throw Error('invalidFilters');
   filters[mode]={...f};
  }
+ // A validated legacy shared filter seeds an independent gathering preference.
+ if(!hasGather)filters.collectionGather={...filters.collection};
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
  return {version:2,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,materialPriceMode:raw.materialPriceMode,productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
 }

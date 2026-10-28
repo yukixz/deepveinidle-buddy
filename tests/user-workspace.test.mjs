@@ -32,3 +32,35 @@ test('every persisted user field is required and corrupt user storage stays unto
   await assert.rejects(store.load());await assert.rejects(store.save(userDefaults()),/storageBlocked/);assert.equal(writes,0);assert.deepEqual(raw,before);
  }
 });
+
+test('three recipe modes roundtrip independent preferences',()=>{
+ const user=userDefaults();
+ for(const [key,skill,query] of [['craft','cooking','craft'],['collection','smithing','bars'],['collectionGather','mining','ores']]){
+  Object.assign(user.filters[key],{skill,query,tier:'1',page:2,maxCost:'100'});
+ }
+ const stored=workspaceForStorage(applyUserWorkspace(defaults(),user));
+ assert.deepEqual(stored,user);
+ stored.filters.collectionGather.query='changed';
+ assert.equal(stored.filters.collection.query,'bars');
+});
+test('legacy shared collection filters seed gathering without mutating or writing the source',async()=>{
+ const raw=userDefaults();delete raw.filters.collectionGather;
+ Object.assign(raw.filters.collection,{skill:'mining',route:'gather',query:'ore',page:3,maxSecondsPerPoint:'54'});
+ const before=structuredClone(raw);let writes=0;
+ const {createStore}=await import('../src/storage.js');
+ const store=createStore({get:async()=>raw,set:async()=>writes++},'user',validateUserWorkspace);
+ const loaded=await store.load();
+ assert.deepEqual(loaded.filters.collectionGather,raw.filters.collection);
+ assert.notEqual(loaded.filters.collectionGather,loaded.filters.collection);
+ assert.deepEqual(raw,before);assert.equal(writes,0);
+ assert.deepEqual(validateUserWorkspace(loaded),loaded);
+});
+test('present but malformed gathering filters are rejected and protected',async()=>{
+ const {createStore}=await import('../src/storage.js');
+ for(const invalid of [null,{},undefined,{...userDefaults().filters.collectionGather,maxCost:'oops'}]){
+  const raw=userDefaults();raw.filters.collectionGather=invalid;let writes=0;
+  const store=createStore({get:async()=>raw,set:async()=>writes++},'user',validateUserWorkspace);
+  await assert.rejects(store.load(),/invalidFilters/);
+  await assert.rejects(store.save(userDefaults()),/storageBlocked/);assert.equal(writes,0);
+ }
+});

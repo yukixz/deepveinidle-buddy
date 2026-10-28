@@ -28,7 +28,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
  const doc=root.ownerDocument,style=doc.createElement('style');style.textContent=css;root.append(style);const container=doc.createElement('div');container.className='panel-mount';root.append(container);
  let workspace=defaults(),mode='collection',route='craft',skill='all',tier='all',query='',page=1,sort='item',sortDirection='asc',minPoints='',maxSecondsPerPoint='',maxCost='',closed=false,error='',notice='',storageError='',status=demo?'demo':'waiting',loaded=false,disposed=false,marketBusy=false,marketPrices=null,lastMarket=0,latestEnvelope=null,appliedPlayerAt=0,appliedSource=null,renderTimer=null,marketError='',live=false,transferBusy=false,importGeneration=0;
  let transferDraft=null,executionState=null,executionError='',syncError='',debug=null,debugGeneration=0,prefillBusy=false;const expandedOrders=new Set(),tableSorts=new Map();
- let collectionCache=null,collectionCacheKey='',savedFilter={craft:null,collection:null};
+ let collectionCache=null,collectionCacheKey='',savedFilter={craft:null,collection:null,collectionGather:null};
  const store=createStore(platform,storageKey,validateUserWorkspace);
  const stableView=createStableView(container,()=>queueRender());
  let language=gameLanguage(doc);const frozen=installFrozenColumns(root);
@@ -70,15 +70,21 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
  async function save(){if(!loaded||disposed||storageError)return;try{await store.save(workspaceForStorage(workspace));}catch(e){if(!storageError)storageError=message(e.message);queueRender();}}
  function changed(defer=false){if(live&&appliedPlayerAt&&!syncError)removeCompleted(workspace);void save();if(defer)queueRender();else render();}
  function ensureOrder(){if(!workspace.orders.length){const o=createOrder();workspace.orders.push(o);workspace.currentOrderId=o.id;}if(!current())workspace.currentOrderId=workspace.orders[0].id;}
+ const filterKey=()=>mode==='collection'&&route==='gather'?'collectionGather':mode;
+ function restoreFilters(){
+  const activeRoute=route;
+  ({skill,tier,query,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost}=savedFilter[filterKey()]);
+  route=mode==='craft'?'all':activeRoute;
+  if(!(mode==='craft'||route==='craft'?craftingSkills:gatheringSkills).includes(skill))skill='all';
+ }
  function applyUserData(raw){
   workspace=applyUserWorkspace(workspace,raw);savedFilter=workspace.filters;
-  ({skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost}=savedFilter[mode]);
-  if(mode==='collection'){route=route==='gather'?'gather':'craft';if(!(route==='craft'?craftingSkills:gatheringSkills).includes(skill))skill='all';}
+  restoreFilters();
   importGeneration++;transferDraft=null;expandedOrders.clear();collectionCache=null;
  }
  if(initial)workspace=validateWorkspace(initial);
  try{const saved=await store.load();if(saved)applyUserData(saved);}catch(e){storageError=message(e.message);}
- loaded=true;savedFilter=workspace.filters;({skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost}=savedFilter[mode]);route='craft';if(!craftingSkills.includes(skill))skill='all';ensureOrder();
+ loaded=true;savedFilter=workspace.filters;restoreFilters();ensureOrder();
  function collectionCandidates(){
   const c=workspace.character;const key=JSON.stringify({initialized:c.initialized,config:c.config,counts:c.counts,rarityHot:hotKey(c)});if(collectionCache&&collectionCacheKey===key)return collectionCache;
   collectionCache=collectionRows(workspace.character).map(row=>({...row,job:game.recipes.find(j=>j.id===row.jobId)}));collectionCacheKey=key;return collectionCache;
@@ -166,7 +172,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
    if(action==='close'){closed=true;render();return;}
    if(action==='sort-table'){const table=el.dataset.table,column=el.dataset.column;if(!sortableColumns(table).includes(column))throw Error('invalidSort');const pref=tablePreference(table),direction=pref.column===column&&pref.direction==='asc'?'desc':'asc';if(table==='recipes'){sort=column;sortDirection=direction;page=1;rememberFilters();}else tableSorts.set(table,{column,direction});render();container.querySelector(`[data-table="${CSS.escape(table)}"][data-column="${column}"]`)?.focus({preventScroll:true});return;}
    if(action==='sort-collection'){if(mode!=='collection'||!['points','duration','time','cost','coins'].includes(el.dataset.sort))throw Error('invalidSort');sortDirection=sort===el.dataset.sort?(sortDirection==='asc'?'desc':'asc'):'asc';sort=el.dataset.sort;page=1;rememberFilters();render();container.querySelector('[data-sort="'+sort+'"]')?.focus({preventScroll:true});return;}
-   if(action.startsWith('mode-')){rememberFilters();mode=action==='mode-craft'?'craft':'collection';const f=savedFilter[mode];({skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost}=f);if(mode==='collection'){route=action==='mode-collection-gather'?'gather':'craft';if(!(route==='craft'?craftingSkills:gatheringSkills).includes(skill))skill='all';page=1;}rememberFilters();render();return;}
+   if(action.startsWith('mode-')){rememberFilters();mode=action==='mode-craft'?'craft':'collection';route=action==='mode-collection-gather'?'gather':'craft';restoreFilters();rememberFilters();render();return;}
    if(action==='reload'){importGeneration++;try{const saved=await store.load();applyUserData(saved??userDefaults());storageError='';}catch(e){storageError=message(e.message);}render();return;}
    if(action==='reset-storage'){if(!confirm(text('删除当前角色助手存档并恢复默认订单？','Delete this character’s buddy storage and reset orders?')))return;importGeneration++;await store.reset();applyUserData(userDefaults());storageError='';await save();render();return;}
    if(action==='next'||action==='previous'){page+=action==='next'?1:-1;rememberFilters();render();return;}
@@ -222,7 +228,7 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
    el.removeAttribute('aria-invalid');changed(true);
   }catch(e){workspace=previous;savedFilter=workspace.filters;el.setAttribute('aria-invalid','true');error=message(e.message);queueRender();}
  }
- function rememberFilters(){workspace.filters[mode]={skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost};savedFilter=workspace.filters;void save();}
+ function rememberFilters(){workspace.filters[filterKey()]={skill,tier,query,route,sort,sortDirection,page,minPoints,maxSecondsPerPoint,maxCost};savedFilter=workspace.filters;void save();}
  function typed(event){
   if(event.isComposing)return;
   const el=event.target;
