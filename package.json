@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "release": "node scripts/release-task.mjs",
     "build": "node scripts/build.mjs",
     "start": "node scripts/serve.mjs",
     "test": "node --test tests/*.test.mjs",
