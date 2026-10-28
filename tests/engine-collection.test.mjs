@@ -5,6 +5,7 @@ import {collectionDefaults,validateCollection,collectionTarget,pointsForProducti
 import {craftingSlots,craftingSkills} from '../src/engine/crafting-model.js';
 import {gatheringSlots,gatheringSkills} from '../src/engine/gathering-model.js';
 import {playerFixture} from './fixtures/player.js';
+import {translatedName} from '../src/engine/i18n.js';
 const setup=()=>({...collectionDefaults(),initialized:true,worldTick:1000000});
 const job=id=>collectionRoutes(id)[0];
 function snapshot(){
@@ -63,4 +64,21 @@ test('equipment property order does not invalidate an otherwise identical snapsh
  const s=setup(),slot=Object.keys(s.config.gear)[0],gear=s.config.gear[slot];s.config.gear[slot]={plus:gear.plus,tier:gear.tier,id:gear.id};
  assert.deepEqual(validateCollection(s).config.gear[slot],gear);
  s.config.gear[slot].plus='0';assert.throws(()=>validateCollection(s),/invalidConfiguration/);
+});
+test('pure coal shares common coal collection and never rolls rarity, including with luck bonuses',()=>{
+ const pure=game.recipes.find(j=>j.id===344),normal=game.recipes.find(j=>j.id===5);
+ assert.equal(translatedName(pure.name,'zh'),'纯煤');assert.equal(translatedName(pure.name,'en'),'Pure coal');
+ assert.equal(pure.plain,true);assert.equal(pure.output.itemId,normal.output.itemId);
+ assert.equal(pure.baseTicks,normal.baseTicks);assert.equal(pure.levelReq,normal.levelReq);assert.equal(pure.xp,normal.xp);
+ assert.ok(game.world.sites.some(site=>site.jobIds.includes(pure.id)));
+ assert.deepEqual(collectionRoutes(5).map(j=>j.id),[5,344]);
+ for(let tier=1;tier<5;tier++)assert.deepEqual(collectionRoutes(game.withRarity(5,tier)).map(j=>j.id),[5]);
+ const s=setup();s.config.levels.mining=40;
+ s.config.gear.pickaxe={id:84,tier:4,plus:5};s.config.gear.amulet={id:186,tier:3,plus:2};
+ s.config.house.shrine=10;s.config.masteries.rare=7;s.config.brews.hunter=4;s.config.blessing=true;s.config.worldRarity=100;
+ const players=collectionPlayers(s),r=estimateCollection(s,5,pure,players,100);
+ assert.equal(r.status,'ok');assert.equal(r.quality,1);assert.equal(r.attempts,100);
+ assert.equal(r.seconds,100*game.tickMs/1000/game.workChance(pure,players.gather));
+ assert.ok(estimateCollection(s,5,normal,players,100).quality<1);
+ for(let tier=1;tier<5;tier++)assert.equal(estimateCollection(s,game.withRarity(5,tier),pure,players).status,'unreachable');
 });

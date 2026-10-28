@@ -1,6 +1,6 @@
 # 当前状态
 
-版本：**0.3.1**。计算基线：**1.0.1199**。发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准。
+版本：**0.3.2**。计算基线：**1.0.1204**。发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准。
 
 ## 功能范围
 
@@ -14,11 +14,13 @@
 
 配方选择的收藏时间筛选改用小时／100点，内部与存档仍为秒／点，兼容已有version=2存档。成本筛选输入仍为百万金币／100点，存档为金币／点；表格效率列仍显示秒／点和金币／点。
 
-## 未发布变更
+## 0.3.2变更
+
+适配游戏1.0.1204，更新公开资源快照、SHA-256、语义映射与生成引擎。新增纯煤采集路线，普通煤收藏可选、稀有煤收藏排除；产物抵扣始终只计普通煤，补充中文名称。
 
 配方选择的制造、收藏（制造）、收藏（采集）分别保存筛选、排序与页码。version=2兼容读取旧两套筛选存档，新增collectionGather保存采集筛选；定价仍全局共用。
 
-本地验证：161项单元测试、构建及mode-filters、browser、point-cost-filter、user-storage、bulk-pagination五个隔离浏览器场景通过（共71项检查）。未执行真实脚本管理器或账号验收。
+本次计算与构建验证：163项单元测试（含来源摘要与确定性提取）及构建通过。完整24个隔离浏览器场景通过（共285项检查），覆盖纯煤中英文筛选、路线选择、订单与执行来源显示、只读接入、存储、输入法及双端布局；发布元数据与摘要校验通过。未执行真实脚本管理器或账号验收。
 
 ## 验证边界
 

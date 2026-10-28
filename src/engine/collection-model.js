@@ -81,7 +81,7 @@ export function pointsForProduction(id,current,quantity){return game.collectionP
 export function collectionRoutes(id){
  const base=game.baseItemId(id);
  if(game.collectionExcluded(id))return [];
- return game.recipes.filter(j=>j.output.itemId===base&&!j.retired&&collectionSkills.includes(j.skill));
+ return game.recipes.filter(j=>j.output.itemId===base&&!j.retired&&(!j.plain||game.itemTier(id)===0)&&collectionSkills.includes(j.skill));
 }
 export function collectionPrice(id,prices,buyMode='ask'){
  const item=prices.getItem(id);

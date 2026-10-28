@@ -54,3 +54,10 @@ test('invalid counts and output overflow fail explicitly',()=>{
  for(const count of [0,-1,1.5,Infinity])assert.throws(()=>plannedProducts(job,0,count,players),/invalidQuantity/);
  assert.throws(()=>plannedProducts(job,0,Number.MAX_SAFE_INTEGER,players),/quantityOverflow/);
 });
+
+test('pure coal planned output supplies only common fuel even with rarity bonuses',()=>{
+ const state=fixture();state.config.worldRarity=100;state.config.brews.hunter=4;state.config.blessing=true;
+ state.config.gear.pickaxe={id:84,tier:4,plus:5};state.config.masteries.rare=7;
+ const pure=game.recipes.find(j=>j.id===344);
+ assert.deepEqual(plannedProducts(pure,0,123,collectionPlayers(state)),{5:123});
+});
