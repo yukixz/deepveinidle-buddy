@@ -82,10 +82,9 @@ export function installNavigationLauncher(doc,onOpen,onGameNavigation=()=>{}){
   if(!event.isTrusted||!mobileMode(doc)||!open)return;
   const target=event.target.closest?.('[data-m-tab]');
   if(!target?.closest('[data-m-tabs]')||!['play','bag','bank','market','more'].includes(target.dataset.mTab))return;
-  const tab=target.dataset.mTab;
-  if(doc.documentElement.dataset.mtab===tab)return;
+  const tab=target.dataset.mTab,next=doc.documentElement.dataset.mtab===tab?'world':tab;
   // Native event dispatch can run microtasks between listeners. Wait for the full click.
-  view.clearTimeout(navigationTimer);navigationTimer=view.setTimeout(()=>{navigationTimer=null;if(!disposed&&open&&mobileMode(doc)&&doc.documentElement.dataset.mtab===tab)onGameNavigation();},0);
+  view.clearTimeout(navigationTimer);navigationTimer=view.setTimeout(()=>{navigationTimer=null;if(!disposed&&open&&mobileMode(doc)&&doc.documentElement.dataset.mtab===next)onGameNavigation();},0);
  }
  function click(event){event.preventDefault();event.stopPropagation();if(ready&&!button.hidden)onOpen();}
  doc.addEventListener('click',gameNavigation,true);button.addEventListener('click',click);view.addEventListener('resize',schedule);view.addEventListener('scroll',schedule,true);view.visualViewport?.addEventListener('resize',schedule);view.visualViewport?.addEventListener('scroll',schedule);repair();

@@ -103,6 +103,12 @@ try{
  checks.push('mobile action prefill never switches desktop panels; inventory and worn items remain visible when returning to bag');
  await page.evaluate(()=>{window.__panel.open();window.__maxAmount=2;});await r.locator('[data-action="prefill-action"]').tap();await page.locator('[data-buddy-hint]').filter({hasText:'输入'}).waitFor();assert.equal(await r.isVisible(),true);assert.ok((await page.locator('[data-buddy-hint]').textContent()).includes('输入'));checks.push('rejected mobile draft values keep the panel open and show the actual failure');
  await page.screenshot({path:'.test-artifacts/mobile/prefill-failure.png'});
+ // Tapping the selected native tab folds back to world, including after prefill failure.
+ await page.locator('[data-m-tab="play"]').tap();
+ assert.equal(await page.evaluate(()=>document.documentElement.dataset.mtab),'world');
+ await page.waitForTimeout(50);assert.equal(await r.isVisible(),false);
+ await page.locator('[data-m-tab="play"]').tap();await page.evaluate(()=>window.__panel.open());
+ checks.push('tapping the selected mobile tab after a failed draft closes the assistant when the game returns to world');
  await page.evaluate(()=>{window.__maxAmount=1e9;window.__routes.pending=null;document.querySelector('[data-market-window]').hidden=true;});await r.locator('[data-action="prefill-purchase"][data-item="1"]').tap();await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').hasAttribute('data-closed'));assert.equal(await page.locator('[data-buddy-hint]').isVisible(),false);assert.equal(await page.locator('[data-buddy-hint]').textContent(),'');assert.equal(await page.locator('[data-trade-qty-in]').inputValue(),'80');assert.equal(await page.locator('[data-trade-price-in]').inputValue(),'112');assert.equal(await page.evaluate(()=>window.__mobileTabClicks.at(-1)),'market');assert.deepEqual(await page.evaluate(()=>window.__commands),[]);checks.push('mobile market uses the visible tab, fills quantity/price and closes after success with zero game action submissions');
  await page.screenshot({path:'.test-artifacts/mobile/prefill.png'});
  assert.equal(await page.evaluate(()=>document.documentElement.dataset.mtab),'market');assert.equal(await page.evaluate(()=>document.querySelector('.m-shell').dataset.mtab),'play');
