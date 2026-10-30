@@ -39,7 +39,7 @@ label { display:inline-flex; align-items:center; gap:6px; }
 .titlebar .controls { margin-left:auto; display:flex; gap:8px; flex-shrink:0; }
 .titlebar button { padding:3px 9px; }
 .status { font-size:12px; color:var(--muted); }
-.content { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; padding:12px; display:grid; gap:12px; }
+.content { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; padding:12px; display:grid; align-content:start; gap:12px; }
 .section { border:1px solid #735537; border-radius:6px; background:#1d120955; padding:11px; display:grid; gap:10px; }
 .heading,.toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:9px; }
 .heading>small { margin-left:auto; }

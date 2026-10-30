@@ -50,6 +50,16 @@ try{
  await page.evaluate(snapshot=>window.sendSnapshot(snapshot),gameSnapshot({collections:{40:100}}));await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('[data-execution-action="collection:40"]').textContent.includes('已完成'));assert.match(await row.textContent(),/已完成/);assert.equal(await row.locator('td').nth(3).textContent(),'0');assert.equal(await row.locator('[data-action="prefill-action"]').isDisabled(),true);await row.locator('[data-action="remove-line"]').click();assert.equal(await row.count(),0);
  checks.push('completed targets remain removable and never turn into executable attempts');
  await select('collection-gather');assert.deepEqual(await root.locator('.content > section').evaluateAll(els=>els.map(e=>e.id)),['global-settings','recipes']);assert.equal(await root.locator('[data-action="add-collection"],[data-action="add-all"]').count(),0);
+ // Sparse results in a tall window must not stretch sections or their internal rows.
+ const savedHeight=await root.evaluate(host=>host.style.height);
+ await root.locator('#search').fill('no-matching-recipe');await root.locator('#search').press('Tab');
+ await root.locator('[data-action="prefill-gather"]').first().waitFor({state:'detached'});
+ const layoutAt=height=>root.evaluate((host,height)=>{host.style.height=height;const r=host.shadowRoot;return [...r.querySelectorAll('.content > *,#global-settings > *,#recipes > *')].map(el=>({top:el.getBoundingClientRect().top,height:el.getBoundingClientRect().height}));},height);
+ const compact=await layoutAt('750px'),tall=await layoutAt('950px');
+ for(let i=0;i<compact.length;i++)for(const key of ['top','height'])assert.ok(Math.abs(compact[i][key]-tall[i][key])<1,`gather layout ${i}.${key}: ${compact[i][key]} -> ${tall[i][key]}`);
+ await root.evaluate((host,height)=>host.style.height=height,savedHeight);
+ await root.locator('#search').fill('');await root.locator('#search').press('Tab');await root.locator('[data-action="prefill-gather"]').first().waitFor();
+ checks.push('sparse gathering content retains section and control spacing when the window grows');
  const ordersBefore=await page.evaluate(()=>JSON.stringify([window.panel.getWorkspace().orders,window.panel.getWorkspace().collectionOrder]));
  assert.deepEqual((await root.locator('#recipe-candidates th').allTextContents()).map(value=>value.replace(/[▲▼]/g,'').trim()),['物品','稀有度','当前→目标','精通点','时间','秒/点','执行次数','操作']);
  assert.equal(await root.locator('#recipe-candidates tbody tr').first().locator('td').nth(2).locator('small').count(),0);
