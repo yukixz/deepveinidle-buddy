@@ -1,6 +1,6 @@
 # 当前状态
 
-版本：**0.4.0**。计算基线：**1.0.1204**。发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准；历史变更见[更新说明](../CHANGELOG.md)。
+版本：**0.4.1**。计算基线：**1.0.1204**。发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准；历史变更见[更新说明](../CHANGELOG.md)。
 
 ## 功能范围
 
