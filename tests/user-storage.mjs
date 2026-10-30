@@ -14,7 +14,7 @@ await build({stdin:{contents:`
   window.panel=await mountPanel(host.attachShadow({mode:'open'}),{css,storageKey:'user-test',platform:{
    get:async(key,fallback)=>{if(key!=='user-test')return fallback;if(window.failRead)throw Error('readFailed');return structuredClone(window.raw);},
    set:async(key,value)=>{if(key!=='user-test')return;if(window.failSet)throw Error('writeFailed');window.raw=structuredClone(value);window.writes.push(structuredClone(value));},
-   market:async()=>{throw Error('disabled in fixture');},copy:()=>{},readClipboard:()=>{},
+   market:async()=>{throw Error('disabled in fixture');},
   }});window.panel.open();
  };
  `,resolveDir:process.cwd()},outfile:'.test-artifacts/user-storage/harness.js',bundle:true,format:'iife',target:'es2022',loader:{'.css':'text'}});

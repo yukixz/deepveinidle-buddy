@@ -3,7 +3,7 @@ export function createStableView(container,onIdle){
  const root=container.getRootNode(),doc=container.ownerDocument,view=doc.defaultView;
  const scrollQuietMs=180;
  let pending=false,pointer=false,scrollUntil=0,timer=null,disposed=false;
- const isControl=node=>node?.nodeType===1&&node.matches('input,select,textarea');
+ const isControl=node=>node?.nodeType===1&&node.matches('input,select');
  function selectedRange(){
   const selected=root.getSelection?.()??doc.getSelection();
   if(!selected||selected.isCollapsed||!selected.rangeCount)return null;
@@ -94,7 +94,7 @@ export function createStableView(container,onIdle){
    if(current.innerHTML!==next.innerHTML||current.value!==next.value)pending=true;
    return;
   }
-  // Moving template children can empty a textarea's default value. Capture it first.
+  // Read control values before patching their children.
   const nextValue=isControl(next)?next.value:null;
   patchChildren(current,next,busy,active,range);
   if(isControl(current)){

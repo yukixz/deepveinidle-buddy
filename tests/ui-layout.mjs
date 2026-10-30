@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {launchBrowser,baseUrl,appVersion,gameVersion,toggleGameLanguage,longPressTitle} from './browser-helper.mjs';
+import {launchBrowser,baseUrl,appVersion,toggleGameLanguage,longPressTitle} from './browser-helper.mjs';
 const browser=await launchBrowser(),checks=[],errors=[];
 const page=await browser.newPage({viewport:{width:1440,height:1080},hasTouch:true});
 page.on('pageerror',error=>errors.push(error.message));
@@ -11,15 +11,15 @@ try{
  assert.deepEqual(await root.locator('.titlebar button').evaluateAll(els=>els.map(el=>el.dataset.action)),['close']);
  assert.doesNotMatch(await root.locator('.titlebar').textContent(),/游戏版本|角色实时|市场行情/);
  assert.match(await root.locator('.titlebar').textContent(),/角色.*市场/);
- assert.equal((await root.locator('.version').textContent()).trim(),'v'+appVersion);assert.equal(await root.locator('.game-version').textContent(),'游戏版本 '+gameVersion);
- assert.equal(await root.locator('.content').evaluate(el=>el.lastElementChild.className),'game-version');
+ assert.equal((await root.locator('.version').textContent()).trim(),'v'+appVersion);assert.equal(await root.locator('.content footer').count(),0);
  assert.equal(await root.locator('#recipe-candidates [data-collection-attempts]').count(),0);
  assert.equal(await root.locator('#recipe-candidates tbody tr').first().locator('td').nth(2).locator('small').count(),0);
  assert.deepEqual((await root.locator('#execution-actions th').allTextContents()).slice(0,3).map(s=>s.replace(/[▲▼]/g,'').trim()),['物品','稀有度','技能']);
- checks.push('compact title, bottom game version, candidate and action column structure');
+ assert.equal(await root.locator('[data-action="export-order"],[data-action="import-order"],[data-action="plan-text"],#plan-text').count(),0);
+ checks.push('no order transfer controls; compact title, no version footer, candidate and action column structure');
  const savedBefore=await page.evaluate(()=>localStorage.getItem('dvi-buddy-demo-v1'));
  await toggleGameLanguage(page);assert.equal(await root.locator('h1').textContent(),'Crafting & Mastery Buddy');
- assert.equal((await root.locator('.version').textContent()).trim(),'v'+appVersion);assert.equal(await root.locator('.game-version').textContent(),'Game version '+gameVersion);
+ assert.equal((await root.locator('.version').textContent()).trim(),'v'+appVersion);assert.equal(await root.locator('.content footer').count(),0);
  assert.equal(await page.evaluate(()=>localStorage.getItem('dvi-buddy-demo-v1')),savedBefore);
  await root.locator('[data-action="close"]').click();await toggleGameLanguage(page);await page.locator('[data-buddy-launcher]').click();assert.equal(await root.locator('h1').textContent(),'工匠精通助手');
  await page.locator('nav').evaluate(nav=>{const copy=nav.cloneNode(true);copy.setAttribute('aria-label','Game navigation');nav.replaceWith(copy);});

@@ -32,7 +32,7 @@ export function validateArtifact({manifest,code,packageVersion,commit,tag}){
  const {fields,body}=metadata(code);
  for(const [key,value]of Object.entries({name:'DeepVeinIdle-Buddy',namespace:'https://dvi-lab.pages.dev',version:packageVersion,license:'MIT','run-at':'document-start',noframes:''}))assert(field(fields,key)===value,`Unexpected @${key}`);
  assert(field(fields,'description').length>0,'Description is missing');
- for(const [key,expected]of Object.entries({match:['https://deepveinidle.com/*','https://cn.deepveinidle.com/*'],grant:['unsafeWindow','GM_getValue','GM_setValue','GM_xmlhttpRequest','GM_setClipboard'],connect:['deepveinidle.com']}))assert(JSON.stringify([...(fields.get(key)??[])].sort())===JSON.stringify([...expected].sort()),`Unexpected @${key} permissions`);
+ for(const [key,expected]of Object.entries({match:['https://deepveinidle.com/*','https://cn.deepveinidle.com/*'],grant:['unsafeWindow','GM_getValue','GM_setValue','GM_xmlhttpRequest'],connect:['deepveinidle.com']}))assert(JSON.stringify([...(fields.get(key)??[])].sort())===JSON.stringify([...expected].sort()),`Unexpected @${key} permissions`);
  assert(!fields.has('require')&&!fields.has('resource')&&!fields.has('include'),'Unexpected external code/resources');
  assert(body.includes(`/* Buddy build commit: ${commit} */`),'Build commit marker is missing');
  return {version:packageVersion,commit,identity:codeIdentity(code),assets:[{name:scriptName,bytes},{name:'manifest.json',bytes:Buffer.from(JSON.stringify(manifest,null,2)+'\n')}]};

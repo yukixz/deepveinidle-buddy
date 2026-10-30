@@ -1,5 +1,5 @@
 :host {
- --ink:#f5e6c8; --muted:#bba784; --edge:#c79352; --good:#b6d48b; --error:#ffb898;
+ --ink:#f5e6c8; --muted:#bba784; --edge:#c79352; --error:#ffb898;
  position:fixed; z-index:7; right:16px; top:64px; width:min(1030px,calc(100vw - 32px)); max-height:100dvh;
  font:13.5px Mulish,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
  color:var(--ink); line-height:1.45; color-scheme:dark; text-align:left; isolation:isolate;
@@ -13,7 +13,7 @@ h2 { font-size:15px; }
 h3 { font-size:13px; }
 small,.muted { color:var(--muted); font-size:12px; }
 strong { font-weight:800; }
-button,input,select,textarea { font:inherit; color:inherit; }
+button,input,select { font:inherit; color:inherit; }
 button {
  cursor:pointer; border:0; border-radius:6px; padding:7px 12px; font-size:12px;
  background:linear-gradient(#6e4423,#4b2c14); box-shadow:inset 0 0 0 1px #c79352,0 0 0 2px #1f1108,0 3px 0 #1f1108;
@@ -21,8 +21,8 @@ button {
 button:hover { filter:brightness(1.2); }
 button:disabled { opacity:.4; cursor:default; }
 button[aria-pressed=true],tr.current { background:linear-gradient(#76532b,#4d341c); color:#fff1c9; }
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible { outline:2px solid #e5c88e; outline-offset:2px; }
-input,select,textarea { min-height:30px; background:#1a1009; border:1px solid #80613d; border-radius:4px; padding:4px 7px; max-width:100%; }
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible { outline:2px solid #e5c88e; outline-offset:2px; }
+input,select { min-height:30px; background:#1a1009; border:1px solid #80613d; border-radius:4px; padding:4px 7px; max-width:100%; }
 input[type=number] { width:90px; }
 input[type=checkbox] { width:auto; min-height:0; accent-color:#c79352; }
 input[aria-invalid=true] { border-color:var(--error); }
@@ -77,7 +77,6 @@ th,td { text-align:left; padding:4px 5px; border-bottom:1px solid #73553766; ver
 th { background:#1d1209; color:#d7bd8d; font-weight:700; }
 td small { display:block; }
 td small.route-label { display:inline; margin-left:6px; }
-.game-version { color:var(--muted); }
 /* Only the three planning tables freeze their item and rarity columns. */
 .frozen-table { border-collapse:separate; border-spacing:0; }
 #recipe-candidates { --frozen-first-width:var(--recipes-item-width,100px); }
@@ -119,7 +118,6 @@ details>summary { cursor:pointer; font-weight:700; }
 details[open]>summary { margin-bottom:10px; }
 .note { font-size:12px; color:var(--muted); }
 .alert { color:var(--error); white-space:pre-line; }
-.good { color:var(--good); }
 .pagination { display:flex; justify-content:flex-start; flex-wrap:wrap; gap:12px; align-items:center; }
 .pagination .add-all { margin-left:auto; }
 /* Transparent resize hit areas remain available on every edge and corner. */
@@ -167,7 +165,7 @@ details[open]>summary { margin-bottom:10px; }
 :host([data-mobile]) .titlebar .controls { gap:4px; }
 :host([data-mobile]) button,:host([data-mobile]) input,:host([data-mobile]) select { height:32px; min-height:32px; padding:3px 5px; }
 :host([data-mobile]) button { min-width:32px; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-:host([data-mobile]) input,:host([data-mobile]) select,:host([data-mobile]) textarea { font-size:16px; }
+:host([data-mobile]) input,:host([data-mobile]) select { font-size:16px; }
 :host([data-mobile]) table { font-size:12px; }
 :host([data-mobile]) th,:host([data-mobile]) td { width:auto; padding:3px 4px; height:26px; }
 :host([data-mobile]) table input[type=number] { width:64px; }
@@ -182,7 +180,4 @@ details[open]>summary { margin-bottom:10px; }
 :host([data-mobile]) .resize-handle { display:none; }
 :host([data-mobile]) .primary-filters { flex-wrap:wrap; }
 :host([data-mobile]) .primary-filters label:last-child { flex:1 1 130px; }
-.transfer-text { display:grid; gap:8px; }
-.transfer-text label { display:flex; flex-direction:column; align-items:stretch; }
-.transfer-text textarea { width:100%; min-width:180px; resize:vertical; overflow-wrap:anywhere; }
 :host([data-mobile]) input[type=checkbox] { width:32px; min-width:32px; height:32px; margin:0; }

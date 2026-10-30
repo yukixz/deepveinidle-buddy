@@ -19,14 +19,14 @@
 | app、theme、stable-view、frozen-columns | 面板交互、稳定节点及冻结表格 |
 | storage、panel-geometry、debug-menu | 独立用户存档、桌面布局和站点调试偏好 |
 | game-prefill | 用户点击后的导航和草稿预填，不提交交易或动作 |
-| plan-transfer、platform | 单订单gzip/Base64传输、GM／浏览器存储与剪贴板 |
+| platform | GM／浏览器存储与行情读取 |
 | sorting、recipe-availability、fee-units | 排序、材料供应筛选和费用单位换算 |
 
 工作区持久化格式为version=2，材料方向保存为materialPriceMode，模式选择保存为可选selectedMode（缺省craft，存在但无效则拒绝），独立制造收藏固定单保存为可选collectionOrder，旧orders完整保留在制造模式；运行时按当前模式选择订单范围并组合角色与行情供引擎计算。角色同步不写存档，自动移除完成收藏实际改变订单时例外。加载、保存和恢复规则见[面板设计](panel.md#存储与验收)。
 
 来源角色身份未知时不读取或写入角色分桶。白名单采样每250ms进行，正常前台变化在1秒内更新；不读取登录凭据、聊天，不增加游戏连接。助手仅主动请求固定公开市场API，禁用凭据。
 
-安装名为DeepVeinIdle-Buddy，namespace为https://dvi-lab.pages.dev，author为Alice。授权仅含unsafeWindow、GM_getValue、GM_setValue、GM_xmlhttpRequest、GM_setClipboard，匹配两个游戏站点。调试功能的公开说明边界见[面板设计](panel.md)。
+安装名为DeepVeinIdle-Buddy，namespace为https://dvi-lab.pages.dev，author为Alice。授权仅含unsafeWindow、GM_getValue、GM_setValue、GM_xmlhttpRequest，匹配两个游戏站点。调试功能的公开说明边界见[面板设计](panel.md)。
 
 ## 开发与验证
 

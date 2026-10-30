@@ -27,7 +27,6 @@ function source(version,commit){return `// ==UserScript==
 // @grant GM_getValue
 // @grant GM_setValue
 // @grant GM_xmlhttpRequest
-// @grant GM_setClipboard
 // @connect deepveinidle.com
 // ==/UserScript==
 /* Buddy build commit: ${commit} */

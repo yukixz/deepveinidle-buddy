@@ -38,7 +38,6 @@ const header=`// ==UserScript==
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_xmlhttpRequest
-// @grant        GM_setClipboard
 // @connect      deepveinidle.com
 // ==/UserScript==\n`;
 for(const [entry,outfile] of [['src/userscript.js','dist/deepveinidle-buddy.user.js'],['src/demo.js','dist/demo.js']]){

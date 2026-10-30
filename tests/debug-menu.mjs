@@ -13,14 +13,14 @@ try{
  assert.match(script,/^\/\/ @author\s+Alice$/m);
  assert.match(script,/^\/\/ @license\s+MIT$/m);
  const grants=[...script.matchAll(/^\/\/ @grant\s+(\S+)$/gm)].map(match=>match[1]);
- assert.deepEqual(grants,['unsafeWindow','GM_getValue','GM_setValue','GM_xmlhttpRequest','GM_setClipboard']);
+ assert.deepEqual(grants,['unsafeWindow','GM_getValue','GM_setValue','GM_xmlhttpRequest']);
  const description=script.match(/^\/\/ @description\s+(.+)$/m)?.[1];
  assert.ok(description);assert.doesNotMatch(description,/预填|prefill|调试|debug/i);
  const englishDescription=script.match(/^\/\/ @description:en\s+(.+)$/m)?.[1];
  assert.equal(englishDescription,'In-game assistant for mixed crafting and collection orders; syncs character data in real time and summarizes procurement materials and execution plans.');
  assert.doesNotMatch(englishDescription,/prefill|debug/i);
  const readme=await fs.readFile('README.md','utf8');assert.doesNotMatch(readme,/预填|prefill|启用调试功能|Enable debug features/i);
- checks.push('built userscript has ASCII default name, localized names, MIT license, namespace, author, five grants and no public prefill introduction');
+ checks.push('built userscript has ASCII default name, localized names, MIT license, namespace, author, four grants and no public prefill introduction');
  const page=await browser.newPage({viewport:{width:1440,height:1080}});page.on('pageerror',e=>errors.push(e.message));
  const root=page.locator('#deepveinidle-buddy'),menu=root.getByRole('menu'),toggle=root.getByRole('menuitemcheckbox');
  const open=()=>root.locator('.titlebar h1').click({button:'right'});

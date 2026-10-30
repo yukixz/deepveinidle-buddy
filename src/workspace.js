@@ -1,5 +1,4 @@
 import {requireKeys} from './engine/record-shape.js';
-import {encodePlanPayload,decodePlanPayload} from './plan-transfer.js';
 import {plannedProducts} from './planned-products.js';
 import {estimateCraftAction} from './crafting-estimates.js';
 import * as game from './engine/upstream.js';
@@ -210,11 +209,4 @@ export function collectionActions(plan){
    seconds:entry.status==='complete'?0:entry.status==='ok'?entry.seconds:null,
    materialStatus:entry.status==='ok'?action?.materialStatus:null,issues:['ok','complete'].includes(entry.status)?[]:[entry.status]};
  });
-}
-export function exportOrder(order){return {format:'deepveinidle-buddy-order',version:1,order:validateOrders([order])[0]};}
-export async function exportOrderText(order){return encodePlanPayload(exportOrder(order));}
-export async function importOrder(text){
- const raw=await decodePlanPayload(text);
- if(!record(raw)||raw.format!=='deepveinidle-buddy-order'||raw.version!==1||Object.keys(raw).some(key=>!['format','version','order'].includes(key)))throw Error('invalidOrders');
- return validateOrders([raw.order])[0];
 }

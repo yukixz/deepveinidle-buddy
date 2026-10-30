@@ -15,7 +15,6 @@ await build({stdin:{contents:`
    get:async(key,fallback)=>structuredClone(window.savedValues[key]??fallback),
    set:async(key,value)=>{window.savedValues[key]=structuredClone(value);window.savedWrites.push({key,value:structuredClone(value)});},
    market:async()=>{if(window.failMarket)throw Error('marketNetworkFailed');return structuredClone(window.marketResponse);},
-   copy:()=>{},readClipboard:()=>{},
   }});
  };`,resolveDir:process.cwd()},outfile:'.test-artifacts/market-storage/harness.js',bundle:true,format:'iife',target:'es2022',loader:{'.css':'text'}});
 const browser=await launchBrowser(),checks=[],errors=[];

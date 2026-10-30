@@ -2,7 +2,7 @@ import {build} from 'esbuild';
 import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {launchBrowser,baseUrl,toggleGameLanguage} from './browser-helper.mjs';
-import {userDefaults,exportOrderText} from '../src/workspace.js';
+import {userDefaults} from '../src/workspace.js';
 import {gameSnapshot} from './game-snapshot.mjs';
 await fs.mkdir('.test-artifacts/assistant-modes',{recursive:true});
 await build({stdin:{contents:`
@@ -16,7 +16,7 @@ await build({stdin:{contents:`
   window.panel=await mountPanel(host.attachShadow({mode:'open'}),{css,storageKey:'modes-test',platform:{
    get:async(key,fallback)=>key==='modes-test'?structuredClone(window.raw):key.startsWith('dvi-buddy-debug')?true:fallback,
    set:async(key,value)=>{if(key==='modes-test'){window.raw=structuredClone(value);window.writes.push(value);}},
-   market:async()=>{throw Error('fixture-market');},copy:async value=>window.clip=value,readClipboard:()=>new Promise(resolve=>window.resolveClipboard=resolve)
+   market:async()=>{throw Error('fixture-market');}
   },gameIntegration:integration,onPrefillFeedback:value=>window.hints.push(value)});
   window.gatherAttempts=key=>collectionRows(window.panel.getWorkspace().character).find(row=>[row.id,row.jobId,row.target].join(':')===key).attempts;
   window.expectedGather=key=>Math.ceil(window.gatherAttempts(key));
@@ -76,9 +76,7 @@ try{
  checks.push('switching away and back invalidates a pending gathering draft');
  await select('craft');assert.deepEqual(await root.locator('.content > section').evaluateAll(els=>els.map(e=>e.id)),['global-settings','recipes','procurement','execution-plan']);assert.equal(await root.locator('#orders').count(),1);assert.equal(await root.locator('[data-pricing="product"]').count(),1);assert.equal(await root.locator('[data-material="1"] td').nth(3).textContent(),'10,000 / 0 / 0');
  await root.locator('#global-product-price-mode').selectOption('ask');await select('collection-craft');await select('craft');assert.equal(await root.locator('#global-product-price-mode').inputValue(),'ask');
- await root.locator('#orders > summary').click();await root.locator('[data-action="edit-order"]').first().click();await root.locator('[data-action="import-order"]').click();await page.waitForFunction(()=>!!window.resolveClipboard);
- await select('collection-gather');await select('craft');await page.evaluate(text=>window.resolveClipboard(text),await exportOrderText({...raw.orders[0],name:'must-not-import'}));await page.waitForFunction(()=>!document.querySelector('#deepveinidle-buddy').shadowRoot.querySelector('[data-action="import-order"]')?.disabled);assert.equal(await page.evaluate(()=>window.raw.orders[0].lines[0].count),10000);assert.equal(await page.evaluate(()=>window.raw.orders[0].name),raw.orders[0].name);
- checks.push('manufacturing keeps multi-order controls and global pricing; switching cancels pending transfer');
+ checks.push('manufacturing keeps multi-order controls and global pricing');
  await mount(raw);
  await page.evaluate(()=>{const r=document.querySelector('#deepveinidle-buddy').shadowRoot;window.staleTarget=r.querySelector('[data-action="target-up"]');window.staleTarget.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:1}));r.querySelector('[data-action="mode-craft"]').click();window.staleConnected=window.staleTarget.isConnected;window.staleDisabled=window.staleTarget.disabled;window.staleTarget.dispatchEvent(new MouseEvent('click',{bubbles:true}));window.dispatchEvent(new PointerEvent('pointerup',{pointerId:1}));});
  assert.equal(await page.evaluate(()=>window.staleConnected&&window.staleDisabled),true);assert.equal(await page.evaluate(()=>window.panel.getWorkspace().collectionOrder.lines[0].target),100);

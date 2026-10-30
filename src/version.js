@@ -1,3 +1,2 @@
-// Build metadata and panel labels use the same version sources.
+// Panel version follows the package version.
 export {version as appVersion} from '../package.json';
-export {changelogVersion as gameVersion} from '../vendor/manifest.json';

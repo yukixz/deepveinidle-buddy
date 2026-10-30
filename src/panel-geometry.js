@@ -95,7 +95,7 @@ export async function installPanelGeometry(root,{platform,key,onError}){
  function ensureFocus(){
   if(!mobileMode(host.ownerDocument)||host.hasAttribute('data-closed'))return;
   const active=root.activeElement,content=root.querySelector('.content');
-  if(!active?.matches('input,select,textarea')||!content?.contains(active))return;
+  if(!active?.matches('input,select')||!content?.contains(active))return;
   const r=active.getBoundingClientRect(),c=content.getBoundingClientRect();
   if(r.bottom>c.bottom)content.scrollTop+=r.bottom-c.bottom+8;
   else if(r.top<c.top)content.scrollTop-=c.top-r.top+8;

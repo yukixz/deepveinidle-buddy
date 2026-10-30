@@ -1,7 +1,6 @@
-import {encodePlanPayload} from '../src/plan-transfer.js';
 import test from 'node:test';import assert from 'node:assert/strict';
 import * as game from '../src/engine/upstream.js';
-import {defaults,createOrder,putLine,validateWorkspace,workspaceForStorage,validateOrders,estimateOrders,removeCompleted,importOrder,exportOrder,exportOrderText} from '../src/workspace.js';
+import {defaults,createOrder,putLine,validateWorkspace,workspaceForStorage,validateOrders,estimateOrders,removeCompleted} from '../src/workspace.js';
 import {collectionRoutes,collectionRows,collectionPlayers} from '../src/engine/collection-model.js';
 import {createPriceSnapshot} from '../src/engine/price-protocol.js';
 import {priceDefaults} from '../src/engine/item-prices.js';
@@ -57,9 +56,6 @@ test('time fee overflow fails explicitly even if missing material prices hide ot
 });
 
 test('new workspace defaults to market asks',()=>{assert.equal(defaults().character.buyMode,'ask');});
-test('single-order transfer contains only validated order intent',async()=>{
- const w=setup();putLine(w.orders[0],craft(4));putLine(w.orders[0],collection());const raw=exportOrder(w.orders[0]);assert.deepEqual(Object.keys(raw).sort(),['format','order','version']);assert.deepEqual(await importOrder(await exportOrderText(w.orders[0])),w.orders[0]);assert.throws(()=>exportOrder({...w.orders[0],lines:[{...craft(),count:-1}]}),/invalidLine/);await assert.rejects(async()=>importOrder(await encodePlanPayload({...raw,version:2})),/invalidOrders/);
-});
 test('filter thresholds are required and validated',()=>{const w=defaults();w.filters.collection.maxSecondsPerPoint='5';assert.equal(validateWorkspace(w).filters.collection.maxSecondsPerPoint,'5');delete w.filters.collection.maxSecondsPerPoint;assert.throws(()=>validateWorkspace(w),/invalidFilters/);w.filters.collection.maxSecondsPerPoint='-1';assert.throws(()=>validateWorkspace(w),/invalidFilters/);});
 
 test('both price sides are required market ask/bid values',()=>{const w=defaults();assert.equal(w.productPriceMode,'bid');w.productPriceMode='ask';assert.equal(validateWorkspace(w).productPriceMode,'ask');delete w.productPriceMode;assert.throws(()=>validateWorkspace(w),/invalidWorkspace/);w.productPriceMode='bid';w.character.buyMode='global';assert.throws(()=>validateWorkspace(w),/invalidPriceMode/);});

@@ -20,12 +20,12 @@ export async function installDebugMenu(root,{platform,key,label,onChange,onError
  }
  function contextmenu(event){
   const title=event.target.closest?.('.titlebar');
-  if(!title||event.target.closest('button,input,select,textarea,a'))return;
+  if(!title||event.target.closest('button,input,select,a'))return;
   cancelPress();event.preventDefault();event.stopPropagation();openAt(event.clientX,event.clientY);
  }
  function down(event){
   cancelPress();
-  if(!mobileMode(doc)||!['touch','pen'].includes(event.pointerType)||!event.isPrimary||event.button!==0||!event.target.closest?.('.titlebar')||event.target.closest('button,input,select,textarea,a'))return;
+  if(!mobileMode(doc)||!['touch','pen'].includes(event.pointerType)||!event.isPrimary||event.button!==0||!event.target.closest?.('.titlebar')||event.target.closest('button,input,select,a'))return;
   press={id:event.pointerId,x:event.clientX,y:event.clientY};
   pressTimer=doc.defaultView.setTimeout(()=>{const point=press;cancelPress();if(point&&!disposed&&mobileMode(doc))openAt(point.x,point.y);},600);
  }

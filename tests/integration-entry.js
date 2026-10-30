@@ -5,7 +5,7 @@ import {defaults} from '../src/workspace.js';import {createGameSync,installGameS
 window.buddyTest={defaults,createGameSync,createGamePrefill};
 const initial=defaults();initial.orders[0].lines=window.__testLines;initial.collectionOrder.lines=window.__testLines.filter(line=>line.kind==='collection'&&!gatheringSkills.includes(game.recipes.find(job=>job.id===line.jobId)?.skill));initial.autoRemove=false;if(window.__testPrices)initial.prices=window.__testPrices;
 const values=new Map();window.__writes=[];
-const platform={get:async(k,v)=>values.get(k)??v,set:async(k,v)=>{values.set(k,v);window.__writes.push(v);},market:()=>Promise.reject(Error('disabled in fixture')),copy:()=>{},readClipboard:()=>{}};
+const platform={get:async(k,v)=>values.get(k)??v,set:async(k,v)=>{values.set(k,v);window.__writes.push(v);},market:()=>Promise.reject(Error('disabled in fixture'))};
 const integration=createGamePrefill(window,{wait:ms=>window.__wait?window.__wait(ms):new Promise(resolve=>setTimeout(resolve,ms))});
 const host=document.createElement('div');host.id='deepveinidle-buddy';document.body.append(host);
 let panel;const navigation=installNavigationLauncher(document,()=>panel?.open(),()=>panel?.close());

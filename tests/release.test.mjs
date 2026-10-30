@@ -17,7 +17,6 @@ function code(version='0.2.2',body=`/* Buddy build commit: ${commit} */\nconsole
 // @grant GM_getValue
 // @grant GM_setValue
 // @grant GM_xmlhttpRequest
-// @grant GM_setClipboard
 // @connect deepveinidle.com
 // ==/UserScript==
 ${body}\n`;}
