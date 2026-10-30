@@ -10,7 +10,7 @@ const checks=[],errors=[];
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});await prepareDemo(page);page.on('pageerror',e=>errors.push(e.message));
  const root=page.locator('#deepveinidle-buddy');
- await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();await root.locator('.summary').waitFor();
+ await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();await page.locator('#deepveinidle-buddy').locator('[data-action="mode-craft"]').click();await root.locator('.summary').waitFor();
  await root.locator('[data-action="mode-collection-craft"]').click();await page.waitForFunction(()=>localStorage.getItem('dvi-buddy-demo-v1')!==null);
  const base=await readDemoWorkspace(page);
  const number=(v,lang='zh')=>v===null?'—':v.toLocaleString(lang==='zh'?'zh-CN':'en',{maximumFractionDigits:2});
@@ -32,18 +32,18 @@ try{
    saved.prices.quotes[40]={ask:{value:5,capturedAt:Date.now()}};
   }
   if(kind==='conflict')saved.orders.push({...structuredClone(saved.orders[0]),id:'second-order'});
-  await seedDemoWorkspace(page,saved);await page.reload();await page.locator("[data-buddy-launcher]").click();await root.locator('.summary').waitFor();
+  await seedDemoWorkspace(page,saved);await page.reload();await page.locator("[data-buddy-launcher]").click();await page.locator('#deepveinidle-buddy').locator('[data-action="mode-craft"]').click();await root.locator('.summary').waitFor();
   const plan=estimateOrders(saved,createPriceSnapshot(saved.prices)),seconds=plan.craftSeconds===null||plan.collectionSeconds===null?null:plan.craftSeconds+plan.collectionSeconds;
-  assert.deepEqual(await root.locator('.summary > span').allTextContents(),['采购 '+number(plan.total),'时间 '+duration(seconds),'精通点 '+number(plan.points)]);
-  assert.deepEqual(await root.locator('#execution-plan .procurement-heading h3,#execution-plan > h3').allTextContents(),['采购材料','执行动作']);assert.equal(await root.locator('#execution-plan details,[id^="execute-"]').count(),0);assert.equal(await root.locator('#orders [data-action="edit-order"]').count(),saved.orders.length);
-  assert.ok(await root.locator('#execution-actions').evaluate(el=>Boolean(el.closest('.scroll').previousElementSibling?.textContent.includes('执行动作'))));
+  assert.equal(await root.locator('[data-plan-cost="material"]').textContent(),'材料成本 '+number(plan.materialCost));assert.equal(await root.locator('[data-plan-cost="purchase"]').textContent(),'采购成本 '+number(plan.total));assert.deepEqual(await root.locator('.summary > span').allTextContents(),['时间 '+duration(seconds),'精通点 '+number(plan.points)]);
+  assert.deepEqual(await root.locator('#procurement > .heading > h2,#execution-plan > .heading > h2').allTextContents(),['采购材料','执行计划']);assert.equal(await root.locator('#execution-plan details,[id^="execute-"]').count(),0);assert.equal(await root.locator('#orders [data-action="edit-order"]').count(),saved.orders.length);
+  assert.ok(await root.locator('#execution-actions').evaluate(el=>Boolean(el.closest('.scroll').previousElementSibling?.textContent.includes('精通点'))));
   assert.deepEqual((await root.locator('#purchase-materials th').allTextContents()).map(s=>s.replace(/[▲▼]/g,'')),['物品','稀有度','数量','需求 / 库存 / 产物','金额']);
   assert.ok(await root.locator('#purchase-materials tbody tr').evaluateAll(rows=>rows.every(row=>row.cells.length===5||row.cells.length===1&&row.cells[0].colSpan===5)));
   if(burning){const row=root.locator('#execution-actions tbody tr').first();assert.equal(await row.locator('td').nth(3).textContent(),number(Math.ceil(burning.attempts)+3));assert.equal(await row.locator('td').nth(4).textContent(),duration(plan.actions[0].seconds));}
   if(kind==='outputs'){const cells=root.locator('[data-material="40"] td');assert.equal(await cells.nth(2).textContent(),'3');assert.equal(await cells.nth(3).textContent(),'10 / 3 / 4');assert.equal(await cells.nth(4).textContent(),'15');assert.ok((await root.locator('[data-column="required"]').textContent()).includes('需求 / 库存 / 产物'));}
   checks.push(kind+' summary totals and purchase-before-actions order');
  }
- await toggleGameLanguage(page);assert.deepEqual((await root.locator('.summary > span').allTextContents()).map(s=>s.split(' ')[0]),['Purchase','Time','Mastery']);assert.deepEqual(await root.locator('#execution-plan .procurement-heading h3,#execution-plan > h3').allTextContents(),['Purchase materials','Execution actions']);assert.deepEqual((await root.locator('#purchase-materials th').allTextContents()).map(s=>s.replace(/[▲▼]/g,'')),['Item','Rarity','Quantity','Required / Stock / Outputs','Amount']);checks.push('English summary and table headings');
- await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().right<=innerWidth+1);assert.equal(await root.locator('.summary > span').count(),3);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));checks.push('narrow layout retains three summary fields without page overflow');
+ await toggleGameLanguage(page);assert.deepEqual((await root.locator('.summary > span').allTextContents()).map(s=>s.split(' ')[0]),['Time','Mastery']);assert.deepEqual(await root.locator('#procurement > .heading > h2,#execution-plan > .heading > h2').allTextContents(),['Purchase materials','Execution plan']);assert.deepEqual((await root.locator('#purchase-materials th').allTextContents()).map(s=>s.replace(/[▲▼]/g,'')),['Item','Rarity','Quantity','Required / Stock / Outputs','Amount']);assert.equal(await root.locator('[data-plan-cost="material"]').textContent(),'Material cost —');assert.equal(await root.locator('[data-plan-cost="purchase"]').textContent(),'Purchase cost —');checks.push('English summary and table headings');
+ await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').getBoundingClientRect().right<=innerWidth+1);assert.equal(await root.locator('.summary > span').count(),2);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));checks.push('narrow layout retains execution summary fields without page overflow');
  assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
 }finally{await browser.close();}

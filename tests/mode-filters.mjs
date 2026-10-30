@@ -9,6 +9,9 @@ const open=async()=>{await page.goto(baseUrl);await page.locator('[data-buddy-la
 const set=async(id,value)=>{await root.locator(id).fill(value);await root.locator(id).press('Tab');};
 try{
  await open();
+ assert.equal(await root.locator('[data-action="mode-craft"]').getAttribute('aria-pressed'),'true');
+ assert.deepEqual(await root.locator('#global-settings .tabs button').allTextContents(),['制造','收藏(制造)','收藏(采集)']);
+ await select('collection-craft');
  await root.locator('#skill').selectOption('smithing');await root.locator('#tier').selectOption('0');
  await set('#min-points','1');await set('#max-hours-per-100-points','100');
  await root.locator('[data-sort="points"]').click();await root.locator('[data-action="next"]').click();
@@ -20,8 +23,14 @@ try{
  await select('collection-craft');assert.equal(await root.locator('#skill').inputValue(),'smithing');assert.equal(await root.locator('#tier').inputValue(),'0');assert.equal(await root.locator('#search').inputValue(),'');assert.equal(await root.locator('#min-points').inputValue(),'1');assert.equal(await root.locator('#max-hours-per-100-points').inputValue(),'100');assert.equal(await root.locator('#max-cost').inputValue(),'');assert.equal(await root.locator('.pagination > small').textContent(),craftPage);
  checks.push('mode switches restore filters, sorting and page independently');
  await page.waitForTimeout(250);await open();assert.equal(await root.locator('#skill').inputValue(),'smithing');assert.equal(await root.locator('.pagination > small').textContent(),craftPage);
- await select('collection-gather');assert.equal(await root.locator('#skill').inputValue(),'mining');assert.equal(await root.locator('#tier').inputValue(),'1');assert.equal(await root.locator('#search').inputValue(),'ore');assert.equal(await root.locator('#min-points').inputValue(),'2');assert.equal(await root.locator('#max-hours-per-100-points').inputValue(),'1.5');assert.equal(await root.locator('#max-cost').inputValue(),'2');assert.equal(await root.locator('[data-sort="time"]').evaluate(el=>el.parentElement.getAttribute('aria-sort')),'ascending');
+ await select('collection-gather');assert.equal(await root.locator('#skill').inputValue(),'mining');assert.equal(await root.locator('#tier').inputValue(),'1');assert.equal(await root.locator('#search').inputValue(),'ore');assert.equal(await root.locator('#min-points').inputValue(),'2');assert.equal(await root.locator('#max-hours-per-100-points').inputValue(),'1.5');assert.equal(await root.locator('#max-cost').inputValue(),'2');assert.equal(await root.locator('[data-sort="time"]').evaluate(el=>el.parentElement.getAttribute('aria-sort')),'descending');
  await select('craft');assert.equal(await root.locator('#skill').inputValue(),'cooking');assert.equal(await root.locator('#tier').inputValue(),'2');assert.equal(await root.locator('#search').inputValue(),'fish');
+ for(const [button,key]of [['craft','craft'],['collection-craft','collection'],['collection-gather','collectionGather']]){
+  await select(button);await page.waitForFunction(key=>JSON.parse(localStorage.getItem('dvi-buddy-demo-v1'))?.selectedMode===key,key);await open();
+  assert.equal(await root.locator(`[data-action="mode-${button}"]`).getAttribute('aria-pressed'),'true');
+  assert.equal(await root.locator('[data-pricing="material"],[data-pricing="product"]').count(),2);
+ }
+ checks.push('all three selected modes survive reload while both pricing controls stay visible');
  const stored=await readDemoWorkspace(page);assert.equal(stored.filters.collection.maxSecondsPerPoint,'3600');assert.equal(stored.filters.collectionGather.maxSecondsPerPoint,'54');assert.deepEqual(errors,[]);
  checks.push('reload restores all three modes and preserves collection threshold units');
  console.log(JSON.stringify({passed:checks.length,checks},null,2));

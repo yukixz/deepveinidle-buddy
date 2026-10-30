@@ -13,12 +13,10 @@ try{
  assert.match(await root.locator('.titlebar').textContent(),/角色.*市场/);
  assert.equal((await root.locator('.version').textContent()).trim(),'v'+appVersion);assert.equal(await root.locator('.game-version').textContent(),'游戏版本 '+gameVersion);
  assert.equal(await root.locator('.content').evaluate(el=>el.lastElementChild.className),'game-version');
- const attempts=root.locator('.expected-attempts').first();
- assert.match(await attempts.textContent(),/^[\d,.]+$/);
- const inline=await attempts.evaluate(el=>{const r=el.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(el.previousSibling);const target=range.getBoundingClientRect();return {sameLine:r.top<target.bottom&&r.bottom>target.top,small:parseFloat(getComputedStyle(el).fontSize)===12&&getComputedStyle(el).color!==getComputedStyle(el.parentElement).color};});
- assert.ok(inline.sameLine&&inline.small);
+ assert.equal(await root.locator('#recipe-candidates [data-collection-attempts]').count(),0);
+ assert.equal(await root.locator('#recipe-candidates tbody tr').first().locator('td').nth(2).locator('small').count(),0);
  assert.deepEqual((await root.locator('#execution-actions th').allTextContents()).slice(0,3).map(s=>s.replace(/[▲▼]/g,'').trim()),['物品','稀有度','技能']);
- checks.push('compact title, bottom game version, inline small attempts and item/rarity/skill column order');
+ checks.push('compact title, bottom game version, candidate and action column structure');
  const savedBefore=await page.evaluate(()=>localStorage.getItem('dvi-buddy-demo-v1'));
  await toggleGameLanguage(page);assert.equal(await root.locator('h1').textContent(),'Crafting & Mastery Buddy');
  assert.equal((await root.locator('.version').textContent()).trim(),'v'+appVersion);assert.equal(await root.locator('.game-version').textContent(),'Game version '+gameVersion);

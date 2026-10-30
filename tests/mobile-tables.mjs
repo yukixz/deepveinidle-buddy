@@ -6,7 +6,7 @@ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,
 page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
 await fs.mkdir('.test-artifacts/mobile-tables',{recursive:true});
 try{
- await page.goto(baseUrl);await page.locator('[data-buddy-launcher]').click();
+ await page.goto(baseUrl);await page.locator('[data-buddy-launcher]').click();await page.locator('#deepveinidle-buddy').locator('[data-action="mode-craft"]').click();
  await page.evaluate(async()=>{const {installMobileFixture}=await import('/tests/mobile-fixture.js');installMobileFixture();});
  const root=page.locator('#deepveinidle-buddy');await page.waitForFunction(()=>document.querySelector('#deepveinidle-buddy').hasAttribute('data-mobile'));
  await root.locator('#orders>summary').tap();

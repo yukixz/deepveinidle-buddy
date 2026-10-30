@@ -212,3 +212,23 @@ test('user storage excludes game observations while retaining orders and pricing
  const w=setup(),now=Date.now();w.prices.quotes={1:{ask:{value:112,quantity:500,capturedAt:now}}};w.productPriceMode='ask';w.excludeInsufficientAsks=true;
  const stored=workspaceForStorage(w);assert.equal(Object.hasOwn(stored,'prices'),false);assert.equal(Object.hasOwn(stored,'character'),false);assert.equal(stored.version,2);assert.equal(stored.materialPriceMode,w.character.buyMode);assert.deepEqual(stored.orders,w.orders);assert.equal(stored.productPriceMode,'ask');assert.equal(stored.excludeInsufficientAsks,true);assert.equal(w.prices.quotes[1].ask.quantity,500);
 });
+
+test('material cost sums selected full requirements before stock, output offsets and fees',()=>{
+ const w=setup(),consumer=craftingJobs.find(j=>j.id===51);putLine(w.orders[0],craft(4));
+ const other=createOrder();other.fees.fixed=99;putLine(other,{kind:'craft',jobId:consumer.id,tier:0,count:5});w.orders.push(other);
+ w.character.bank={1:4,2:4,40:3};w.prices=quote(quote(quote(priceDefaults(),1,2),2,3),40,5);
+ let p=evaluate(w);assert.equal(p.materialCost,70);assert.equal(p.total,15);assert.equal(p.orders.reduce((sum,row)=>sum+row.materialValue,0),70);
+ w.character.bank[40]=100;p=evaluate(w);assert.equal(p.materialCost,70);assert.equal(p.total,0);
+ other.enabled=false;p=evaluate(w);assert.equal(p.materialCost,20);assert.equal(p.total,0);
+});
+test('material cost is independent of unknown inventory but missing prices remain unknown even with no purchase',()=>{
+ const w=setup();putLine(w.orders[0],craft(10));w.prices=quote(quote(priceDefaults(),1,2),2,3);w.character.bank=null;
+ assert.equal(evaluate(w).materialCost,50);assert.equal(evaluate(w).total,null);
+ w.character.bank={1:100,2:100};w.prices=priceDefaults();assert.equal(evaluate(w).materialCost,null);assert.equal(evaluate(w).total,0);
+ w.orders[0].lines=[];assert.equal(evaluate(w).materialCost,0);
+ putLine(w.orders[0],collection(100));w.character.initialized=false;assert.equal(evaluate(w).materialCost,null);
+});
+test('aggregate full material cost overflow fails explicitly even if stock covers procurement',()=>{
+ const w=setup();w.character.bank={1:100000000,2:100000000};w.prices=quote(quote(priceDefaults(),1,1e9),2,1);
+ putLine(w.orders[0],craft(4000000));const second=createOrder();putLine(second,craft(4000000));const third=createOrder();putLine(third,craft(4000000));w.orders.push(second,third);assert.throws(()=>evaluate(w),/quantityOverflow/);
+});

@@ -7,8 +7,8 @@ try{
  const page=await browser.newPage({viewport:{width:1440,height:1080}});await prepareDemo(page);
  page.on('pageerror',error=>errors.push(error.message));
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();
- const root=page.locator('#deepveinidle-buddy'),material=root.locator('#recipes-material-price-mode');
- const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64,64,64]);};
+ const root=page.locator('#deepveinidle-buddy'),material=root.locator('#global-material-price-mode');
+ const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64]);};
  const row=target=>root.locator(`[data-key="40:41:${target}"]`);
  const saved=()=>readDemoWorkspace(page);
  await root.locator('[data-action="mode-collection-craft"]').click();
@@ -22,16 +22,15 @@ try{
  async function select(value){await material.selectOption(value);await page.waitForTimeout(200);}
  await load(state);
  assert.equal(await material.locator('option[value="ask-stock"]').textContent(),'卖单（排除在售数量不足）');
- assert.equal(await root.locator('#recipes-product-price-mode option[value="ask-stock"]').count(),0);
- assert.equal(await root.locator('#execution-product-price-mode option[value="ask-stock"]').count(),0);
+ assert.equal(await root.locator('#global-product-price-mode option[value="ask-stock"]').count(),0);
  const existing=structuredClone(state.orders);
  const plan=await root.locator('#execution-plan .summary').textContent();
  assert.equal(await row(100).count(),1);await select('ask-stock');
  assert.equal(await row(10).count(),1);assert.equal(await row(100).count(),0);
- assert.equal(await root.locator('#execution-material-price-mode').inputValue(),'ask-stock');
+ assert.equal(await root.locator('#global-material-price-mode').inputValue(),'ask-stock');
  assert.equal(await root.locator('#execution-plan .summary').textContent(),plan);
  assert.deepEqual((await saved()).orders,existing);
- checks.push('new material-only option synchronizes both controls and excludes insufficient collection targets without deducting inventory or deleting orders');
+ checks.push('global material option excludes insufficient collection targets without deducting inventory or deleting orders');
  await page.reload();await page.locator("[data-buddy-launcher]").click();await material.waitFor();assert.equal(await material.inputValue(),'ask-stock');assert.equal(await row(100).count(),0);
  checks.push('stock filtering survives reload');
  const enough=await saved();enough.prices.quotes={1:quote(91),2:quote(91)};await load(enough);
@@ -43,18 +42,18 @@ try{
  }
  checks.push('missing or invalid quantity and absent ask price exclude candidates');
  await select('ask');assert.equal(await row(100).count(),1);assert.equal((await saved()).excludeInsufficientAsks,false);
- await root.locator('#execution-material-price-mode').selectOption('bid');await page.waitForTimeout(200);
+ await root.locator('#global-material-price-mode').selectOption('bid');await page.waitForTimeout(200);
  assert.equal(await material.inputValue(),'bid');assert.equal(await row(100).count(),1);
- checks.push('ordinary asks and bids restore candidates and selecting from either panel keeps controls synchronized');
+ checks.push('global ask and bid options restore candidates and disable the supply filter');
  const craft=structuredClone(enough);craft.prices.quotes={1:quote(1),2:quote(1)};craft.orders[0].lines=[{kind:'craft',jobId:41,tier:0,count:500}];await load(craft);
  await root.locator('[data-action="mode-craft"]').click();assert.equal(await root.locator('[data-count="41:0"]').inputValue(),'500');
  await select('ask-stock');assert.equal(await root.locator('[data-count="41:0"]').inputValue(),'500');
  checks.push('manufacturing availability uses a single attempt rather than the existing order count');
- const batch=structuredClone(enough);batch.orders[0].lines=[];await load(batch);await root.locator('[data-action="add-all"]').click();await page.waitForTimeout(200);
- assert.deepEqual((await saved()).orders[0].lines,[{kind:'collection',itemId:40,jobId:41,target:100}]);
+ const batch=structuredClone(enough);batch.collectionOrder.lines=[];await load(batch);await root.locator('[data-action="add-all"]').click();await page.waitForTimeout(200);
+ assert.deepEqual((await saved()).collectionOrder.lines,[{kind:'collection',itemId:40,jobId:41,target:100}]);
  checks.push('Add all includes only eligible targets and takes the highest eligible target');
  await root.locator('[data-action="mode-collection-gather"]').click();await root.locator('#search').fill('');await root.locator('#search').press('Tab');await page.waitForTimeout(200);
- assert.ok(await root.locator('[data-action="add-collection"]').count()>0);
+ assert.ok(await root.locator('#recipe-candidates tbody tr[data-item-id]').count()>0);
  checks.push('gathering candidates without material requirements remain visible');
  await root.locator('[data-action="mode-collection-craft"]').click();await root.locator('#search').fill('青铜锭');await root.locator('#search').press('Tab');await page.waitForTimeout(200);
  await fs.mkdir('.test-artifacts/recipe-availability',{recursive:true});await compactPricing();await page.screenshot({path:'.test-artifacts/recipe-availability/desktop.png'});

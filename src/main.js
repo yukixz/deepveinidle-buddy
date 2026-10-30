@@ -13,6 +13,7 @@ function demoWorkspace(){
  const bronze=craftingJobs.find(j=>j.output.itemId===40&&!j.upgrade);
  putLine(initial.orders[0],{kind:'craft',jobId:bronze.id,tier:0,count:10});
  putLine(initial.orders[0],{kind:'collection',itemId:40,jobId:collectionRoutes(40)[0].id,target:100});
+ putLine(initial.collectionOrder,{kind:'collection',itemId:40,jobId:collectionRoutes(40)[0].id,target:100});
  return initial;
 }
 export async function startDemo(initial=demoWorkspace()){

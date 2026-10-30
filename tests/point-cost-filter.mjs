@@ -47,7 +47,7 @@ try{
  assert.equal((await stored()).filters.collection.maxCost,'200');
  assert.equal(await row.locator('td').nth(7).textContent(),'113.75');
  await setLimit('0.01');
- await root.locator('#recipes-material-price-mode').selectOption('bid');
+ await root.locator('#global-material-price-mode').selectOption('bid');
  assert.equal(await row.locator('td').nth(7).textContent(),'68.25');
  checks.push('table shows actual coins per point for ask and bid pricing while filter conversion preserves internal units');
 

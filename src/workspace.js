@@ -4,6 +4,7 @@ import {plannedProducts} from './planned-products.js';
 import {estimateCraftAction} from './crafting-estimates.js';
 import * as game from './engine/upstream.js';
 import {craftingJobs,craftingTiers,craftingMaterials} from './engine/crafting-model.js';
+import {gatheringSkills} from './engine/gathering-model.js';
 import {collectionDefaults,validateCollection,collectionTarget,collectionRoutes,collectionPlayers,estimateCollection,collectionPrice} from './engine/collection-model.js';
 import {validateCollectionSelection} from './engine/collection-plan.js';
 import {priceDefaults,normalizePriceState} from './engine/item-prices.js';
@@ -12,6 +13,18 @@ const safe=v=>Number.isFinite(v)&&v>=0&&v<=Number.MAX_SAFE_INTEGER;
 const quantity=v=>Number.isSafeInteger(v)&&v>=0;
 export const add=(a,b)=>{const value=a+b;if(!safe(value))throw Error('quantityOverflow');return value;};
 export function createOrder(id=crypto.randomUUID(),name='订单 1'){return {id,name,enabled:true,fees:{fixed:0,percent:0,minute:0},lines:[]};}
+function createCollectionOrder(){return createOrder('collection-craft','收藏（制造）');}
+function validateCollectionOrder(raw){
+ const order=validateOrders([raw])[0],fixed=createCollectionOrder();
+ if(order.id!==fixed.id||order.name!==fixed.name||!order.enabled||Object.values(order.fees).some(value=>value!==0)||order.lines.some(line=>line.kind!=='collection'||gatheringSkills.includes(game.recipes.find(job=>job.id===line.jobId)?.skill)))throw Error('invalidOrders');
+ return order;
+}
+export function ordersForMode(workspace,mode){
+ if(mode==='craft')return workspace.orders;
+ if(mode==='collection')return [workspace.collectionOrder];
+ if(mode==='collectionGather')return [];
+ throw Error('invalidMode');
+}
 export const lineKey=line=>line.kind==='craft'?`craft:${line.jobId}:${line.tier}`:`collection:${line.itemId}`;
 export function validateLine(raw){
  if(!record(raw))throw Error('invalidLine');
@@ -38,23 +51,26 @@ export function validateOrders(raw){
  });
 }
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
-export function userDefaults(){const order=createOrder();return {version:2,revision:0,orders:[order],currentOrderId:order.id,materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection'),collectionGather:filterDefaults('collection')}};}
+export function userDefaults(){const order=createOrder();return {version:2,revision:0,selectedMode:'craft',orders:[order],currentOrderId:order.id,collectionOrder:createCollectionOrder(),materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection'),collectionGather:filterDefaults('collection')}};}
 export function defaults(){return applyUserWorkspace({character:collectionDefaults(),prices:priceDefaults()},userDefaults());}
 // Runtime composition for the calculation engine; never persist this object.
 export function validateWorkspace(raw){
- requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
+ requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters',...['collectionOrder','selectedMode'].filter(key=>Object.hasOwn(raw,key))],'invalidWorkspace');
  if(raw.version!==1)throw Error('invalidWorkspace');
- const {filters}=workspaceForStorage(raw);
- return {...raw,filters,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)};
+ const {filters,collectionOrder,selectedMode}=workspaceForStorage(raw);
+ return {...raw,filters,collectionOrder,selectedMode,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)};
 }
 export function validateUserWorkspace(raw){
  if(!record(raw)||raw.version!==2)throw Error('unsupportedWorkspaceVersion');
- requireKeys(raw,['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters'],'invalidWorkspace');
+ requireKeys(raw,['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters',...['collectionOrder','selectedMode'].filter(key=>Object.hasOwn(raw,key))],'invalidWorkspace');
+ const selectedMode=Object.hasOwn(raw,'selectedMode')?raw.selectedMode:'craft';
+ if(!['craft','collection','collectionGather'].includes(selectedMode))throw Error('invalidWorkspace');
  const hasGather=record(raw.filters)&&Object.hasOwn(raw.filters,'collectionGather');
  requireKeys(raw.filters,hasGather?['craft','collection','collectionGather']:['craft','collection'],'invalidFilters');
  if(!quantity(raw.revision)||typeof raw.autoRemove!=='boolean')throw Error('invalidWorkspace');
  if(typeof raw.excludeInsufficientAsks!=='boolean'||!['ask','bid'].includes(raw.productPriceMode)||!['ask','bid'].includes(raw.materialPriceMode))throw Error('invalidPriceMode');
- const orders=validateOrders(raw.orders),filters={};
+ const orders=validateOrders(raw.orders),collectionOrder=Object.hasOwn(raw,'collectionOrder')?validateCollectionOrder(raw.collectionOrder):createCollectionOrder(),filters={};
+ if(orders.some(order=>order.id===collectionOrder.id))throw Error('invalidOrders');
  for(const mode of hasGather?['craft','collection','collectionGather']:['craft','collection']){
   const f=raw.filters[mode],columns=mode==='craft'?['item','rarity']:['item','rarity','points','duration','time','cost','coins'];
   const keys=['skill','tier','query','route','sort','sortDirection','page','minPoints','maxSecondsPerPoint','maxCost'];
@@ -65,10 +81,10 @@ export function validateUserWorkspace(raw){
  // A validated legacy shared filter seeds an independent gathering preference.
  if(!hasGather)filters.collectionGather={...filters.collection};
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
- return {version:2,revision:raw.revision,orders,currentOrderId:raw.currentOrderId,materialPriceMode:raw.materialPriceMode,productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
+ return {version:2,revision:raw.revision,selectedMode,orders,currentOrderId:raw.currentOrderId,collectionOrder,materialPriceMode:raw.materialPriceMode,productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
 }
 export function workspaceForStorage(workspace){
- return validateUserWorkspace({version:2,revision:workspace.revision,orders:workspace.orders,currentOrderId:workspace.currentOrderId,materialPriceMode:workspace.character.buyMode,productPriceMode:workspace.productPriceMode,excludeInsufficientAsks:workspace.excludeInsufficientAsks,autoRemove:workspace.autoRemove,filters:workspace.filters});
+ return validateUserWorkspace({version:2,revision:workspace.revision,orders:workspace.orders,currentOrderId:workspace.currentOrderId,...Object.fromEntries(['collectionOrder','selectedMode'].filter(key=>Object.hasOwn(workspace,key)).map(key=>[key,workspace[key]])),materialPriceMode:workspace.character.buyMode,productPriceMode:workspace.productPriceMode,excludeInsufficientAsks:workspace.excludeInsufficientAsks,autoRemove:workspace.autoRemove,filters:workspace.filters});
 }
 export function applyUserWorkspace(workspace,raw){
  const {materialPriceMode,...user}=validateUserWorkspace(raw);
@@ -83,7 +99,7 @@ export function putLine(order,raw){
 export function removeCompleted(workspace){
  if(!workspace.autoRemove||!workspace.character.initialized)return false;
  let changed=false;
- for(const order of workspace.orders){const lines=order.lines.filter(l=>l.kind!=='collection'||!collectionTarget(workspace.character,l.itemId,l.target).complete);if(lines.length!==order.lines.length){order.lines=lines;changed=true;}}
+ for(const order of [...workspace.orders,...(workspace.collectionOrder?[workspace.collectionOrder]:[])]){const lines=order.lines.filter(l=>l.kind!=='collection'||!collectionTarget(workspace.character,l.itemId,l.target).complete);if(lines.length!==order.lines.length){order.lines=lines;changed=true;}}
  return changed;
 }
 function summarizeExecutionActions(entries,rows,canAssess){
@@ -181,7 +197,19 @@ export function estimateOrders(workspace,prices){
   if(cost!==null)subtotal=add(subtotal,cost);
   return {id,required,owned,produced,purchase,price:quote.price,cost};
  });
- return {entries,orders,rows,actions:summarizeExecutionActions(entries,rows,blocked===0&&!unknownInventory),blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&!['ok','complete'].includes(e.status))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
+ const materialCost=orders.some(order=>order.materialValue===null)?null:orders.reduce((sum,order)=>add(sum,order.materialValue),0);
+ return {entries,orders,rows,materialCost,actions:summarizeExecutionActions(entries,rows,blocked===0&&!unknownInventory),blocked,conflicts:[...conflicts],points:blocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&!['ok','complete'].includes(e.status))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
+}
+// Editable collection rows retain intent identity, including completed/blocked targets.
+export function collectionActions(plan){
+ const actions=new Map(plan.actions.map(row=>[`${row.jobId}:${row.tier}`,row]));
+ return plan.entries.map(entry=>{
+  const tier=game.itemTier(entry.itemId),action=actions.get(`${entry.jobId}:${tier}`);
+  return {key:lineKey(entry),jobId:entry.jobId,tier,itemId:entry.itemId,target:entry.target,status:entry.status,
+   count:entry.status==='complete'?0:entry.status==='ok'?entry.attempts:null,
+   seconds:entry.status==='complete'?0:entry.status==='ok'?entry.seconds:null,
+   materialStatus:entry.status==='ok'?action?.materialStatus:null,issues:['ok','complete'].includes(entry.status)?[]:[entry.status]};
+ });
 }
 export function exportOrder(order){return {format:'deepveinidle-buddy-order',version:1,order:validateOrders([order])[0]};}
 export async function exportOrderText(order){return encodePlanPayload(exportOrder(order));}
