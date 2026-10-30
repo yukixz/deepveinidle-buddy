@@ -255,7 +255,16 @@ export async function mountPanel(root,{platform,css,storageKey='dvi-buddy-demo-v
   }
   page=1;rememberFilters();queueRender();
  }
- function keydown(event){if(event.target.matches?.('input,select')&&(event.isComposing||event.key!=='Escape'))event.stopPropagation();}
+ function keydown(event){
+  const el=event.target;
+  if(el.matches?.('input,select')&&(event.isComposing||event.key!=='Escape'))event.stopPropagation();
+  if(event.defaultPrevented||event.key!=='Tab'||event.isComposing||event.ctrlKey||event.altKey||event.metaKey||!manufacturing())return;
+  if(!el.matches?.('#recipe-candidates input[data-count]')||el.disabled||el.dataset.modeGeneration!==String(modeGeneration))return;
+  const inputs=[...el.closest('table').querySelectorAll('input[data-count]:enabled')].filter(input=>input.getClientRects().length);
+  const index=inputs.indexOf(el),next=inputs[index+(event.shiftKey?-1:1)];
+  if(index<0||!next)return;
+  event.preventDefault();next.focus();
+ }
  root.addEventListener('click',click);root.addEventListener('change',change);root.addEventListener('input',typed);root.addEventListener('compositionend',typed);root.addEventListener('keydown',keydown);
  function hotKey(value){return value.initialized?JSON.stringify(gatheringSkills.map(skill=>game.hotRarityMultiplier(value.worldTick,skill))):'';}
  function meaningfulCharacter(value){const {capturedAt,inventoryCapturedAt,worldTick,...rest}=value;return JSON.stringify(rest);}
