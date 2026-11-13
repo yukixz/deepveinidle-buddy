@@ -252,11 +252,13 @@ test('manufacturing estimates ignore the collection bar preference, including le
  for(const [id,price]of [[40,10],[1,2],[2,3]])w.prices=quote(w.prices,id,price);
  const second=createOrder();putLine(second,{kind:'craft',jobId:51,tier:1,count:2});w.orders.push(second);
  for(const bank of [{40:4},null]){
-  w.character.bank=bank;w.expandMetalBars=false;
+  w.character.bank=bank;w.intermediateStrategy='buy';
   const baseline=evaluate(w);
-  w.expandMetalBars=true;
-  assert.deepEqual(evaluate(w),baseline);
-  for(const order of w.orders)assert.deepEqual(evaluate({...w,orders:[order]}),evaluate({...w,expandMetalBars:false,orders:[order]}));
+  for(const intermediateStrategy of ['optimal','craft']){
+   w.intermediateStrategy=intermediateStrategy;
+   assert.deepEqual(evaluate(w),baseline);
+   for(const order of w.orders)assert.deepEqual(evaluate({...w,orders:[order]}),evaluate({...w,intermediateStrategy:'buy',orders:[order]}));
+  }
  }
  assert.equal(evaluate(w).actions.some(row=>row.prerequisite),false);
 });
@@ -268,7 +270,7 @@ test('collection bar expansion values raw materials without changing the preview
  putLine(w.collectionOrder,{kind:'collection',jobId:job.id,itemId,target:100});
  const off=evaluateCollection(w);
  assert.equal(off.rows[0].id,bar);
- w.expandMetalBars=true;w.character.bank={...ore};
+ w.intermediateStrategy='optimal';w.character.bank={...ore};
  for(const id of Object.keys(ore))w.prices=quote(w.prices,id,3);
  const stored=workspaceForStorage(w),on=evaluateCollection(w),barStep=on.actions.find(action=>action.prerequisite),product=on.actions.find(action=>!action.prerequisite);
  assert.equal(barStep.count,4);assert.equal(barStep.tier,tier);
@@ -283,14 +285,14 @@ test('collection bar expansion values raw materials without changing the preview
  assert.deepEqual(preview.materials,craftingMaterials(job,tier,1));assert.equal(preview.cost,null);
  assert.equal(preview.seconds,off.collectionSeconds/2);
  assert.deepEqual(workspaceForStorage(w),stored);
- assert.equal(stored.expandMetalBars,true);
- w.expandMetalBars=false;
- assert.equal(Object.hasOwn(workspaceForStorage(w),'expandMetalBars'),false);
- assert.throws(()=>validateWorkspace({...w,expandMetalBars:'true'}),/invalidWorkspace/);
+ assert.equal(stored.intermediateStrategy,'optimal');
+ w.intermediateStrategy='buy';
+ assert.equal(workspaceForStorage(w).intermediateStrategy,'buy');
+ assert.throws(()=>validateWorkspace({...w,intermediateStrategy:'true'}),/invalidWorkspace/);
 });
 
 test('a price reversal or tie removes smelting, alternative purchases and ore demand',()=>{
- const w=setup();w.expandMetalBars=true;w.character.counts[80]=90;w.character.bank={40:8};
+ const w=setup();w.intermediateStrategy='optimal';w.character.counts[80]=90;w.character.bank={40:8};
  putLine(w.collectionOrder,{kind:'collection',jobId:51,itemId:80,target:100});
  setAsks(w,{1:20,2:25,40:60});
  const crafted=evaluateCollection(w);
@@ -306,7 +308,7 @@ test('a price reversal or tie removes smelting, alternative purchases and ore de
 });
 
 test('a partially quoted recipe falls back to purchase; losing the buy quote leaves demand pending',()=>{
- const w=setup();w.expandMetalBars=true;w.character.counts[80]=99;
+ const w=setup();w.intermediateStrategy='optimal';w.character.counts[80]=99;
  putLine(w.collectionOrder,{kind:'collection',jobId:51,itemId:80,target:100});
  setAsks(w,{1:2,40:10});
  assert.equal(evaluateCollection(w).rows[0].purchase,2);
@@ -323,7 +325,7 @@ test('a partially quoted recipe falls back to purchase; losing the buy quote lea
 });
 
 test('collection bar stock covers demand before only the shortage is smelted and valued',()=>{
- const w=setup();w.expandMetalBars=true;w.character.counts[80]=95;
+ const w=setup();w.intermediateStrategy='optimal';w.character.counts[80]=95;
  putLine(w.collectionOrder,{kind:'collection',jobId:51,itemId:80,target:100});
  w.character.bank={40:3};w.character.pack={40:1};
  for(const [id,price]of [[40,10],[1,2],[2,3]])w.prices=quote(w.prices,id,price);
@@ -344,7 +346,7 @@ test('collection bar stock covers demand before only the shortage is smelted and
 });
 
 test('collection bar stock is shared once across saved entries without changing inventory or intent',()=>{
- const w=setup();w.expandMetalBars=true;w.character.bank={40:5};w.character.counts={80:98,360:94};
+ const w=setup();w.intermediateStrategy='optimal';w.character.bank={40:5};w.character.counts={80:98,360:94};
  setAsks(w,{1:2,2:3,40:10});
  for(const [jobId,itemId]of [[51,80],[308,360]])putLine(w.collectionOrder,{kind:'collection',jobId,itemId,target:100});
  const before=workspaceForStorage(w),plan=evaluateCollection(w);
@@ -357,7 +359,7 @@ test('collection bar stock is shared once across saved entries without changing 
 });
 
 test('collection bar sourcing respects quality, purchases locked output and propagates unknown inventory',()=>{
- const w=setup();w.expandMetalBars=true;w.character.counts[1080]=98;
+ const w=setup();w.intermediateStrategy='optimal';w.character.counts[1080]=98;
  setAsks(w,{1001:2,1002:3,1040:10});
  putLine(w.collectionOrder,{kind:'collection',jobId:51,itemId:1080,target:100});
  w.character.bank={40:100,1040:1};
@@ -369,6 +371,10 @@ test('collection bar sourcing respects quality, purchases locked output and prop
  assert.equal(locked.rows.find(row=>row.id===1040).owned,0);
  assert.equal(locked.entries[0].barSteps,undefined);
  assert.equal(locked.total,40);assert.equal(locked.collectionSeconds,locked.entries[0].seconds);
+ w.intermediateStrategy='craft';
+ const blocked=evaluateCollection(w);
+ assert.equal(blocked.entries[0].status,'materialLocked');assert.equal(blocked.collectionSeconds,null);
+ assert.equal(blocked.rows.find(row=>row.id===1040).purchase,null);assert.equal(blocked.entries[0].barSteps,undefined);
  w.character.bankLocked=[];w.character.bank=null;
  const unknown=evaluateCollection(w),bar=unknown.rows.find(row=>row.id===1040);
  assert.deepEqual([bar.required,bar.owned,bar.produced,bar.purchase],[4,null,null,null]);
@@ -378,7 +384,7 @@ test('collection bar sourcing respects quality, purchases locked output and prop
 });
 
 test('explicit bar collection retains its output alongside prerequisite smelting',()=>{
- const w=setup();w.expandMetalBars=true;w.character.bank={40:4};w.character.counts={40:97,80:95};
+ const w=setup();w.intermediateStrategy='optimal';w.character.bank={40:4};w.character.counts={40:97,80:95};
  setAsks(w,{1:2,2:3,40:10});
  putLine(w.collectionOrder,{kind:'collection',jobId:41,itemId:40,target:100});
  putLine(w.collectionOrder,{kind:'collection',jobId:51,itemId:80,target:100});
@@ -392,7 +398,7 @@ test('explicit bar collection retains its output alongside prerequisite smelting
 });
 
 test('collection exposes merged prerequisites by metal and quality while retaining editable targets',()=>{
- const w=setup();w.expandMetalBars=true;w.character.bank={1:5,2:5};
+ const w=setup();w.intermediateStrategy='optimal';w.character.bank={1:5,2:5};
  setAsks(w,{1:2,2:3,40:10,1001:2,1002:3,1040:10});
  w.character.counts={80:98,360:97,1080:99};
  for(const [jobId,itemId]of [[51,80],[308,360],[51,1080]])putLine(w.collectionOrder,{kind:'collection',jobId,itemId,target:100});
@@ -410,7 +416,7 @@ test('collection exposes merged prerequisites by metal and quality while retaini
 });
 
 test('gem shortages share stock once, merge cutting steps and preserve costs, time and intent',()=>{
- const w=setup();w.expandMetalBars=true;w.character.bank={180:2,100:3,4:10};w.character.pack={180:1};
+ const w=setup();w.intermediateStrategy='optimal';w.character.bank={180:2,100:3,4:10};w.character.pack={180:1};
  w.character.counts={181:95,184:96};
  for(const [jobId,itemId]of [[231,181],[234,184]])putLine(w.collectionOrder,{kind:'collection',jobId,itemId,target:100});
  for(const [id,price]of [[180,10],[100,2],[4,5]])w.prices=quote(w.prices,id,price);
@@ -422,14 +428,14 @@ test('gem shortages share stock once, merge cutting steps and preserve costs, ti
  assert.equal(plan.materialCost,87);assert.equal(plan.total,6);
  assert.equal(plan.collectionSeconds,plan.entries.reduce((sum,entry)=>sum+entry.seconds,0)+steps[0].seconds);
  assert.deepEqual(workspaceForStorage(w),before);assert.deepEqual(w.character.bank,{180:2,100:3,4:10});
- w.expandMetalBars=false;
+ w.intermediateStrategy='buy';
  const off=evaluateCollection(w);
  assert.equal(off.actions.some(row=>row.prerequisite),false);assert.equal(off.rows.some(row=>row.id===100),false);
  assert.equal(off.rows.find(row=>row.id===180).purchase,6);assert.equal(off.points,plan.points);
 });
 
 test('gem sourcing matches quality, purchases locked output and propagates unknown stock',()=>{
- const w=setup();w.expandMetalBars=true;w.character.counts[1181]=95;
+ const w=setup();w.intermediateStrategy='optimal';w.character.counts[1181]=95;
  setAsks(w,{1180:10,1100:2,1004:1});
  putLine(w.collectionOrder,{kind:'collection',jobId:231,itemId:1181,target:100});
  w.character.bank={180:100,1180:2,1100:3,1004:5};

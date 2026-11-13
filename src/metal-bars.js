@@ -24,8 +24,8 @@ export function expandBarMaterials(materials,availableBars,pricing){
   if(used>0){costMaterials[id]=safeAdd(costMaterials[id]??0,used);stockUsed[id]=used;}
   if(count===0)continue;
   const route=pricing.get(itemId);
-  if(route.price===null){
-   issue=route.priceError??issue??'missingIntermediatePrice';
+  if(!route.craft&&route.price===null){
+   issue=route.priceError??issue??route.issue??'missingIntermediatePrice';
    const possibleInputs=route.unitSeconds===null?{}:craftingMaterials(job,tier,1);
    unpricedRoutes.push({itemId,inputIds:Object.keys(possibleInputs).map(Number)});
    continue;

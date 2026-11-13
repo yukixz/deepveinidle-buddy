@@ -45,7 +45,7 @@ test('gathering target, rarity details and planned products use the whole bound 
 test('collection plan prices and times a bronze rod and its bronze bar using each recipe skill',()=>{
  const workspace=defaults();
  workspace.character=character(current,bindings);
- workspace.expandMetalBars=true;
+ workspace.intermediateStrategy='optimal';
  workspace.orders=[workspace.collectionOrder];
  workspace.collectionOrder.fees.minute=60;
  putLine(workspace.collectionOrder,{kind:'collection',itemId:85,jobId:56,target:1});

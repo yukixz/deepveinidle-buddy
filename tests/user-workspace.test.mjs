@@ -5,7 +5,7 @@ import {defaults,userDefaults,validateUserWorkspace,workspaceForStorage,applyUse
 test('user persistence roundtrips without character, clock, inventory or market validation',()=>{
  const runtime=defaults();runtime.character.buyMode='bid';runtime.character.config=null;runtime.character.bank='invalid';runtime.prices=null;
  const stored=workspaceForStorage(runtime);assert.equal(stored.materialPriceMode,'bid');assert.equal(stored.version,2);
- assert.deepEqual(Object.keys(stored).sort(),['version','revision','selectedMode','orders','currentOrderId','collectionOrder','materialPriceMode','productPriceMode','excludeInsufficientAsks','inventoryOnly','autoRemove','filters'].sort());
+ assert.deepEqual(Object.keys(stored).sort(),['version','revision','selectedMode','orders','currentOrderId','collectionOrder','materialPriceMode','productPriceMode','excludeInsufficientAsks','inventoryOnly','intermediateStrategy','autoRemove','filters'].sort());
  assert.deepEqual(validateUserWorkspace(stored),stored);
 });
 test('persisted user data excludes runtime state and requires explicit settings',()=>{
@@ -26,7 +26,7 @@ test('automatic removal reports only actual user order mutations and requires in
 
 test('required persisted user fields cannot be omitted and corrupt storage stays untouched',async()=>{
  const {createStore}=await import('../src/storage.js');
- for(const key of Object.keys(userDefaults()).filter(key=>!['collectionOrder','selectedMode','inventoryOnly'].includes(key))){
+ for(const key of Object.keys(userDefaults()).filter(key=>!['collectionOrder','selectedMode','inventoryOnly','intermediateStrategy'].includes(key))){
   const raw=userDefaults();delete raw[key];const before=structuredClone(raw);let writes=0;
   const store=createStore({get:async()=>structuredClone(raw),set:async()=>writes++},'user',validateUserWorkspace);
   await assert.rejects(store.load());await assert.rejects(store.save(userDefaults()),/storageBlocked/);assert.equal(writes,0);assert.deepEqual(raw,before);
@@ -102,4 +102,34 @@ test('inventory selection rejects conflicting pricing and supply preferences',()
  const user={...userDefaults(),inventoryOnly:true};
  assert.throws(()=>validateUserWorkspace({...user,materialPriceMode:'bid'}),/invalidPriceMode/);
  assert.throws(()=>validateUserWorkspace({...user,excludeInsufficientAsks:true}),/invalidPriceMode/);
+});
+
+test('legacy intermediate preferences normalize on read and migrate on the next save',async()=>{
+ const {createStore}=await import('../src/storage.js');
+ for(const [legacy,expected] of [[{},'buy'],[{expandMetalBars:false},'buy'],[{expandMetalBars:true},'optimal']]){
+  const raw={...userDefaults(),...legacy};delete raw.intermediateStrategy;
+  const before=structuredClone(raw),writes=[];
+  const store=createStore({get:async()=>raw,set:async(_,value)=>writes.push(value)},'user',validateUserWorkspace);
+  const loaded=await store.load(),runtime=applyUserWorkspace(defaults(),loaded);
+  assert.equal(runtime.intermediateStrategy,expected);assert.equal(Object.hasOwn(runtime,'expandMetalBars'),false);
+  assert.deepEqual(raw,before);assert.deepEqual(writes,[]);
+  await store.save(workspaceForStorage(runtime));
+  assert.deepEqual(writes,[{...loaded,intermediateStrategy:expected,revision:1}]);
+  assert.equal(Object.hasOwn(writes[0],'expandMetalBars'),false);
+ }
+ for(const intermediateStrategy of ['buy','optimal','craft']){
+  const user={...userDefaults(),intermediateStrategy};
+  assert.deepEqual(workspaceForStorage(applyUserWorkspace(defaults(),user)),user);
+ }
+});
+
+test('invalid or ambiguous intermediate preferences protect the stored workspace',async()=>{
+ const {createStore}=await import('../src/storage.js');
+ for(const fields of [{expandMetalBars:'true'},{expandMetalBars:null},{intermediateStrategy:false},{intermediateStrategy:undefined},{intermediateStrategy:'auto'},{intermediateStrategy:'craft',expandMetalBars:false}]){
+  const raw=userDefaults();delete raw.intermediateStrategy;Object.assign(raw,fields);
+  let writes=0;
+  const store=createStore({get:async()=>raw,set:async()=>writes++},'user',validateUserWorkspace);
+  await assert.rejects(store.load(),/invalidWorkspace/);
+  await assert.rejects(store.save(userDefaults()),/storageBlocked/);assert.equal(writes,0);
+ }
 });

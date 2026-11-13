@@ -1,10 +1,16 @@
 # 当前状态
 
-版本：**0.5.11**。计算基线：**1.0.1214**（对应 `package.json` 与 `vendor/manifest.json`）。线上发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准，历史变更见[更新说明](../CHANGELOG.md)。
+版本：**0.5.12**。计算基线：**1.0.1214**（对应 `package.json` 与 `vendor/manifest.json`）。线上发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准，历史变更见[更新说明](../CHANGELOG.md)。
 
 功能与计算规则统一见[面板规则](panel.md)，模块和上游来源见[技术方案](technical.md)。工作区存档保持 `version=2`，新增字段的兼容与降级限制见[存储与恢复](panel.md#存储与恢复)。
 
 ## 当前版本变更
+
+### 0.5.12 待发布
+
+收藏（制造）支持择优、购买、自制三档半成品策略；窄屏材料名称与「自制」标记采用执行表的换行布局。[交互与计算规则](panel.md#半成品策略)
+
+本次通过 243 项单元测试、本地构建及 6 组桌面无头 Chrome 场景（62 项检查），其中包含 390px 窄屏布局。三档交互尚未在真实账号或移动真机验收。
 
 ### 0.5.11
 

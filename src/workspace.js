@@ -51,20 +51,23 @@ export function validateOrders(raw){
  });
 }
 export const filterDefaults=(mode='craft')=>({skill:'all',tier:'all',query:'',route:'all',sort:mode==='collection'?'cost':'item',sortDirection:'asc',page:1,minPoints:'',maxSecondsPerPoint:'',maxCost:''});
-export function userDefaults(){const order=createOrder();return {version:2,revision:0,selectedMode:'craft',orders:[order],currentOrderId:order.id,collectionOrder:createCollectionOrder(),materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,inventoryOnly:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection'),collectionGather:{...filterDefaults('collection'),sort:'time'}}};}
+export function userDefaults(){const order=createOrder();return {version:2,revision:0,selectedMode:'craft',intermediateStrategy:'buy',orders:[order],currentOrderId:order.id,collectionOrder:createCollectionOrder(),materialPriceMode:'ask',productPriceMode:'bid',excludeInsufficientAsks:false,inventoryOnly:false,autoRemove:false,filters:{craft:filterDefaults(),collection:filterDefaults('collection'),collectionGather:{...filterDefaults('collection'),sort:'time'}}};}
+const optionalWorkspaceKeys=['collectionOrder','selectedMode','inventoryOnly','intermediateStrategy','expandMetalBars'];
 export function defaults(){return applyUserWorkspace({character:collectionDefaults(),prices:priceDefaults()},userDefaults());}
 // Runtime composition for the calculation engine; never persist this object.
 export function validateWorkspace(raw){
- requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters',...['collectionOrder','selectedMode','inventoryOnly','expandMetalBars'].filter(key=>Object.hasOwn(raw,key))],'invalidWorkspace');
+ requireKeys(raw,['version','revision','orders','currentOrderId','character','prices','productPriceMode','excludeInsufficientAsks','autoRemove','filters',...optionalWorkspaceKeys.filter(key=>Object.hasOwn(raw,key))],'invalidWorkspace');
  if(raw.version!==1)throw Error('invalidWorkspace');
- const {filters,collectionOrder,selectedMode,inventoryOnly,expandMetalBars=false}=workspaceForStorage(raw);
- return {...raw,filters,collectionOrder,selectedMode,inventoryOnly,expandMetalBars,character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)};
+ const user=workspaceForStorage(raw);
+ return composeWorkspace({character:validateCollection(raw.character),prices:normalizePriceState(raw.prices)},user);
 }
 export function validateUserWorkspace(raw){
  if(!record(raw)||raw.version!==2)throw Error('unsupportedWorkspaceVersion');
- requireKeys(raw,['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters',...['collectionOrder','selectedMode','inventoryOnly','expandMetalBars'].filter(key=>Object.hasOwn(raw,key))],'invalidWorkspace');
- const expandMetalBars=Object.hasOwn(raw,'expandMetalBars')?raw.expandMetalBars:false;
- if(typeof expandMetalBars!=='boolean')throw Error('invalidWorkspace');
+ requireKeys(raw,['version','revision','orders','currentOrderId','materialPriceMode','productPriceMode','excludeInsufficientAsks','autoRemove','filters',...optionalWorkspaceKeys.filter(key=>Object.hasOwn(raw,key))],'invalidWorkspace');
+ const legacy=Object.hasOwn(raw,'expandMetalBars'),hasStrategy=Object.hasOwn(raw,'intermediateStrategy');
+ if(legacy&&(typeof raw.expandMetalBars!=='boolean'||hasStrategy))throw Error('invalidWorkspace');
+ const intermediateStrategy=hasStrategy?raw.intermediateStrategy:raw.expandMetalBars===true?'optimal':'buy';
+ if(!['optimal','buy','craft'].includes(intermediateStrategy))throw Error('invalidWorkspace');
  const inventoryOnly=Object.hasOwn(raw,'inventoryOnly')?raw.inventoryOnly:false;
  if(typeof inventoryOnly!=='boolean')throw Error('invalidPriceMode');
  const selectedMode=Object.hasOwn(raw,'selectedMode')?raw.selectedMode:'craft';
@@ -86,14 +89,16 @@ export function validateUserWorkspace(raw){
  // A validated legacy shared filter seeds an independent gathering preference.
  if(!hasGather)filters.collectionGather={...filters.collection};
  if(!orders.length||!orders.some(order=>order.id===raw.currentOrderId))throw Error('invalidWorkspace');
- return {version:2,revision:raw.revision,selectedMode,inventoryOnly,...(expandMetalBars?{expandMetalBars}:{}),orders,currentOrderId:raw.currentOrderId,collectionOrder,materialPriceMode:raw.materialPriceMode,productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
+ return {version:2,revision:raw.revision,selectedMode,inventoryOnly,intermediateStrategy,orders,currentOrderId:raw.currentOrderId,collectionOrder,materialPriceMode:raw.materialPriceMode,productPriceMode:raw.productPriceMode,excludeInsufficientAsks:raw.excludeInsufficientAsks,autoRemove:raw.autoRemove,filters};
 }
 export function workspaceForStorage(workspace){
- return validateUserWorkspace({version:2,revision:workspace.revision,orders:workspace.orders,currentOrderId:workspace.currentOrderId,...Object.fromEntries(['collectionOrder','selectedMode','inventoryOnly','expandMetalBars'].filter(key=>Object.hasOwn(workspace,key)).map(key=>[key,workspace[key]])),materialPriceMode:workspace.character.buyMode,productPriceMode:workspace.productPriceMode,excludeInsufficientAsks:workspace.excludeInsufficientAsks,autoRemove:workspace.autoRemove,filters:workspace.filters});
+ return validateUserWorkspace({version:2,revision:workspace.revision,orders:workspace.orders,currentOrderId:workspace.currentOrderId,...Object.fromEntries(optionalWorkspaceKeys.filter(key=>Object.hasOwn(workspace,key)).map(key=>[key,workspace[key]])),materialPriceMode:workspace.character.buyMode,productPriceMode:workspace.productPriceMode,excludeInsufficientAsks:workspace.excludeInsufficientAsks,autoRemove:workspace.autoRemove,filters:workspace.filters});
 }
 export function applyUserWorkspace(workspace,raw){
- const {materialPriceMode,...user}=validateUserWorkspace(raw);
- return {...workspace,...user,expandMetalBars:user.expandMetalBars??false,version:1,character:{...workspace.character,buyMode:materialPriceMode}};
+ return composeWorkspace(workspace,validateUserWorkspace(raw));
+}
+function composeWorkspace(workspace,{materialPriceMode,...user}){
+ return {...user,prices:workspace.prices,version:1,character:{...workspace.character,buyMode:materialPriceMode}};
 }
 export function putLine(order,raw){
  if(raw.kind==='craft'&&raw.count===0){order.lines=order.lines.filter(l=>lineKey(l)!==lineKey(raw));return;}
@@ -140,8 +145,9 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
   if(seen.has(line.itemId))conflicts.add(line.itemId);seen.add(line.itemId);
  }
  // Expansion belongs only to the fixed Collection (Craft) calculation scope.
- const expandMetalBars=workspace.expandMetalBars&&selected.length===1&&selected[0].id===workspace.collectionOrder?.id;
- if(expandMetalBars)pricing??=createIntermediatePricing(state,prices,players);
+ const strategy=workspace.intermediateStrategy??(workspace.expandMetalBars?'optimal':'buy');
+ const expandMetalBars=strategy!=='buy'&&selected.length===1&&selected[0].id===workspace.collectionOrder?.id;
+ if(expandMetalBars)pricing??=createIntermediatePricing(state,prices,players,strategy);
  const prerequisiteProducts=new Map();
  const uncertainOutputs=new Set(),uncertainRequirements=new Set();
  const availableBars=expandMetalBars&&state.bank!==null&&state.pack!==null?new Map():null;
@@ -184,7 +190,7 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
      for(const id of route.inputIds)uncertainRequirements.add(id);
     }
     if(!['ok','complete'].includes(timing.status)){
-     if(timing.status!=='missingIntermediatePrice')globallyBlocked=true;
+     if(!expanded.unpricedRoutes?.length)globallyBlocked=true;
      blocked++;ownBlocked=true;if(line.kind==='collection'&&entry.status!=='ok')ownMaterialsUnknown=true;
     }
     if(entry.status==='ok'){
@@ -235,7 +241,7 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
   const sum=estimateAmount(()=>cost===null?subtotal:addAmount(subtotal,cost),subtotalError,valuation.error);
   subtotal=sum.value;subtotalError=sum.error;
   const row={id,required,owned,produced,purchase,price:quote.price,cost,...amountError('cost',valuation)};
-  if(prerequisiteCount>0&&pricing.get(id).strictlyCheaper){
+  if(prerequisiteCount>0&&(strategy==='craft'||pricing.get(id).strictlyCheaper)){
    row.selfCrafted=true;
    row.directPurchase=purchase===null?null:Math.ceil(Math.max(0,required-owned-independentProducts));
   }

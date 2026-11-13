@@ -25,7 +25,7 @@ export function valueItems(items,prices,side,pricing){
  }
  return missing?null:total;
 }
-export function createIntermediatePricing(state,prices,players=collectionPlayers(state)){
+export function createIntermediatePricing(state,prices,players=collectionPlayers(state),strategy='optimal'){
  const cache=new Map();
  return {get(itemId){
   if(cache.has(itemId))return cache.get(itemId);
@@ -33,11 +33,14 @@ export function createIntermediatePricing(state,prices,players=collectionPlayers
   if(!job)return null;
   const buyPrice=collectionPrice(itemId,prices,state.buyMode).price;
   const tier=game.itemTier(itemId);
-  const unitSeconds=state.bankLocked.includes(itemId)?null:estimateCraftAction(state,job,1,players).seconds;
-  const craftValue=estimateAmount(()=>unitSeconds!==null?valueItems(craftingMaterials(job,tier,1),prices,state.buyMode):null);
+  const action=state.bankLocked.includes(itemId)?{status:'materialLocked',seconds:null}:estimateCraftAction(state,job,1,players);
+  const craftValue=estimateAmount(()=>action.seconds!==null&&strategy!=='buy'?valueItems(craftingMaterials(job,tier,1),prices,state.buyMode):null);
   const craftPrice=craftValue.value;
-  const craft=craftPrice!==null&&(buyPrice===null||craftPrice<buyPrice);
-  const route={price:craftValue.error?null:craft?craftPrice:buyPrice,craft,strictlyCheaper:craft&&buyPrice!==null,unitSeconds,...amountError('price',craftValue)};
+  const strictlyCheaper=craftPrice!==null&&buyPrice!==null&&craftPrice<buyPrice;
+  const craft=strategy==='craft'?action.status==='ok':craftPrice!==null&&(buyPrice===null||strictlyCheaper);
+  const issue=strategy==='craft'&&action.status!=='ok'?action.status:null;
+  const price=craft||issue||craftValue.error?craftPrice:buyPrice;
+  const route={price,craft,strictlyCheaper,unitSeconds:action.seconds,issue,...amountError('price',craftValue)};
   cache.set(itemId,route);
   return route;
  }};

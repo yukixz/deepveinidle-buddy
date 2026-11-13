@@ -179,9 +179,6 @@ details[open]>summary { margin-bottom:10px; }
 :host([data-mobile]) .frozen-table> :is(thead,tbody)>tr> :is(th,td):first-child:not([colspan]) { width:72px; min-width:72px; max-width:72px; }
 :host([data-mobile]) .item-name { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; overflow-wrap:anywhere; }
 :host([data-mobile]) .item-name:focus { display:block; overflow:visible; outline:1px solid var(--edge); }
-:host([data-mobile]) .self-crafted-name { display:flex; align-items:baseline; }
-:host([data-mobile]) .self-crafted-name .item-name { min-width:0; }
-:host([data-mobile]) .self-crafted-name .route-label { flex:none; }
 :host([data-mobile]) .materials-cell { min-width:120px; max-width:160px; }
 :host([data-mobile]) .material-amount { white-space:normal; overflow-wrap:anywhere; }
 :host([data-mobile]) .resize-handle { display:none; }

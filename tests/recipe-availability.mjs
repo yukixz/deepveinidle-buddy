@@ -8,7 +8,7 @@ try{
  page.on('pageerror',error=>errors.push(error.message));
  await page.goto(baseUrl);await page.locator("[data-buddy-launcher]").click();
  const root=page.locator('#deepveinidle-buddy'),material=root.locator('#global-material-price-mode');
- const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64]);};
+ const compactPricing=async()=>{const widths=await root.locator('.pricing-controls select').evaluateAll(els=>els.map(el=>el.getBoundingClientRect().width));assert.deepEqual(widths,[64,64,64]);};
  const row=target=>root.locator(`[data-key="40:41:${target}"]`);
  const saved=()=>readDemoWorkspace(page);
  await root.locator('[data-action="mode-collection-craft"]').click();
