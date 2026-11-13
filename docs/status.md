@@ -1,10 +1,16 @@
 # 当前状态
 
-版本：**0.5.9**。计算基线：**1.0.1214**（对应 `package.json` 与 `vendor/manifest.json`）。线上发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准，历史变更见[更新说明](../CHANGELOG.md)。
+版本：**0.5.10**。计算基线：**1.0.1214**（对应 `package.json` 与 `vendor/manifest.json`）。线上发布记录以[GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)与[Greasy Fork](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy)为准，历史变更见[更新说明](../CHANGELOG.md)。
 
 功能与计算规则统一见[面板规则](panel.md)，模块和上游来源见[技术方案](technical.md)。工作区存档保持 `version=2`，新增字段的兼容与降级限制见[存储与恢复](panel.md#存储与恢复)。
 
 ## 当前版本变更
+
+### 0.5.10
+
+[大额预估金额与异常隔离](superpowers/specs/2026-11-13-large-amount-estimates-design.md)已实现。计算所得总价及金额派生值接受有限非负浮点数，覆盖配方估值、半成品比价、订单费用与采购汇总；利维坦之鳞高价不再使收藏候选整表消失。实际数量、行情输入和存储边界保持原规则，无效金额按行及依赖关系明确报告。
+
+本轮完整单元测试 239 项通过，构建通过；浏览器合成夹具的 `large-amounts`、`extra-sorting`、`execution-summary`、`fee-captions`、`game-integration` 五个场景共 65 项检查通过。新增场景核对 1.1B 单价下完整候选、千万档 11Q 成本、金额阈值、分页、批量加入及采购排序，并检查语言切换与 390px 窄屏布局。非有限金额与负值等异常通过合成协议注入单元测试验证，真实账号、移动真机及生产环境尚未验证。
 
 ### 已发布基线 0.5.9
 

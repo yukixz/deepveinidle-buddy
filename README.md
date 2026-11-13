@@ -1,6 +1,6 @@
 # 工匠精通助手 · Crafting & Mastery Buddy
 
-在Deep Vein Idle游戏内运行的userscript，提供制造订单、收藏规划、材料采购与执行计划。版本 **0.5.9**，计算基线 **1.0.1214**。
+在Deep Vein Idle游戏内运行的userscript，提供制造订单、收藏规划、材料采购与执行计划。版本 **0.5.10**，计算基线 **1.0.1214**。
 
 [安装与更新](https://greasyfork.org/zh-CN/scripts/601896-deepveinidle-buddy) · [GitHub Releases](https://github.com/yukixz/deepveinidle-buddy/releases)
 

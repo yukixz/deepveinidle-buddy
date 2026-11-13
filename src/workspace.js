@@ -1,6 +1,7 @@
+import {addAmount,multiplyAmount,estimateAmount,amountError} from './amounts.js';
 import {requireKeys} from './engine/record-shape.js';
 import {plannedProducts} from './planned-products.js';
-import {createIntermediatePricing,estimateBarSteps,estimateCraftAction,withBarTime} from './crafting-estimates.js';
+import {valueItems,createIntermediatePricing,estimateBarSteps,estimateCraftAction,withBarTime} from './crafting-estimates.js';
 import * as game from './engine/upstream.js';
 import {craftingJobs,craftingTiers,craftingMaterials} from './engine/crafting-model.js';
 import {gatheringSkills} from './engine/gathering-model.js';
@@ -151,7 +152,7 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
  const entries=[],orders=[];let blocked=0,globallyBlocked=false,points=0,craftSeconds=0,collectionSeconds=0;
  const materialAdd=(map,id,qty)=>map.set(Number(id),add(map.get(Number(id))??0,qty));
  for(const order of selected){
-  const own=new Map();let ownBlocked=false,ownSeconds=0,ownMaterialsUnknown=false;
+  const own=new Map();let ownBlocked=false,ownSeconds=0,ownMaterialsUnknown=false,ownMaterialsError=null;
   for(const line of order.lines){
    let entry={...line,orderId:order.id,status:'ok',materials:{}};
    try{
@@ -175,6 +176,7 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
     const tier=line.kind==='craft'?line.tier:game.itemTier(line.itemId);
     const expanded=expandMetalBars?estimateBarSteps(entry.materials,availableBars,pricing):{costMaterials:entry.materials,requirements:entry.materials,stockUsed:{},steps:[]};
     if(expanded.issue)ownMaterialsUnknown=true;
+    if(expanded.issue==='invalidAmount')ownMaterialsError='invalidAmount';
     if(expanded.steps.length)entry.barSteps=expanded.steps.map(step=>({...step,prerequisite:true}));
     const timing=expanded.issue?{status:expanded.issue,seconds:null}:withBarTime(entry,expanded.steps);
     for(const route of expanded.unpricedRoutes??[]){
@@ -209,16 +211,17 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
    }catch(error){entry.status=error.message;blocked++;globallyBlocked=true;ownBlocked=true;ownMaterialsUnknown=true;}
    entries.push(entry);
   }
-  let materialValue=0,unknown=false;
-  for(const [id,qty]of own){const price=collectionPrice(id,prices,state.buyMode).price;if(price===null&&qty>0)unknown=true;else materialValue=add(materialValue,qty*(price??0));}
+  const valuation=estimateAmount(()=>ownMaterialsUnknown?null:valueItems(Object.fromEntries(own),prices,state.buyMode),ownMaterialsError);
+  const cost=valuation.value;
   const nonempty=order.lines.some(l=>l.kind==='craft'||!state.initialized||!collectionTarget(state,l.itemId,l.target).complete);
-  const fixed=nonempty?order.fees.fixed:0,percent=order.fees.percent===0?0:unknown||ownMaterialsUnknown?null:add(0,materialValue*(order.fees.percent/100));
-  const minute=!nonempty||order.fees.minute===0?0:ownBlocked?null:add(0,ownSeconds/60*order.fees.minute);
-  const total=percent===null||minute===null?null:add(add(fixed,percent),minute);
-  const cost=unknown||ownMaterialsUnknown?null:materialValue;
-  orders.push({id:order.id,fees:{fixed,percent,minute,total},blocked:ownBlocked,seconds:ownBlocked?null:ownSeconds,materialValue:cost,suggestedPrice:cost===null||total===null?null:add(cost,total)});
+  const fixed=nonempty?order.fees.fixed:0;
+  const percent=estimateAmount(()=>order.fees.percent===0?0:cost===null?null:multiplyAmount(cost,order.fees.percent/100),order.fees.percent===0?null:valuation.error);
+  const minute=estimateAmount(()=>!nonempty||order.fees.minute===0?0:ownBlocked?null:multiplyAmount(ownSeconds/60,order.fees.minute));
+  const fee=estimateAmount(()=>percent.value===null||minute.value===null?null:addAmount(addAmount(fixed,percent.value),minute.value),percent.error,minute.error);
+  const suggested=estimateAmount(()=>cost===null||fee.value===null?null:addAmount(cost,fee.value),valuation.error,fee.error);
+  orders.push({id:order.id,fees:{fixed,percent:percent.value,minute:minute.value,total:fee.value,...amountError('percent',percent),...amountError('minute',minute),...amountError('total',fee)},blocked:ownBlocked,seconds:ownBlocked?null:ownSeconds,materialValue:cost,...amountError('materialValue',valuation),suggestedPrice:suggested.value,...amountError('suggestedPrice',suggested)});
  }
- let subtotal=0,missingPrices=0,unknownInventory=false;
+ let subtotal=0,subtotalError=null,missingPrices=0,unknownInventory=false;
  const rows=[...materials].sort((a,b)=>a[0]-b[0]).map(([id,exact])=>{
   const required=uncertainRequirements.has(id)?null:Math.ceil(exact);if(required!==null&&!quantity(required))throw Error('quantityOverflow');
   const owned=state.bank===null||state.pack===null?null:state.bankLocked.includes(id)?0:add(state.bank[id]??0,state.pack[id]??0);
@@ -227,17 +230,20 @@ export function estimateOrders(workspace,prices,players=collectionPlayers(worksp
   const purchase=required===null||owned===null||produced===null?null:Math.ceil(Math.max(0,required-owned-produced));
   const quote=collectionPrice(id,prices,state.buyMode);
   if(owned===null)unknownInventory=true;if(purchase>0&&quote.price===null)missingPrices++;
-  const cost=purchase===0?0:purchase===null||quote.price===null?null:purchase*quote.price;
-  if(cost!==null)subtotal=add(subtotal,cost);
-  const row={id,required,owned,produced,purchase,price:quote.price,cost};
+  const valuation=estimateAmount(()=>purchase===0?0:purchase===null||quote.price===null?null:multiplyAmount(purchase,quote.price));
+  const cost=valuation.value;
+  const sum=estimateAmount(()=>cost===null?subtotal:addAmount(subtotal,cost),subtotalError,valuation.error);
+  subtotal=sum.value;subtotalError=sum.error;
+  const row={id,required,owned,produced,purchase,price:quote.price,cost,...amountError('cost',valuation)};
   if(prerequisiteCount>0&&pricing.get(id).strictlyCheaper){
    row.selfCrafted=true;
    row.directPurchase=purchase===null?null:Math.ceil(Math.max(0,required-owned-independentProducts));
   }
   return row;
  });
- const materialCost=orders.some(order=>order.materialValue===null)?null:orders.reduce((sum,order)=>add(sum,order.materialValue),0);
- return {entries,orders,rows,materialCost,actions:summarizeExecutionActions(entries,state,blocked===0&&state.bank!==null&&state.pack!==null),blocked,conflicts:[...conflicts],points:globallyBlocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&(!['ok','complete'].includes(e.status)||e.barSteps?.some(step=>step.status!=='ok')))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
+ const material=estimateAmount(()=>orders.some(order=>order.materialValue===null)?null:orders.reduce((sum,order)=>addAmount(sum,order.materialValue),0),...orders.map(order=>order.materialValueError));
+ const materialCost=material.value;
+ return {entries,orders,rows,materialCost,...amountError('materialCost',material),...(subtotalError?{subtotalError,totalError:subtotalError}:{}),actions:summarizeExecutionActions(entries,state,blocked===0&&state.bank!==null&&state.pack!==null),blocked,conflicts:[...conflicts],points:globallyBlocked?null:points,craftSeconds:entries.some(e=>e.kind==='craft'&&e.status!=='ok')?null:craftSeconds,collectionSeconds:entries.some(e=>e.kind==='collection'&&(!['ok','complete'].includes(e.status)||e.barSteps?.some(step=>step.status!=='ok')))?null:collectionSeconds,missingPrices,unknownInventory,subtotal,total:blocked||missingPrices||unknownInventory?null:subtotal};
 }
 // Editable collection rows retain intent identity, including completed/blocked targets.
 export function collectionActions(plan){

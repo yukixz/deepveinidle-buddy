@@ -56,8 +56,8 @@ test('collection time fee retains burn, rarity and caught-stop analytical expect
  putLine(w.orders[0],{kind:'collection',itemId:candidate.id,jobId:candidate.jobId,target:candidate.target});w.orders[0].fees.minute=7;
  const p=evaluate(w);const seconds=candidate.seconds/candidate.attempts*Math.ceil(candidate.attempts);assert.equal(p.collectionSeconds,seconds);assert.equal(p.orders[0].fees.minute,seconds/60*7);
 });
-test('time fee overflow fails explicitly even if missing material prices hide other fees',()=>{
- const w=setup();putLine(w.orders[0],craft(100));w.orders[0].fees={fixed:0,percent:1,minute:Number.MAX_SAFE_INTEGER};assert.throws(()=>evaluate(w),/quantityOverflow/);
+test('large finite time fees survive missing material prices',()=>{
+ const w=setup();putLine(w.orders[0],craft(100));w.orders[0].fees={fixed:0,percent:1,minute:Number.MAX_SAFE_INTEGER};const result=evaluate(w).orders[0];assert.ok(result.fees.minute>Number.MAX_SAFE_INTEGER);assert.equal(result.fees.minute,result.seconds/60*Number.MAX_SAFE_INTEGER);assert.equal(result.fees.total,null);assert.equal(result.fees.minuteError,undefined);
 });
 
 test('new workspace defaults to market asks',()=>{assert.equal(defaults().character.buyMode,'ask');});
@@ -239,9 +239,9 @@ test('material cost is independent of unknown inventory but missing prices remai
  w.orders[0].lines=[];assert.equal(evaluate(w).materialCost,0);
  putLine(w.orders[0],collection(100));w.character.initialized=false;assert.equal(evaluate(w).materialCost,null);
 });
-test('aggregate full material cost overflow fails explicitly even if stock covers procurement',()=>{
+test('aggregate full material cost accepts large estimates even if stock covers procurement',()=>{
  const w=setup();w.character.bank={1:100000000,2:100000000};w.prices=quote(quote(priceDefaults(),1,1e9),2,1);
- putLine(w.orders[0],craft(4000000));const second=createOrder();putLine(second,craft(4000000));const third=createOrder();putLine(third,craft(4000000));w.orders.push(second,third);assert.throws(()=>evaluate(w),/quantityOverflow/);
+ putLine(w.orders[0],craft(4000000));const second=createOrder();putLine(second,craft(4000000));const third=createOrder();putLine(third,craft(4000000));w.orders.push(second,third);const result=evaluate(w);assert.equal(result.materialCost,12000000*(1e9+1));assert.equal(result.total,0);assert.equal(result.materialCostError,undefined);
 });
 
 test('manufacturing estimates ignore the collection bar preference, including legacy mixed orders and fees',()=>{

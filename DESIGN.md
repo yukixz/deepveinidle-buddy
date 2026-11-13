@@ -7,6 +7,7 @@
 - [面板与计算规则](docs/panel.md)
 - [按技能绑定的精通页估算](docs/superpowers/specs/2026-11-12-skill-mastery-pages-design.md)
 - [收藏（制造）考虑自制半成品](docs/superpowers/specs/2026-11-12-consider-crafting-intermediates-design.md)
+- [大额预估金额与异常隔离](docs/superpowers/specs/2026-11-13-large-amount-estimates-design.md)
 - [模块与上游来源](docs/technical.md)
 - [版本状态与验证](docs/status.md)
 - [构建与发布](docs/releasing.md)

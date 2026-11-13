@@ -10,8 +10,8 @@ export function sortItemRows(rows,column='item',direction='asc',getId=row=>row.i
  }).map(entry=>entry.row);
 }
 
-export function sortNumericRows(rows,value,direction='asc',getId=row=>row.id){
+export function sortNumericRows(rows,value,direction='asc',getId=row=>row.id,{amount=false}={}){
  if(!['asc','desc'].includes(direction))throw Error('invalidSort');
- const ranked=sortItemRows(rows,'item','asc',getId).map((row,index)=>{const number=value(row)??null;if(number!==null&&(typeof number!=='number'||!Number.isFinite(number)||number<0||number>Number.MAX_SAFE_INTEGER))throw Error('invalidSortValue');return {row,index,number};});
+ const ranked=sortItemRows(rows,'item','asc',getId).map((row,index)=>{const number=value(row)??null;if(number!==null&&(typeof number!=='number'||!Number.isFinite(number)||number<0||(!amount&&number>Number.MAX_SAFE_INTEGER)))throw Error('invalidSortValue');return {row,index,number};});
  const sign=direction==='asc'?1:-1;ranked.sort((a,b)=>a.number===null?(b.number===null?a.index-b.index:1):b.number===null?-1:sign*(a.number-b.number)||a.index-b.index);return ranked.map(entry=>entry.row);
 }
